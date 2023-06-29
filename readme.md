@@ -1,24 +1,19 @@
 # Gallery Galore
-
-[The app is deployed to GitHub](https://joelhkv.github.io/HelsinkiCityBikeApp/)
-
+[The app is deployed to GitHub](https://JoelHKV.github.io/GalleryGalore/)
 
 ## General Information
-
 Gallery Galore is an exploratory App for examining the possibilities of AI for learning. In particular, Gallery Galore teaches the styles of famous painters in an engaging way. 
-
-                    
+                 
 ## Instructions and Features
-
 In the practice mode, users can click through random paintings or use sliders to change the title or painter.
+
+<img src="https://storage.googleapis.com/joeltestfiles/GG1.png" width="600" height="600">
 
 In the quiz mode, users will be presented with four buttons, each displaying a different painter's name. The task is to click on the button that corresponds to the displayed painting.
 
-Below are some screenshots from the app:
-
+<img src="https://storage.googleapis.com/joeltestfiles/GG2.png" width="600" height="600">
 
 ## Setup
-
 The app contains of the following code files:
 - index.html
 - src/main.jsx
@@ -27,17 +22,13 @@ The app contains of the following code files:
 - src/reducers/counterSlice.js
 - src/components/QuizBlock.jsx
 
-
 ## Technologies Used
 The app is written in JavaScript (React + Redux), HTML, and CSS. 
-
 
 ## Testing
 
 ### Pseudo-random navigation with Selenium
-
 With the following Python script, we navigate through menus and change the window size to test the app. We have tested the app with Chrome, Firefox, and Edge (but not Safari). 
-
 
 
 ```
@@ -159,7 +150,6 @@ driver.quit()
 
 
 ### Bombardiering the DOM
-
 With the following AHK script, we randomly click the screen every 2ms. You can refer to the following video for the demonstration: [BombardieringTheDom.mp4](https://storage.googleapis.com/joelvuolevi/bikeapp/BombardieringTheDom.mp4).
 
 ```
@@ -183,7 +173,6 @@ Loop
 ```
 
 ## Data
-
 The painting files are currently saved in Google Cloud Storage and can be accessed as such. 
 
 
