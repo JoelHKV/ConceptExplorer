@@ -16,7 +16,7 @@ const QuizBlock = ({ handleModeChange, playmode }) => {
                 color="primary"
                 onClick={() => handleModeChange('quiz')}
             >
-                {playmode === 'finish' ? 'New Quiz' : 'Take a Quiz'}
+                Quiz
             </Button>
         </div>
     );

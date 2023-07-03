@@ -126,7 +126,7 @@ const App = () => {
     const dispatch = useDispatch();
 
     return (
-        <div className="app-container">
+        <div className="app-container unselectable"  >
             <div className="title-section">
                 Gallery Galore
             </div>
@@ -153,7 +153,7 @@ const App = () => {
                     </Button>
                 )}
                 {(playmode === 'quiz') && (
-                <div style={{ textAlign: 'left', fontSize: '1.5rem', padding: '10px', fontWeight: 'bold' }}>                   
+                    <div className="round-counter" style={{ textAlign: 'left', fontSize: '1.5rem', padding: '10px', fontWeight: 'bold' }}>                   
                     {counter + 1} / {rounds}             
                 </div>
                  )}
@@ -221,10 +221,10 @@ const App = () => {
             {playmode === 'practice' && (
                 <div className="painting-name">
 
-            <Typography variant="h6">
+            <Typography variant="h5">
                         {painting_names[paintingnro]}
                     </Typography>
-                    <Typography variant="h6">
+                    <Typography variant="h5">
                         {painters[painternro]}
                     </Typography>
             </div>
@@ -232,14 +232,11 @@ const App = () => {
             {playmode==='quiz' && fourPainters.map((option, index) => (
                 <div className={`option-${index + 1}`} key={index}>
                     <Button variant="contained" color="primary" onClick={() => handleButtonClick(index + 1, option.correct)}>
-                        {painters[option.painter]}
+                        {option.painter !== 1 ? painters[option.painter] : painters[option.painter].slice(0, 13)}
+                        
                     </Button>
                 </div>
             ))}
-
-
-
-
 
         </div>
  
