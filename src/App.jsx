@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ToggleButtonGroup, ToggleButton, Button, Slider, Typography } from '@mui/material';
+import { Button, Slider, Typography } from '@mui/material';
 
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -23,8 +23,43 @@ const getImageUrl = (horizontalSliderValue, verticalSliderValue) => {
 
     const totalnamestring = stem + thisPainting + middle + thisPainter + end;
 
+
     return totalnamestring;
+
+
 };
+
+const preloadedImages = [];
+imagerevolver()
+function imagerevolver() {
+    document.cookie = "SameSite=None; Secure";
+    const painting_names = ['Reflections', 'Chaos and Order', 'Dreamscape', 'Beyond the Horizon', 'Melancholy', 'Inner Depths', 'Metamorphosis', 'Fragmented Memories', 'The Human Condition', 'Parallel Universe', 'Illusionary Worlds', 'Embrace of the Elements', 'Transcendence', 'Enchanted Forests', 'Sensory Overload', 'Timeless Beauty', 'Celestial Journey', 'The Endless Ocean', 'Shadows and Light', 'The Alchemy of Nature'];
+    const painters = ['Leonardo da Vinci', 'Michelangelo Buonarroti', 'Vincent van Gogh', 'Pablo Picasso', 'Rembrandt van Rijn', 'Claude Monet', 'Johannes Vermeer', 'Salvador Dali', 'Henri Matisse', 'Paul Cezanne', 'Francisco Goya', 'Sandro Botticelli', 'Wassily Kandinsky', 'Edvard Munch', 'Caravaggio', 'Diego Velazquez', 'Gustav Klimt', 'Edouard Manet', 'Edward Hopper', 'Jan van Eyck', 'Pierre-Auguste Renoir', 'Titian', 'William Turner', 'Gustave Courbet', 'Jackson Pollock', 'Johannes Itten', 'Mark Rothko', 'Roy Lichtenstein', 'John Constable', 'Paul Gauguin', 'Joan Miro', 'Paul Klee', 'Claude Lorrain', 'JMW Turner', 'Jean-Francois Millet', 'Edgar Degas', 'Camille Pissarro', 'Pierre Bonnard', 'Kazimir Malevich', 'Marc Chagall', 'Georges Braque', 'Emile Nolde', 'Piet Mondrian', 'Diego Rivera', 'Frida Kahlo', 'Edward Burne-Jones', 'William Morris', 'Eugene Delacroix', 'Pierre Puvis de Chavannes'];
+
+    const stem = 'https://storage.googleapis.com/ai_dev_projects/arthouse/paintings/'
+    const middle = '_in_'
+    const end = '_style_painting__.jpg'
+
+    for (var i = 0; i < 20; i++) {
+        preloadedImages[i] = [];
+        for (var j = 0; j < 10; j++) {
+            preloadedImages[i][j] = new Image();
+            //preloadedImages[i][j].onerror = function () {
+            //  console.log("Error loading image: " + this.src);
+            // alert("Error loading image: " + this.src);
+            //};
+
+
+            const thisPainting = painting_names[i].replace(/ /g, '_');
+            const thisPainter = painters[j].replace(/ /g, '_');
+            const totalnamestring = stem + thisPainting + middle + thisPainter + end;
+
+            preloadedImages[i][j].src = totalnamestring;
+        }
+    }
+   //const showimage= document.getElementById('showimage')
+   // showimage.setAttribute('src', preloadedImages[3][0].src);
+}
 
 
 const makePainterOptions = (correctPainter, painter_count, totalNroOptions) => {
@@ -49,7 +84,7 @@ const makePainterOptions = (correctPainter, painter_count, totalNroOptions) => {
 
 const App = () => {
 
-
+    
 
     const handleHorizontalSliderChange = (event, newValue) => {
         dispatch(xSliderChoice(newValue))
@@ -162,7 +197,8 @@ const App = () => {
             <div className="painting-section">
                 {(playmode === 'practice' || playmode === 'quiz') && (
                     <img style={playmode === 'practice' ? { cursor: 'pointer' } : {}}
-                    src={getImageUrl(paintingnro, painternro)} // Replace with your image source
+                  //  src={getImageUrl(paintingnro, painternro)} // Replace with your image source
+                        src={preloadedImages[paintingnro][painternro].src}
                         alt="Image"
                     onClick={handleRandomSliders}
                         
