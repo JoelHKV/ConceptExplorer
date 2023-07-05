@@ -16,42 +16,25 @@ html {
     height: auto;
     margin: auto;
     padding: 2rem;
+    padding-top: 0rem;
+
     text-align: center;
-    border: 2px solid black;
+    border: 0px solid black;
     border-radius: 1vmax;
 }
 
 
-.title-section {
-    grid-column: 1 / 12;
-    grid-row: 1;
-    color: black;
-    margin: auto;
-    font-weight: 900;
-    font-size: 2.5rem;
-    padding-top: 0px;
-    margin-top: 0;
-}
+ 
 
-.info_button-section, .quiz_button-section {
-    grid-column: 1 / 12;
-    grid-row: 1;
-    width: 100%;
-    display: grid;
-}
-
-
-
-    .info_button-section button, .quiz_button-section button {
+    .quiz_button-section button {
         padding: 0;
-        font-size: 1.3rem;
+        font-size: 2.3rem;
         width: 1rem;
         height: 1.7rem;
         margin-left: auto;
         background-color: #eeeeee;
         color: black;
         border: 0.1rem solid black;
-        margin-top: 0.5rem;
     }
 
     .quiz_button-section button {
@@ -123,17 +106,20 @@ html {
     .option-1 button, .option-2 button, .option-3 button, .option-4 button {
         width: 100%;
         height: 90%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
         text-align: center;
-        background-color: #eeeeee;
-        color: black;
+
         border: 0.1rem solid black;
         font-size: 0.9rem;
     }
 
-.option-1 button:hover, .option-2 button:hover,.option-3 button:hover,.option-4 button:hover {
+
+
+.option-1 button, .option-2 button, .option-3 button, .option-4 button {
+    background-color: #eeeeee;
+    color: black;
+}
+
+        .option-1 button:hover, .option-2 button:hover,.option-3 button:hover,.option-4 button:hover {
             background-color: #bbbbbb; /* Set your desired background color on hover */
         }
 
@@ -158,7 +144,7 @@ html {
 
 @media screen and (max-width: 1020px) {
     .info_button-section button, .quiz_button-section button {
-        margin-top: 7vh;
+        
     }
     .round-counter {
         margin-top: 6vh;
@@ -216,8 +202,6 @@ html {
             grid-row: 7;
         }
 
-
-
     }
 
     @media screen and (max-width: 612px) {
@@ -225,10 +209,6 @@ html {
             font-size: 13px;
         }
     }
-
-
-
-
 
     @keyframes green-flash {
         0% {

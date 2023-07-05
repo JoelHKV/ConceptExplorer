@@ -8,6 +8,7 @@ import { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoi
 import './App.css';  
 
 import QuizBlock from './components/QuizBlock';
+import TitleBar from './components/TitleBar';
 
 const preloadedImages = []
 const [paintingNames, painters] = paintingLoader(); 
@@ -110,21 +111,9 @@ const App = () => {
 
     return (
         <div className="app-container unselectable"  >
-            <div className="title-section">
-                Gallery Galore
-            </div>
 
-            <div className="info_button-section">
-                {(playmode === 'practice' || playmode === 'finish') && (
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => clickInfo()}
-                >
-                    ?
-                    </Button>
-                )}
-            </div>
+            <TitleBar clickInfo={clickInfo} playmode={playmode} />
+ 
             <div className="quiz_button-section">
                 {(playmode === 'practice') && (
                 <Button
