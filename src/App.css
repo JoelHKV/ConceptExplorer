@@ -250,7 +250,7 @@ html {
         }
 
         50% {
-            background-color: #ff0000;
+            background-color: #aaaaaa;
         }
 
         100% {
@@ -265,3 +265,4 @@ html {
     .go-red {
         animation: red-flash 0.5s infinite;
     }
+

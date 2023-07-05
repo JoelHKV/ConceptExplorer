@@ -3,160 +3,108 @@ import { Button, Slider, Typography } from '@mui/material';
 
 import { useDispatch, useSelector } from 'react-redux';
 
-import { incrementRound, incrementPoint, zeroCounter, randomChoice, xSliderChoice, ySliderChoice, modeToggle } from './reducers/counterSlice';
+import { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoice, horizontalSliderChoice, verticalSliderChoice, modeToggle } from './reducers/counterSlice';
 
 import './App.css';  
 
 import QuizBlock from './components/QuizBlock';
 
+const preloadedImages = []
+const [paintingNames, painters] = paintingLoader(); 
+const painting_count = paintingNames.length
+const painter_count = painters.length
 
-const getImageUrl = (horizontalSliderValue, verticalSliderValue) => {
-    const painting_names = ['Reflections', 'Chaos and Order', 'Dreamscape', 'Beyond the Horizon', 'Melancholy', 'Inner Depths', 'Metamorphosis', 'Fragmented Memories', 'The Human Condition', 'Parallel Universe', 'Illusionary Worlds', 'Embrace of the Elements', 'Transcendence', 'Enchanted Forests', 'Sensory Overload', 'Timeless Beauty', 'Celestial Journey', 'The Endless Ocean', 'Shadows and Light', 'The Alchemy of Nature'];
-    const painters = ['Leonardo da Vinci', 'Michelangelo Buonarroti', 'Vincent van Gogh', 'Pablo Picasso', 'Rembrandt van Rijn', 'Claude Monet', 'Johannes Vermeer', 'Salvador Dali', 'Henri Matisse', 'Paul Cezanne', 'Francisco Goya', 'Sandro Botticelli', 'Wassily Kandinsky', 'Edvard Munch', 'Caravaggio', 'Diego Velazquez', 'Gustav Klimt', 'Edouard Manet', 'Edward Hopper', 'Jan van Eyck', 'Pierre-Auguste Renoir', 'Titian', 'William Turner', 'Gustave Courbet', 'Jackson Pollock', 'Johannes Itten', 'Mark Rothko', 'Roy Lichtenstein', 'John Constable', 'Paul Gauguin', 'Joan Miro', 'Paul Klee', 'Claude Lorrain', 'JMW Turner', 'Jean-Francois Millet', 'Edgar Degas', 'Camille Pissarro', 'Pierre Bonnard', 'Kazimir Malevich', 'Marc Chagall', 'Georges Braque', 'Emile Nolde', 'Piet Mondrian', 'Diego Rivera', 'Frida Kahlo', 'Edward Burne-Jones', 'William Morris', 'Eugene Delacroix', 'Pierre Puvis de Chavannes'];
-
+function paintingLoader() {
+    // preloads painting images and populates preloadedImages[paintingNro][painterNro]
+    const paintingNames = ['Reflections', 'Chaos and Order', 'Dreamscape', 'Beyond the Horizon', 'Melancholy', 'Inner Depths', 'Metamorphosis', 'Fragmented Memories', 'The Human Condition', 'Parallel Universe', 'Illusionary Worlds', 'Embrace of the Elements', 'Transcendence', 'Enchanted Forests', 'Sensory Overload', 'Timeless Beauty', 'Celestial Journey', 'The Endless Ocean', 'Shadows and Light', 'The Alchemy of Nature'];
+    const painters = ['Leonardo da Vinci', 'Michelangelo Buonarroti', 'Vincent van Gogh', 'Pablo Picasso', 'Rembrandt van Rijn', 'Claude Monet', 'Johannes Vermeer', 'Salvador Dali', 'Henri Matisse', 'Paul Cezanne'];
     const stem = 'https://storage.googleapis.com/ai_dev_projects/arthouse/paintings/';
     const middle = '_in_';
     const end = '_style_painting__.jpg';
 
-    const thisPainting = painting_names[horizontalSliderValue].replace(/ /g, '_');
-    const thisPainter = painters[verticalSliderValue].replace(/ /g, '_');
-
-    const totalnamestring = stem + thisPainting + middle + thisPainter + end;
-
-
-    return totalnamestring;
-
-
-};
-
-const preloadedImages = [];
-imagerevolver()
-function imagerevolver() {
-    document.cookie = "SameSite=None; Secure";
-    const painting_names = ['Reflections', 'Chaos and Order', 'Dreamscape', 'Beyond the Horizon', 'Melancholy', 'Inner Depths', 'Metamorphosis', 'Fragmented Memories', 'The Human Condition', 'Parallel Universe', 'Illusionary Worlds', 'Embrace of the Elements', 'Transcendence', 'Enchanted Forests', 'Sensory Overload', 'Timeless Beauty', 'Celestial Journey', 'The Endless Ocean', 'Shadows and Light', 'The Alchemy of Nature'];
-    const painters = ['Leonardo da Vinci', 'Michelangelo Buonarroti', 'Vincent van Gogh', 'Pablo Picasso', 'Rembrandt van Rijn', 'Claude Monet', 'Johannes Vermeer', 'Salvador Dali', 'Henri Matisse', 'Paul Cezanne', 'Francisco Goya', 'Sandro Botticelli', 'Wassily Kandinsky', 'Edvard Munch', 'Caravaggio', 'Diego Velazquez', 'Gustav Klimt', 'Edouard Manet', 'Edward Hopper', 'Jan van Eyck', 'Pierre-Auguste Renoir', 'Titian', 'William Turner', 'Gustave Courbet', 'Jackson Pollock', 'Johannes Itten', 'Mark Rothko', 'Roy Lichtenstein', 'John Constable', 'Paul Gauguin', 'Joan Miro', 'Paul Klee', 'Claude Lorrain', 'JMW Turner', 'Jean-Francois Millet', 'Edgar Degas', 'Camille Pissarro', 'Pierre Bonnard', 'Kazimir Malevich', 'Marc Chagall', 'Georges Braque', 'Emile Nolde', 'Piet Mondrian', 'Diego Rivera', 'Frida Kahlo', 'Edward Burne-Jones', 'William Morris', 'Eugene Delacroix', 'Pierre Puvis de Chavannes'];
-
-    const stem = 'https://storage.googleapis.com/ai_dev_projects/arthouse/paintings/'
-    const middle = '_in_'
-    const end = '_style_painting__.jpg'
-
-    for (var i = 0; i < 20; i++) {
+    paintingNames.forEach((painting, i) => {
         preloadedImages[i] = [];
-        for (var j = 0; j < 10; j++) {
-            preloadedImages[i][j] = new Image();
-            //preloadedImages[i][j].onerror = function () {
-            //  console.log("Error loading image: " + this.src);
-            // alert("Error loading image: " + this.src);
-            //};
-
-
-            const thisPainting = painting_names[i].replace(/ /g, '_');
-            const thisPainter = painters[j].replace(/ /g, '_');
+        painters.forEach((painter, j) => {
+            const thisPainting = painting.replace(/ /g, '_');
+            const thisPainter = painter.replace(/ /g, '_');
             const totalnamestring = stem + thisPainting + middle + thisPainter + end;
+            const image = new Image();
+            image.src = totalnamestring;
+            preloadedImages[i][j] = image;
+        });
+    });
 
-            preloadedImages[i][j].src = totalnamestring;
-        }
-    }
-   //const showimage= document.getElementById('showimage')
-   // showimage.setAttribute('src', preloadedImages[3][0].src);
+    return [paintingNames, painters]
 }
 
 
-const makePainterOptions = (correctPainter, painter_count, totalNroOptions) => {
-    const painteroptions = [];
-
-    painteroptions.push({ painter: correctPainter, correct: true });
-
-    while (painteroptions.length < totalNroOptions) {
-        const randomValue = Math.floor(Math.random() * painter_count);
-        if (!painteroptions.some(obj => obj.painter === randomValue)) {
-            painteroptions.push({ painter: randomValue, correct: false });
-        }
-    }
-
-    for (let i = painteroptions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [painteroptions[i], painteroptions[j]] = [painteroptions[j], painteroptions[i]];
-    }
-
-    return painteroptions
-};
 
 const App = () => {
+ 
 
-    
+    const [buttonColorCorrectAnsw, setButtonColorCorrectAnsw] = useState('');
 
     const handleHorizontalSliderChange = (event, newValue) => {
-        dispatch(xSliderChoice(newValue))
+        dispatch(horizontalSliderChoice(newValue))
     };
 
     const handleVerticalSliderChange = (event, newValue) => {
-        dispatch(ySliderChoice(newValue))
+        dispatch(verticalSliderChoice(newValue))
     };
 
-    const handleRandomSliders = () => {
+    const clickPaintingRandom = () => { // clicked a painting, get a random one
         if (playmode === 'practice') {
             dispatch(randomChoice());
         }
-
-        
     }
 
-    const handleInfo = () => {
+    const clickInfo = () => { // show introscreen
         dispatch(zeroCounter())
         dispatch(modeToggle('intro'))
     }
 
-    const handleButtonClick = (buttonnro, answer) => {
-        let answerColor = 'go-red'
-        if (answer) {        
-            dispatch(incrementPoint());
-            answerColor = 'go-green'
+    const handleUserGuess = (buttonNro, painterGuess) => { // quiz answer has been given
+        console.log(buttonNro, painterGuess, painternro)
+        if (painterGuess === painternro) {
+            dispatch(incrementPoint()); // increment point for right answer
+            setButtonColorCorrectAnsw('go-green');
+        }
+        else {
+            setButtonColorCorrectAnsw('go-red');
         }
 
-        document.querySelector(`.option-${buttonnro} button`).classList.add(answerColor);
-
         setTimeout(() => {
-            document.querySelector(`.option-${buttonnro} button`).classList.remove(answerColor);
+            setButtonColorCorrectAnsw('');
             if (counter >= rounds - 1) {
-                dispatch(modeToggle('finish'))
+                dispatch(modeToggle('finish')) // quiz over
             }
             else {
-                dispatch(incrementRound());
-                dispatch(randomChoice());
+                dispatch(incrementRound()); // next round
+                dispatch(randomChoice()); // random painting
+                dispatch(addQuizOptions()); // make options
             }
-        }, 500);
+        }, 800);
     }
 
    
     const handleModeChange = (newMode) => {
-        console.log(newMode)
         dispatch(modeToggle(newMode))
-        dispatch(randomChoice())
+        if (newMode === 'quiz') {
+            dispatch(randomChoice())
+            dispatch(addQuizOptions());
+        }
         if (playmode === 'finish') {
             dispatch(zeroCounter())
         }
         };
    
-
-    const painting_names = ['Reflections', 'Chaos and Order', 'Dreamscape', 'Beyond the Horizon', 'Melancholy', 'Inner Depths', 'Metamorphosis', 'Fragmented Memories', 'The Human Condition', 'Parallel Universe', 'Illusionary Worlds', 'Embrace of the Elements', 'Transcendence', 'Enchanted Forests', 'Sensory Overload', 'Timeless Beauty', 'Celestial Journey', 'The Endless Ocean', 'Shadows and Light', 'The Alchemy of Nature'];
-    const painters = ['Leonardo da Vinci', 'Michelangelo Buonarroti', 'Vincent van Gogh', 'Pablo Picasso', 'Rembrandt van Rijn', 'Claude Monet', 'Johannes Vermeer', 'Salvador Dali', 'Henri Matisse', 'Paul Cezanne', 'Francisco Goya', 'Sandro Botticelli', 'Wassily Kandinsky', 'Edvard Munch', 'Caravaggio', 'Diego Velazquez', 'Gustav Klimt', 'Edouard Manet', 'Edward Hopper', 'Jan van Eyck', 'Pierre-Auguste Renoir', 'Titian', 'William Turner', 'Gustave Courbet', 'Jackson Pollock', 'Johannes Itten', 'Mark Rothko', 'Roy Lichtenstein', 'John Constable', 'Paul Gauguin', 'Joan Miro', 'Paul Klee', 'Claude Lorrain', 'JMW Turner', 'Jean-Francois Millet', 'Edgar Degas', 'Camille Pissarro', 'Pierre Bonnard', 'Kazimir Malevich', 'Marc Chagall', 'Georges Braque', 'Emile Nolde', 'Piet Mondrian', 'Diego Rivera', 'Frida Kahlo', 'Edward Burne-Jones', 'William Morris', 'Eugene Delacroix', 'Pierre Puvis de Chavannes'];
-
-    const painting_count = painting_names.length
-    const painter_count = 10
-    
- 
-
-
-    const counter = useSelector((state) => state.counter[0].itemnro);
-    const painternro = useSelector((state) => state.counter[0].randpainter);
-    const paintingnro = useSelector((state) => state.counter[0].randpainting);
-    const playmode = useSelector((state) => state.counter[0].playmode);
-    const rounds = useSelector((state) => state.counter[0].rounds);
-    const points = useSelector((state) => state.counter[0].points);
-
-    const fourPainters = makePainterOptions(painternro, painter_count, 4)
-
+    const counter = useSelector((state) => state.counter[0].itemnro); //round nro
+    const painternro = useSelector((state) => state.counter[0].randpainter); // painter nro
+    const paintingnro = useSelector((state) => state.counter[0].randpainting); // painting nro
+    const playmode = useSelector((state) => state.counter[0].playmode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
+    const rounds = useSelector((state) => state.counter[0].rounds); // total nro rounds
+    const points = useSelector((state) => state.counter[0].points); // nro points
+    const painterOptions = useSelector((state) => state.counter[0].painterOptions); // multiple choice options
 
     const dispatch = useDispatch();
 
@@ -171,7 +119,7 @@ const App = () => {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => handleInfo()}
+                    onClick={() => clickInfo()}
                 >
                     ?
                     </Button>
@@ -197,11 +145,9 @@ const App = () => {
             <div className="painting-section">
                 {(playmode === 'practice' || playmode === 'quiz') && (
                     <img style={playmode === 'practice' ? { cursor: 'pointer' } : {}}
-                  //  src={getImageUrl(paintingnro, painternro)} // Replace with your image source
                         src={preloadedImages[paintingnro][painternro].src}
                         alt="Image"
-                    onClick={handleRandomSliders}
-                        
+                        onClick={clickPaintingRandom}                       
                     />
                 )}
                 {(playmode === 'finish') && (
@@ -229,19 +175,18 @@ const App = () => {
                 </div>
             {(playmode === 'practice' || playmode === 'intro') && (
                 <div className="painting-slider">
-                <Slider
-                    value={paintingnro}
-                    onChange={handleHorizontalSliderChange}
-                    min={0}
-                    max={painting_count - 1}
-                    step={1}
-                    marks
-                />
+                    <Slider
+                        value={paintingnro}
+                        onChange={handleHorizontalSliderChange}
+                        min={0}
+                        max={painting_count - 1}
+                        step={1}
+                        marks
+                    />
                 </div>
             )}
             {(playmode === 'practice' || playmode === 'intro') && (
                 <div className="painter-slider">
-
                     <Slider
                         value={painternro}
                         onChange={handleVerticalSliderChange}
@@ -256,27 +201,22 @@ const App = () => {
             )}
             {playmode === 'practice' && (
                 <div className="painting-name">
-
-            <Typography variant="h5">
-                        {painting_names[paintingnro]}
-                    </Typography>
                     <Typography variant="h5">
-                        {painters[painternro]}
-                    </Typography>
-            </div>
+                                {paintingNames[paintingnro]}
+                            </Typography>
+                            <Typography variant="h5">
+                                {painters[painternro]}
+                            </Typography>
+                    </div>
             )}
-            {playmode==='quiz' && fourPainters.map((option, index) => (
+            {playmode === 'quiz' && painterOptions.map((val, index) => (
                 <div className={`option-${index + 1}`} key={index}>
-                    <Button variant="contained" color="primary" onClick={() => handleButtonClick(index + 1, option.correct)}>
-                        {option.painter !== 1 ? painters[option.painter] : painters[option.painter].slice(0, 13)}
-                        
+                    <Button className={val === painternro ? buttonColorCorrectAnsw : ''} variant="contained" color="primary" onClick={() => handleUserGuess(index + 1, val)}>
+                        {val !== 1 ? painters[val] : painters[val].slice(0, 13)}                       
                     </Button>
                 </div>
             ))}
-
         </div>
- 
-
     );
 };
 
