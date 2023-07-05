@@ -12,8 +12,8 @@ import TitleBar from './components/TitleBar';
 
 const preloadedImages = []
 const [paintingNames, painters] = paintingLoader(); 
-const painting_count = paintingNames.length
-const painter_count = painters.length
+const maxPaintingIndex = paintingNames.length - 1;
+const maxPainterIndex = painters.length - 1;
 
 function paintingLoader() {
     // preloads painting images and populates preloadedImages[paintingNro][painterNro]
@@ -55,7 +55,7 @@ const App = () => {
 
     const clickPaintingRandom = () => { // clicked a painting, get a random one
         if (playmode === 'practice') {
-            dispatch(randomChoice());
+            dispatch(randomChoice([maxPaintingIndex, maxPainterIndex]));
         }
     }
 
@@ -81,8 +81,8 @@ const App = () => {
             }
             else {
                 dispatch(incrementRound()); // next round
-                dispatch(randomChoice()); // random painting
-                dispatch(addQuizOptions()); // make options
+                dispatch(randomChoice([maxPaintingIndex, maxPainterIndex])); // random painting
+                dispatch(addQuizOptions(maxPainterIndex)); // make options
             }
         }, 800);
     }
@@ -91,8 +91,8 @@ const App = () => {
     const handleModeChange = (newMode) => {
         dispatch(modeToggle(newMode))
         if (newMode === 'quiz') {
-            dispatch(randomChoice())
-            dispatch(addQuizOptions());
+            dispatch(randomChoice([maxPaintingIndex, maxPainterIndex]))
+            dispatch(addQuizOptions(maxPainterIndex));
         }
         if (playmode === 'finish') {
             dispatch(zeroCounter())
@@ -113,23 +113,17 @@ const App = () => {
         <div className="app-container unselectable"  >
 
             <TitleBar clickInfo={clickInfo} playmode={playmode} />
- 
-            <div className="quiz_button-section">
-                {(playmode === 'practice') && (
-                <Button
-                    variant="contained"
-                    color="primary"
-                        onClick={() => handleModeChange('quiz')}
-                >
-                        {playmode === 'practice' ? 'Quiz' : `${counter + 1} / ${rounds}`}
-                    </Button>
-                )}
+            {(playmode !== 'quiz') && (
+            <QuizBlock handleModeChange={handleModeChange} playmode={playmode} />
+            )}
+
+            
                 {(playmode === 'quiz') && (
-                    <div className="round-counter" style={{ textAlign: 'left', fontSize: '1.5rem', padding: '10px', fontWeight: 'bold' }}>                   
-                    {counter + 1} / {rounds}             
+                    <div className="round-counter">                   
+                    Round: {counter + 1} / {rounds}             
                 </div>
                  )}
-            </div>
+            
           
             <div className="painting-section">
                 {(playmode === 'practice' || playmode === 'quiz') && (
@@ -144,31 +138,25 @@ const App = () => {
                     <div>
                         <h2>Your score: {points} / {rounds}</h2>
                     </div>
-                    <div>
-                        <QuizBlock handleModeChange={handleModeChange} playmode={playmode} />
-                    </div>
+
                     </>
                 )}
-                {(playmode === 'intro') && (
-                    
+                {(playmode === 'intro') && (                   
                     <div style={{ textAlign: 'left' }}>
                         <p>Gallery Galore is a fun way to learn about the styles of the most famous painters. The app contains 20 different titles, all drawn by the 10 most famous painters, resulting in a total of 200 AI-generated paintings.</p>
                         <p>In the practice mode, you can view random paintings by clicking on the current painting. Alternatively, you can use the bottom slider to change the title or the right slider to change the painter.</p>                       <p>In the quiz mode, you will be presented with four buttons, each displaying a different painter's name. Your task is to click on the button that corresponds to the painting shown.</p>
-                        <div>
-                            <QuizBlock handleModeChange={handleModeChange} playmode={playmode} />
-                        </div>
                     </div>
         
                 )}
 
-                </div>
+             </div>
             {(playmode === 'practice' || playmode === 'intro') && (
                 <div className="painting-slider">
                     <Slider
                         value={paintingnro}
                         onChange={handleHorizontalSliderChange}
                         min={0}
-                        max={painting_count - 1}
+                        max={maxPaintingIndex}
                         step={1}
                         marks
                     />
@@ -181,7 +169,7 @@ const App = () => {
                         onChange={handleVerticalSliderChange}
                         orientation="vertical"
                         min={0}
-                        max={painter_count-1}
+                        max={maxPainterIndex}
                         step={1}
                         marks
                     />                       
