@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 
-const QuizBlock = ({ handleModeChange, playmode }) => {
+const QuizBlock = ({ handleModeChange, gameMode }) => {
 
     const styles = `
 
@@ -48,7 +48,7 @@ const QuizBlock = ({ handleModeChange, playmode }) => {
                     color="primary"
                     onClick={() => handleModeChange('quiz')}
                 >
-                    {playmode === 'finish' ? 'New Quiz' : 'Quiz'} 
+                    {gameMode === 'finish' ? 'New Quiz' : 'Quiz'} 
                 </Button>
             </div>
             <style>{styles}</style>

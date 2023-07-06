@@ -3,20 +3,23 @@ import { Button, Slider, Typography } from '@mui/material';
 
 import { useDispatch, useSelector } from 'react-redux';
 
-import { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoice, horizontalSliderChoice, verticalSliderChoice, modeToggle } from './reducers/counterSlice';
+import { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoice, paintingSliderChoice, painterSliderChoice, newGameMode } from './reducers/counterSlice';
 
 import './App.css';  
 
 import QuizBlock from './components/QuizBlock';
 import TitleBar from './components/TitleBar';
+import IntroBlock from './components/IntroBlock';
+import CustomButtonGroup from './components/CustomButtonGroup';
+
 
 const preloadedImages = []
-const [paintingNames, painters] = paintingLoader(); 
+const { paintingNames, painters } = paintingLoader(); 
 const maxPaintingIndex = paintingNames.length - 1;
 const maxPainterIndex = painters.length - 1;
 
 function paintingLoader() {
-    // preloads painting images and populates preloadedImages[paintingNro][painterNro]
+    // preloads painting images and populates preloadedImages[thisPaintingNro][thisPainterNro]
     const paintingNames = ['Reflections', 'Chaos and Order', 'Dreamscape', 'Beyond the Horizon', 'Melancholy', 'Inner Depths', 'Metamorphosis', 'Fragmented Memories', 'The Human Condition', 'Parallel Universe', 'Illusionary Worlds', 'Embrace of the Elements', 'Transcendence', 'Enchanted Forests', 'Sensory Overload', 'Timeless Beauty', 'Celestial Journey', 'The Endless Ocean', 'Shadows and Light', 'The Alchemy of Nature'];
     const painters = ['Leonardo da Vinci', 'Michelangelo Buonarroti', 'Vincent van Gogh', 'Pablo Picasso', 'Rembrandt van Rijn', 'Claude Monet', 'Johannes Vermeer', 'Salvador Dali', 'Henri Matisse', 'Paul Cezanne'];
     const stem = 'https://storage.googleapis.com/ai_dev_projects/arthouse/paintings/';
@@ -35,39 +38,43 @@ function paintingLoader() {
         });
     });
 
-    return [paintingNames, painters]
+    return { paintingNames, painters };
 }
 
 
 
 const App = () => {
  
+    const [buttonColorCorrectAnsw, setButtonColorCorrectAnsw] = useState(''); // flashes the correct quiz answer
 
-    const [buttonColorCorrectAnsw, setButtonColorCorrectAnsw] = useState('');
-
-    const handleHorizontalSliderChange = (event, newValue) => {
-        dispatch(horizontalSliderChoice(newValue))
+    const nextIntro = () => {
+        dispatch(incrementRound());
+        console.log('dada')
     };
 
-    const handleVerticalSliderChange = (event, newValue) => {
-        dispatch(verticalSliderChoice(newValue))
+
+    const handlePaintingSliderChange = (event, newValue) => {
+        dispatch(paintingSliderChoice(newValue))
     };
 
-    const clickPaintingRandom = () => { // clicked a painting, get a random one
-        if (playmode === 'practice') {
+    const handlePainterSliderChange = (event, newValue) => {
+        dispatch(painterSliderChoice(newValue))
+    };
+
+    const clickPaintingRandom = () => { // shows a random painting after clicking a painting 
+        if (gameMode === 'practice') {
             dispatch(randomChoice([maxPaintingIndex, maxPainterIndex]));
         }
     }
 
     const clickInfo = () => { // show introscreen
         dispatch(zeroCounter())
-        dispatch(modeToggle('intro'))
+        dispatch(newGameMode('intro'))
     }
 
-    const handleUserGuess = (buttonNro, painterGuess) => { // quiz answer has been given
-        console.log(buttonNro, painterGuess, painternro)
-        if (painterGuess === painternro) {
-            dispatch(incrementPoint()); // increment point for right answer
+    const handleUserGuess = (buttonNro, painterGuess) => { // checks if the given quiz answer is correct
+        if (painterGuess === thisPainterNro) {
+            dispatch(incrementPoint()); // increment point for correct answer
             setButtonColorCorrectAnsw('go-green');
         }
         else {
@@ -76,8 +83,8 @@ const App = () => {
 
         setTimeout(() => {
             setButtonColorCorrectAnsw('');
-            if (counter >= rounds - 1) {
-                dispatch(modeToggle('finish')) // quiz over
+            if (roundNro >= roundTotal - 1) {
+                dispatch(newGameMode('finish')) // quiz over
             }
             else {
                 dispatch(incrementRound()); // next round
@@ -86,113 +93,122 @@ const App = () => {
             }
         }, 800);
     }
-
-   
+ 
     const handleModeChange = (newMode) => {
-        dispatch(modeToggle(newMode))
+        dispatch(newGameMode(newMode))
         if (newMode === 'quiz') {
             dispatch(randomChoice([maxPaintingIndex, maxPainterIndex]))
             dispatch(addQuizOptions(maxPainterIndex));
         }
-        if (playmode === 'finish') {
+        if (gameMode === 'finish') {
             dispatch(zeroCounter())
         }
-        };
+    };
+
+
+
    
-    const counter = useSelector((state) => state.counter[0].itemnro); //round nro
-    const painternro = useSelector((state) => state.counter[0].randpainter); // painter nro
-    const paintingnro = useSelector((state) => state.counter[0].randpainting); // painting nro
-    const playmode = useSelector((state) => state.counter[0].playmode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
-    const rounds = useSelector((state) => state.counter[0].rounds); // total nro rounds
+    const roundNro = useSelector((state) => state.counter[0].roundNro); //round nro
+    const thisPainterNro = useSelector((state) => state.counter[0].randPainter); // painter nro
+    const thisPaintingNro = useSelector((state) => state.counter[0].randPainting); // painting nro
+    const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
+    const roundTotal = useSelector((state) => state.counter[0].roundTotal); // total nro rounds
     const points = useSelector((state) => state.counter[0].points); // nro points
     const painterOptions = useSelector((state) => state.counter[0].painterOptions); // multiple choice options
 
     const dispatch = useDispatch();
 
     return (
-        <div className="app-container unselectable"  >
+        <div className="app-container unselectable">
 
-            <TitleBar clickInfo={clickInfo} playmode={playmode} />
-            {(playmode !== 'quiz') && (
-            <QuizBlock handleModeChange={handleModeChange} playmode={playmode} />
-            )}
-
-            
-                {(playmode === 'quiz') && (
-                    <div className="round-counter">                   
-                    Round: {counter + 1} / {rounds}             
-                </div>
-                 )}
-            
+            <TitleBar clickInfo={clickInfo} gameMode={gameMode} />
+ 
           
+            {(gameMode === 'quiz') && (
+                <div className="round-counter">                   
+                    Round: {roundNro + 1} / {roundTotal}             
+            </div>
+            )}
+                    
             <div className="painting-section">
-                {(playmode === 'practice' || playmode === 'quiz') && (
-                    <img style={playmode === 'practice' ? { cursor: 'pointer' } : {}}
-                        src={preloadedImages[paintingnro][painternro].src}
+               
+                {(gameMode === 'practice' || gameMode === 'quiz') && (
+                    <img style={gameMode === 'practice' ? { cursor: 'pointer' } : {}}
+                        src={preloadedImages[thisPaintingNro][thisPainterNro].src}
                         alt="Image"
                         onClick={clickPaintingRandom}                       
                     />
                 )}
-                {(playmode === 'finish') && (
+
+                {(gameMode === 'finish') && (
                     <>
                     <div>
-                        <h2>Your score: {points} / {rounds}</h2>
+                            <h2>Your score: {points} / {roundTotal}</h2>
                     </div>
 
                     </>
                 )}
-                {(playmode === 'intro') && (                   
-                    <div style={{ textAlign: 'left' }}>
-                        <p>Gallery Galore is a fun way to learn about the styles of the most famous painters. The app contains 20 different titles, all drawn by the 10 most famous painters, resulting in a total of 200 AI-generated paintings.</p>
-                        <p>In the practice mode, you can view random paintings by clicking on the current painting. Alternatively, you can use the bottom slider to change the title or the right slider to change the painter.</p>                       <p>In the quiz mode, you will be presented with four buttons, each displaying a different painter's name. Your task is to click on the button that corresponds to the painting shown.</p>
+                {(gameMode === 'intro') && (                                     
+                    <IntroBlock nextIntro={nextIntro} gameMode={gameMode} roundNro={roundNro} imgurl={preloadedImages[thisPaintingNro][thisPainterNro].src} />                  
+                    )}      
+                {(gameMode === 'practice') && (
+                    <>
+                        <div className="painting-slider">
+                            <Slider
+                                value={thisPaintingNro}
+                                onChange={handlePaintingSliderChange}
+                                min={0}
+                                max={maxPaintingIndex}
+                                step={1}
+                                marks
+                            />
+                        </div>              
+                        <div className="painter-slider">
+                            <Slider
+                                value={thisPainterNro}
+                                onChange={handlePainterSliderChange}
+                                orientation="vertical"
+                                min={0}
+                                max={maxPainterIndex}
+                                step={1}
+                                marks
+                            />
+                        </div>
+                    </>
+                )}
+                {(gameMode !== 'quiz') && (
+                    <div className="top-buttons">
+                        <CustomButtonGroup
+                            buttonNames={['practice', 'quiz']}
+                            handleModeChange={handleModeChange}
+                        />
                     </div>
-        
                 )}
 
-             </div>
-            {(playmode === 'practice' || playmode === 'intro') && (
-                <div className="painting-slider">
-                    <Slider
-                        value={paintingnro}
-                        onChange={handleHorizontalSliderChange}
-                        min={0}
-                        max={maxPaintingIndex}
-                        step={1}
-                        marks
-                    />
-                </div>
-            )}
-            {(playmode === 'practice' || playmode === 'intro') && (
-                <div className="painter-slider">
-                    <Slider
-                        value={painternro}
-                        onChange={handleVerticalSliderChange}
-                        orientation="vertical"
-                        min={0}
-                        max={maxPainterIndex}
-                        step={1}
-                        marks
-                    />                       
-                </div>
-
-            )}
-            {playmode === 'practice' && (
+            </div>
+            {gameMode === 'practice' && (
                 <div className="painting-name">
                     <Typography variant="h5">
-                                {paintingNames[paintingnro]}
+                        {paintingNames[thisPaintingNro]}
                             </Typography>
                             <Typography variant="h5">
-                                {painters[painternro]}
+                            {painters[thisPainterNro]}
                             </Typography>
-                    </div>
+                        </div>
+               
             )}
-            {playmode === 'quiz' && painterOptions.map((val, index) => (
+            {gameMode === 'quiz' && painterOptions.map((val, index) => (
                 <div className={`option-${index + 1}`} key={index}>
-                    <Button className={val === painternro ? buttonColorCorrectAnsw : ''} variant="contained" color="primary" onClick={() => handleUserGuess(index + 1, val)}>
+                    <Button className={val === thisPainterNro ? buttonColorCorrectAnsw : ''} variant="contained" color="primary" onClick={() => handleUserGuess(index + 1, val)}>
                         {val !== 1 ? painters[val] : painters[val].slice(0, 13)}                       
                     </Button>
                 </div>
             ))}
+
+
+
+
+
         </div>
     );
 };

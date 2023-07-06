@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 
-const TitleBar = ({ clickInfo, playmode }) => {
+const TitleBar = ({ clickInfo, gameMode }) => {
 
     const styles = `
     .banner {
