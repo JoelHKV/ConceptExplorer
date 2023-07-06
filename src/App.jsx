@@ -119,15 +119,24 @@ const App = () => {
     const dispatch = useDispatch();
 
     return (
-        <div className="app-container unselectable">
-
+        <>
             <TitleBar clickInfo={clickInfo} gameMode={gameMode} />
- 
+        <div className="app-container unselectable">
+                
+            {(gameMode !== 'quiz') && (
+                <div className="top-buttons-or-counter">
+                    <CustomButtonGroup
+                        buttonNames={['practice', 'quiz']}
+                        handleModeChange={handleModeChange}
+                    />
+                </div>
+            )}
+               
           
             {(gameMode === 'quiz') && (
-                <div className="round-counter">                   
+                <div className="top-buttons-or-counter">                   
                     Round: {roundNro + 1} / {roundTotal}             
-            </div>
+                </div>
             )}
                     
             <div className="painting-section">
@@ -175,28 +184,32 @@ const App = () => {
                             />
                         </div>
                     </>
-                )}
-                {(gameMode !== 'quiz') && (
-                    <div className="top-buttons">
-                        <CustomButtonGroup
-                            buttonNames={['practice', 'quiz']}
-                            handleModeChange={handleModeChange}
-                        />
-                    </div>
-                )}
+                    )}
+                </div>
 
-            </div>
+
+            
             {gameMode === 'practice' && (
                 <div className="painting-name">
                     <Typography variant="h5">
                         {paintingNames[thisPaintingNro]}
-                            </Typography>
-                            <Typography variant="h5">
-                            {painters[thisPainterNro]}
-                            </Typography>
-                        </div>
+                    </Typography>
+                    <Typography variant="h5">
+                    {painters[thisPainterNro]}
+                    </Typography>
+                </div>
                
             )}
+
+                {(gameMode === 'intro') && (
+                <div className="intro-next">
+                        <Button variant="contained" onClick={() => handleModeChange(name)}>
+                            Next
+                        </Button>
+                </div>
+            )}
+
+
             {gameMode === 'quiz' && painterOptions.map((val, index) => (
                 <div className={`option-${index + 1}`} key={index}>
                     <Button className={val === thisPainterNro ? buttonColorCorrectAnsw : ''} variant="contained" color="primary" onClick={() => handleUserGuess(index + 1, val)}>
@@ -209,7 +222,8 @@ const App = () => {
 
 
 
-        </div>
+            </div>
+        </>
     );
 };
 

@@ -11,33 +11,33 @@ html {
 .app-container {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: 8vh 8vh 58vh 7vh 7vh 2vh;
-    max-width: 850px;
+    grid-template-rows: 8vh 4vh 58vh 7vh 7vh 2vh;
+    max-width: max-content;
     height: auto;
+    width: auto;
     margin: auto;
     padding: 2rem;
     padding-top: 0rem;
-
     text-align: center;
-    border: 0px solid black;
+    border: 2px solid black;
     border-radius: 1vmax;
 }
 
-
-.round-counter {
-    display: grid;
+.top-buttons-or-counter {
     grid-column: 1 / 13;
     grid-row: 2;
-    margin-top: 4vh;
-    text-align: center;
+    width: 100%;
     font-size: clamp(18px, 4.5vw, 24px);
     font-weight: bold;
 }
 
+
+
+
 .painting-section {
     grid-column: 1 / 13;
     grid-row: 3;
-    width: 600px;
+    height: 600px;
     aspect-ratio: 1;
     border: 12px solid black;
     margin: auto;
@@ -68,22 +68,18 @@ html {
 }
 
 
-.top-buttons {
-    position: absolute;
-    top: -8%;
-    left: 0;
-    height: 10%;
-    width: 100%;
-}
-
-
-
 .painting-name {
     grid-column: 1 / 13;
     grid-row: 5;
 }
 
-
+.intro-next {
+    grid-column: 1 / 13;
+    grid-row: 4;
+    width: 100%;
+    font-size: clamp(18px, 4.5vw, 24px);
+    font-weight: bold;
+}
 
 
 

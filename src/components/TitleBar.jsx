@@ -16,7 +16,7 @@ const TitleBar = ({ clickInfo, gameMode }) => {
     .title {
         display: grid;
         width: 100%;
-        grid-column: 2 / 12;
+        grid-column: 1 / 13;
         grid-row: 1;
         font-weight: 900;
         font-size: clamp(14px, 6vw, 40px);

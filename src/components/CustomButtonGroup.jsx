@@ -3,8 +3,10 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 
 const CustomButtonGroup = ({ buttonNames, handleModeChange }) => {
-    const numButtons = buttonNames.length;
-
+    let numButtons = buttonNames.length;
+    if (numButtons == 1) {
+        numButtons = 2
+    }
     const styles = `
     .array-buttons {
       display: flex;
