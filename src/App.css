@@ -4,6 +4,9 @@
     user-select: none;
 }
 
+
+
+
 html {
     font-size: 20px; /* Set the root font size */
 }
@@ -11,17 +14,52 @@ html {
 .app-container {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: 8vh 4vh 58vh 7vh 7vh 2vh;
+    grid-template-rows: 9vh 4vh auto 2vh auto;
     max-width: max-content;
     height: auto;
     width: auto;
     margin: auto;
-    padding: 2rem;
+    padding: 3vw;
     padding-top: 0rem;
     text-align: center;
     border: 2px solid black;
     border-radius: 1vmax;
 }
+
+.title {
+    display: grid;
+    width: 100%;
+    grid-column: 1 / 13;
+    grid-row: 1;
+    font-weight: 900;
+    font-size: clamp(14px, 7vw, 50px);
+    margin: auto;
+    padding-top: 1vh;
+}
+
+
+.info_button {
+    display: grid;
+    grid-column: 1 / 13;
+    grid-row: 1;
+    position: relative;
+}
+    .info_button button {
+        position: absolute;
+        min-width: 4px;
+        right: 2%;
+        width: 50px;
+        background-color: #aaffff;
+        color: black;
+        border: 0.1rem solid black;
+        width: 10%;
+        top: 30%;
+        height: 50%;
+        font-size: 1rem;
+    }
+
+
+
 
 .top-buttons-or-counter {
     grid-column: 1 / 13;
@@ -31,19 +69,13 @@ html {
     font-weight: bold;
 }
 
-.painter-choice-buttons {
-    grid-column: 1 / 13;
-    grid-row: 5;
-    width: 100%;
-    font-size: clamp(18px, 4.5vw, 24px);
-    font-weight: bold;
-}
+
 
 
 .painting-section {
     grid-column: 1 / 13;
     grid-row: 3;
-    height: 600px;
+    height: clamp(300px, 80vw, 600px);
     aspect-ratio: 1;
     border: 12px solid black;
     margin: auto;
@@ -78,6 +110,15 @@ html {
     grid-row: 5;
 }
 
+.painter-choice-buttons {
+    grid-column: 1 / 13;
+    grid-row: 5;
+    width: 100%;
+    font-size: clamp(18px, 4.5vw, 24px);
+    font-weight: bold;
+}
+
+
 .intro-next {
     grid-column: 1 / 13;
     grid-row: 4;
@@ -88,40 +129,15 @@ html {
 
 
 
-   
-
-
-
-
-
-
-    @media screen and (max-width: 850px) {
-        html {
-            font-size: 18.5px;
-        }
-
-       
+@media screen and (max-width: 765px) {
+    html {
+        font-size: 16px;
     }
-
-    @media screen and (max-width: 765px) {
-        html {
-            font-size: 16px;
-        }
-
-    
-
-    
+}
 
 
-   
 
-    }
 
-    @media screen and (max-width: 612px) {
-        html {
-            font-size: 13px;
-        }
-    }
 
     @keyframes green-flash {
         0% {
@@ -152,10 +168,10 @@ html {
     }
 
     .go-green {
-        animation: green-flash 0.5s infinite;
+        animation: green-flash 2s infinite;
     }
 
     .go-red {
-        animation: red-flash 0.5s infinite;
+        animation: red-flash 2s infinite;
     }
 

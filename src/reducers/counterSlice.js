@@ -7,7 +7,7 @@ const initialState = [
         points: 0,
         randPainter: 0,
         randPainting: 0,
-        gameMode: 'practice',
+        gameMode: 'intro',
     }
 ]
 

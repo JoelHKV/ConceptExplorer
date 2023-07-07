@@ -1,24 +1,25 @@
 import React from 'react';
-import Button from '@mui/material/Button';
-
 
 const introText = []
 //const imgurl = 'https://storage.googleapis.com/joeltestfiles/GG2.png'
 
-const img2url = 'https://storage.googleapis.com/joeltestfiles/intro2.png'
-const img3url = 'https://storage.googleapis.com/joeltestfiles/intro3.png'
 
-introText[0] = `Gallery Galore is a fun way to learn about the styles of the most famous painters. 
-    The app contains a total of 200 AI-generated paintings, breaking into 20 different titles
-    and 10 different painters.`;
 
-introText[1] = `In the practice mode, you can view random paintings by clicking on the current painting. 
-    Alternatively, you can use the bottom slider to change the title
-    or the right slider to change the painter.`;
+const img1url = 'https://storage.googleapis.com/joeltestfiles/GGintro1.jpg'
+const img2url = 'https://storage.googleapis.com/joeltestfiles/GGintro2.jpg'
+const img3url = 'https://storage.googleapis.com/joeltestfiles/GGintro3.jpg'
 
-introText[2] = `In the quiz mode, you will be presented with four buttons, each 
-    displaying a different painter's name. Your task is to click on the button that 
-    corresponds to the painting shown.`;
+introText[0] = `Gallery Galore is a collection of AI-generated paintings that 
+help you associate famous painters with their distinct painting styles. 
+For example, the title below is "Beyond the Horizon" by Salvador Dali.`;
+
+introText[1] = `In the practice mode, you can browse through random 
+paintings by clicking on the current painting. Alternatively,
+you can change the title with the bottom slider and the painter with the right slider.`;
+
+introText[2] = `In the quiz mode, you will be presented with random paintings, 
+and your task is to guess the painter's name. Simply click the button that corresponds to 
+the painting shown. Click on "PRACTICE" or "QUIZ" to start!`;
 
 
 
@@ -27,13 +28,18 @@ const IntroBlock = ({ nextIntro, gameMode, roundNro, imgurl }) => {
     const styles = `
     .intro-text{
         text-align: left;
+        padding: 10px;
+        margin-top: -1.2rem;
+        font-size: 1.2rem;
     }
    
     .intro-image {
-        height: 80%; 
+        height: 60%; 
         margin-left: auto;
         margin-right: auto;
+        margin-top: -0.4rem;
         aspect-ratio: 1;
+        border: 5px solid black;
     }
 
     .intro-image img {
@@ -65,19 +71,11 @@ const IntroBlock = ({ nextIntro, gameMode, roundNro, imgurl }) => {
             </div>
             <div className="intro-image">
                 <img 
-                    src={roundNro === 0 ? imgurl : roundNro === 1 ? img2url : img3url }
+                    src={roundNro === 0 ? img1url : roundNro === 1 ? img2url : img3url }
                     alt="Image"
                 />
             </div>
-            <div className="intro-button">
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => nextIntro()}
-                >
-                    {roundNro === 2 ? 'Practice' : 'Read on'} 
-                </Button>
-            </div>
+ 
             <style>{styles}</style>
         </>
     );

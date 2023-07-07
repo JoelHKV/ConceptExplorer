@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+
+ 
+
 import { Button, Slider, Typography } from '@mui/material';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -45,9 +48,33 @@ function paintingLoader() {
 
 
 
+
 const App = () => {
  
-    const [buttonColorCorrectAnsw, setButtonColorCorrectAnsw] = useState(''); // flashes the correct quiz answer
+    const [borderColorFlash, setborderColorFlash] = useState(''); // flashes the correct quiz answer
+
+    const appContainerRef = useRef(null);
+    const [containerWidth, setContainerWidth] = useState(null);
+
+    const handleResize = () => {
+        if (appContainerRef.current) {
+            const width = appContainerRef.current.getBoundingClientRect().width;
+            setContainerWidth(width);
+        }
+    };
+
+    useEffect(() => {
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
+    useEffect(() => {
+        handleResize();
+    }, []);
+
 
     const nextIntro = () => {
         dispatch(incrementRound());
@@ -79,10 +106,10 @@ const App = () => {
         if (painterGuess === painters[thisPainterNro]) {
             dispatch(incrementPoint()); // increment point for correct answer
             // button_
-            setButtonColorCorrectAnsw('go-green');
+            setborderColorFlash('go-green');
         }
         else {
-            setButtonColorCorrectAnsw('go-red');
+            setborderColorFlash('go-red');
         }
 
         dispatch(newGameMode('reveal')) 
@@ -94,6 +121,7 @@ const App = () => {
     const handleModeChange = (newMode) => {
         dispatch(newGameMode(newMode))
         if (newMode === 'quiz') {
+            dispatch(zeroCounter())
             dispatch(randomChoice([maxPaintingIndex, maxPainterIndex]))
             dispatch(addQuizOptions(maxPainterIndex));
         }
@@ -118,7 +146,7 @@ const App = () => {
 
     if (gameMode === 'reveal') {
                 setTimeout(() => {
-            setButtonColorCorrectAnsw('');
+            setborderColorFlash('');
             if (roundNro >= roundTotal - 1) {
                 dispatch(newGameMode('finish')) // quiz over
             }
@@ -134,9 +162,21 @@ const App = () => {
 
     return (
         <>
-            <TitleBar clickInfo={clickInfo} gameMode={gameMode} />
-        <div className="app-container unselectable">
-                
+            
+            <div ref={appContainerRef} className="app-container unselectable">
+
+                <div className="title">Gallery Galore</div>
+                <div className="info_button">
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => clickInfo()}
+                    >
+                        ?
+                    </Button>
+                </div>
+
+
                 {(gameMode !== 'quiz' && gameMode !== 'reveal') && (
                 <div className="top-buttons-or-counter">
                     <CustomButtonGroup
@@ -154,7 +194,7 @@ const App = () => {
                 </div>
             )}
                     
-                <div className={`painting-section ${buttonColorCorrectAnsw}`}>
+                <div className={`painting-section ${borderColorFlash}`}>
                
                     {(gameMode === 'practice' || gameMode === 'quiz' || gameMode === 'reveal') && (
                     <img style={gameMode === 'practice' ? { cursor: 'pointer' } : {}}
@@ -201,9 +241,7 @@ const App = () => {
                     </>
                     )}
                 </div>
-
-
-            
+          
                 {(gameMode === 'practice' || gameMode === 'reveal') && (
                 <div className="painting-name">
                     <Typography variant="h5">
@@ -214,31 +252,27 @@ const App = () => {
                     </Typography>
                 </div>
                
+             
+
             )}
 
-                {(gameMode === 'intro') && (
-                <div className="intro-next">
-                        <Button variant="contained" onClick={() => handleModeChange(name)}>
-                            Next
-                        </Button>
-                </div>
-            )}
-
-                {(gameMode === 'quiz') && (
-                    
+                {(gameMode === 'quiz') && (                   
                 <div className="painter-choice-buttons">
                         <CustomButtonGroup
                             buttonNames={[painters[painterOptions[0]], painters[painterOptions[1]], painters[painterOptions[2]], painters[painterOptions[3]]]}
                             buttonFunction={handleUserGuess}
-                            rows={2}
-                        />
-
-                     
-
-
+                            rows={containerWidth>600 ? 2 : 4 }
+                        />                   
                 </div>
                 )}
-
+                {(gameMode === 'intro' && roundNro<2) && (
+                    <div className="painter-choice-buttons">
+                        <CustomButtonGroup
+                            buttonNames={['read more']}
+                            buttonFunction={nextIntro}
+                        />
+                    </div>
+                )}
 
 
 

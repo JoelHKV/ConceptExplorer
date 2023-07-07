@@ -5,7 +5,6 @@ import Grid from '@mui/material/Grid';
 
 const CustomButtonGroup = ({ buttonNames, buttonFunction, buttonClasses = [], rows = 1 }) => {
     let horizontalButtonNro = buttonNames.length/rows;
-    console.log(rows)
     const styles = `
         .array-buttons {
           display: flex;
@@ -30,7 +29,7 @@ const CustomButtonGroup = ({ buttonNames, buttonFunction, buttonClasses = [], ro
           font-size: 1rem;
         }
        .button-group-break {
-          margin-top: -10px;  
+          margin-top: -15px;  
         }
 
    `;
@@ -38,8 +37,8 @@ const CustomButtonGroup = ({ buttonNames, buttonFunction, buttonClasses = [], ro
     const buttons = buttonNames.map((name, index) => (
         <Grid item key={index} xs={12 / horizontalButtonNro}>
             <div className={`array-button ${buttonClasses[index]}`}>
-                <Button variant="contained" onClick={() => buttonFunction(name)}>                                 
-                    {name}
+                <Button variant="contained" onClick={() => buttonFunction(name)}>                    
+                    {name.length > 18 ? `${name.slice(0, 13)}...` : name}
                 </Button>
             </div>
         </Grid>
@@ -51,7 +50,6 @@ const CustomButtonGroup = ({ buttonNames, buttonFunction, buttonClasses = [], ro
         buttons2D.push(subarray);
     }
 
-    console.log(buttons2D)
     return (
         <>
             <div className="array-buttons">
