@@ -72,9 +72,11 @@ const App = () => {
         dispatch(newGameMode('intro'))
     }
 
-    const handleUserGuess = (buttonNro, painterGuess) => { // checks if the given quiz answer is correct
-        if (painterGuess === thisPainterNro) {
+    const handleUserGuess = (painterGuess) => { // checks if the given quiz answer is correct
+        console.log(painterGuess)
+        if (painterGuess === painters[thisPainterNro]) {
             dispatch(incrementPoint()); // increment point for correct answer
+            // button_
             setButtonColorCorrectAnsw('go-green');
         }
         else {
@@ -116,6 +118,7 @@ const App = () => {
     const points = useSelector((state) => state.counter[0].points); // nro points
     const painterOptions = useSelector((state) => state.counter[0].painterOptions); // multiple choice options
 
+  
     const dispatch = useDispatch();
 
     return (
@@ -127,7 +130,8 @@ const App = () => {
                 <div className="top-buttons-or-counter">
                     <CustomButtonGroup
                         buttonNames={['practice', 'quiz']}
-                        handleModeChange={handleModeChange}
+                        buttonClasses={['practice', 'quiz']}
+                        buttonFunction={handleModeChange}
                     />
                 </div>
             )}
@@ -139,7 +143,7 @@ const App = () => {
                 </div>
             )}
                     
-            <div className="painting-section">
+                <div className={`painting-section ${buttonColorCorrectAnsw}`}>
                
                 {(gameMode === 'practice' || gameMode === 'quiz') && (
                     <img style={gameMode === 'practice' ? { cursor: 'pointer' } : {}}
@@ -209,14 +213,22 @@ const App = () => {
                 </div>
             )}
 
+                {(gameMode === 'quiz') && (
+                    
+                <div className="painter-choice-buttons">
+                        <CustomButtonGroup
+                            buttonNames={[painters[painterOptions[0]], painters[painterOptions[1]], painters[painterOptions[2]], painters[painterOptions[3]]]}
+                            buttonFunction={handleUserGuess}
+                            rows={2}
+                        />
 
-            {gameMode === 'quiz' && painterOptions.map((val, index) => (
-                <div className={`option-${index + 1}`} key={index}>
-                    <Button className={val === thisPainterNro ? buttonColorCorrectAnsw : ''} variant="contained" color="primary" onClick={() => handleUserGuess(index + 1, val)}>
-                        {val !== 1 ? painters[val] : painters[val].slice(0, 13)}                       
-                    </Button>
+                     
+
+
                 </div>
-            ))}
+                )}
+
+
 
 
 
