@@ -25,7 +25,7 @@ const CustomButtonGroup = ({ buttonNames, buttonFunction, buttonClasses = [], ro
           background-color: #aaffff;
           color: black;
           border: 0.1rem solid black;
-          width: 80%;
+          width: 92%;
           height: 50%;
           font-size: 1rem;
         }

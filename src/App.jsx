@@ -13,6 +13,8 @@ import IntroBlock from './components/IntroBlock';
 import CustomButtonGroup from './components/CustomButtonGroup';
 
 
+const answerTimeout = 1200;
+
 const preloadedImages = []
 const { paintingNames, painters } = paintingLoader(); 
 const maxPaintingIndex = paintingNames.length - 1;
@@ -83,17 +85,10 @@ const App = () => {
             setButtonColorCorrectAnsw('go-red');
         }
 
-        setTimeout(() => {
-            setButtonColorCorrectAnsw('');
-            if (roundNro >= roundTotal - 1) {
-                dispatch(newGameMode('finish')) // quiz over
-            }
-            else {
-                dispatch(incrementRound()); // next round
-                dispatch(randomChoice([maxPaintingIndex, maxPainterIndex])); // random painting
-                dispatch(addQuizOptions(maxPainterIndex)); // make options
-            }
-        }, 800);
+        dispatch(newGameMode('reveal')) 
+
+
+
     }
  
     const handleModeChange = (newMode) => {
@@ -121,12 +116,28 @@ const App = () => {
   
     const dispatch = useDispatch();
 
+    if (gameMode === 'reveal') {
+                setTimeout(() => {
+            setButtonColorCorrectAnsw('');
+            if (roundNro >= roundTotal - 1) {
+                dispatch(newGameMode('finish')) // quiz over
+            }
+            else {
+                dispatch(newGameMode('quiz'))
+                dispatch(incrementRound()); // next round
+                dispatch(randomChoice([maxPaintingIndex, maxPainterIndex])); // random painting
+                dispatch(addQuizOptions(maxPainterIndex)); // make options
+            }
+                }, answerTimeout);
+    }
+
+
     return (
         <>
             <TitleBar clickInfo={clickInfo} gameMode={gameMode} />
         <div className="app-container unselectable">
                 
-            {(gameMode !== 'quiz') && (
+                {(gameMode !== 'quiz' && gameMode !== 'reveal') && (
                 <div className="top-buttons-or-counter">
                     <CustomButtonGroup
                         buttonNames={['practice', 'quiz']}
@@ -137,7 +148,7 @@ const App = () => {
             )}
                
           
-            {(gameMode === 'quiz') && (
+                {(gameMode === 'quiz' || gameMode === 'reveal') && (
                 <div className="top-buttons-or-counter">                   
                     Round: {roundNro + 1} / {roundTotal}             
                 </div>
@@ -145,7 +156,7 @@ const App = () => {
                     
                 <div className={`painting-section ${buttonColorCorrectAnsw}`}>
                
-                {(gameMode === 'practice' || gameMode === 'quiz') && (
+                    {(gameMode === 'practice' || gameMode === 'quiz' || gameMode === 'reveal') && (
                     <img style={gameMode === 'practice' ? { cursor: 'pointer' } : {}}
                         src={preloadedImages[thisPaintingNro][thisPainterNro].src}
                         alt="Image"
@@ -193,7 +204,7 @@ const App = () => {
 
 
             
-            {gameMode === 'practice' && (
+                {(gameMode === 'practice' || gameMode === 'reveal') && (
                 <div className="painting-name">
                     <Typography variant="h5">
                         {paintingNames[thisPaintingNro]}
