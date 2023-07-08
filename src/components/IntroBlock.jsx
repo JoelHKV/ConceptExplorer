@@ -24,14 +24,14 @@ const IntroBlock = ({ nextIntro, roundNro }) => {
         text-align: left;
         padding-left: 5%;
         padding-right: 5%;
-        font-size: 1.4rem;
+        font-size: clamp(15px, 3.5vw, 30px);
         background-color: white;
         color: black;
         border: 0.3rem solid black;
     }
     .intro_button button {
         width: 100%;
-        height: clamp(28px, 3.5vw, 35px);
+        height: clamp(20px, 3.5vw, 35px);
         margin-bottom: 10px;
         font-size: 1rem;
         background-color: #eee;
