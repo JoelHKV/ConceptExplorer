@@ -3,9 +3,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoice, paintingSliderChoice, painterSliderChoice, newGameMode } from './reducers/quizGameSlice';
 
-import { Button, Slider, Typography } from '@mui/material';
+import { Button, Slider, Typography } from '@mui/material'; // use MUI component library
 import CustomButtonGroup from './components/CustomButtonGroup'; // custom button array component
-import IntroBlock from './components/IntroBlock';
+import IntroBlock from './components/IntroBlock'; // instructions are here
 
 import './App.css'; 
 
@@ -46,7 +46,15 @@ const App = () => {
     const [containerWidth, setContainerWidth] = useState(null); // state for container width
     const appContainerRef = useRef(null);
 
- 
+    const roundNro = useSelector((state) => state.counter[0].roundNro); //round nro
+    const thisPainterNro = useSelector((state) => state.counter[0].randPainter); // painter nro
+    const thisPaintingNro = useSelector((state) => state.counter[0].randPainting); // painting nro
+    const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
+    const roundTotal = useSelector((state) => state.counter[0].roundTotal); // total nro rounds
+    const points = useSelector((state) => state.counter[0].points); // nro points
+    const painterOptions = useSelector((state) => state.counter[0].painterOptions); // multiple choice options
+
+    const dispatch = useDispatch();
 
     const nextIntro = () => {
         dispatch(incrementRound());
@@ -85,26 +93,51 @@ const App = () => {
         }
     };
 
+    const handleUserGuess = (painterGuess) => { 
+        const isCorrectGuess = painterGuess === painters[thisPainterNro];
+        const isQuizMode = gameMode === 'quiz';
 
+        if (isCorrectGuess) {
+            dispatch(incrementPoint());
+            setborderColorFlash('go-green');
+        } else {
+            setborderColorFlash('go-red');
+        }
 
+        if (isQuizMode) {
+            setTimeout(() => {
+                dispatch(newGameMode('reveal')); // reveal the author and the title
+            }, 200);
+            setTimeout(() => {
+                setborderColorFlash(''); // stop the flashing
 
+                if (roundNro >= roundTotal - 1) {
+                    dispatch(newGameMode('finish')) // quiz over
+                }
+                else {
+                    dispatch(newGameMode('quiz'))
+                    dispatch(incrementRound()); // next round
+                    dispatch(randomChoice([maxPaintingIndex, maxPainterIndex])); // random painting
+                    dispatch(addQuizOptions(maxPainterIndex)); // make options
+                }
 
- 
-    const roundNro = useSelector((state) => state.counter[0].roundNro); //round nro
-    const thisPainterNro = useSelector((state) => state.counter[0].randPainter); // painter nro
-    const thisPaintingNro = useSelector((state) => state.counter[0].randPainting); // painting nro
-    const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
-    const roundTotal = useSelector((state) => state.counter[0].roundTotal); // total nro rounds
-    const points = useSelector((state) => state.counter[0].points); // nro points
-    const painterOptions = useSelector((state) => state.counter[0].painterOptions); // multiple choice options
+            }, answerTimeoutTime);
+        }
 
-    const dispatch = useDispatch();
-
+        else { // we need different logic and rendering if going through instructions
+            setTimeout(() => {
+                dispatch(newGameMode('reveal_intro'));
+                dispatch(incrementRound());
+            }, 200);
+            setTimeout(() => {
+                setborderColorFlash(''); 
+            }, 2 * answerTimeoutTime);
+        }
+    }
 
     const handleResize = () => { // updates window width 
         if (appContainerRef.current) {
             const width = appContainerRef.current.getBoundingClientRect().width;
-            console.log(width)
             if (width > layoutSwitchWidth) {
                 appContainerRef.current.style.setProperty('--extra-height', '0vh');
             }
@@ -126,61 +159,6 @@ const App = () => {
     useEffect(() => {
         handleResize();
     }, []);
-
-
-
-    const handleUserGuess = (painterGuess) => { // checks if the given quiz answer is correct
-        if (painterGuess === painters[thisPainterNro]) {
-            dispatch(incrementPoint()); // increment point for correct answer
-            setborderColorFlash('go-green');
-        }
-        else {
-            setborderColorFlash('go-red');
-        }
-
-        if (gameMode === 'intro') {
-            dispatch(incrementRound());
-            dispatch(newGameMode('reveal_intro')) //gamestate to reveal the the answer in integrated intro
-        }
-        else {
-            dispatch(newGameMode('reveal')) //gamestate to reveal the the answer
-
-
-
-
-
-
-
-        }
-
-    }
-
-
-
-    // handle quiz 
-    if (gameMode === 'reveal') { 
-        setTimeout(() => {
-            setborderColorFlash(''); // stop the flashing
-
-            if (roundNro >= roundTotal - 1) {
-                dispatch(newGameMode('finish')) // quiz over
-            }
-            else {
-                dispatch(newGameMode('quiz'))
-                dispatch(incrementRound()); // next round
-                dispatch(randomChoice([maxPaintingIndex, maxPainterIndex])); // random painting
-                dispatch(addQuizOptions(maxPainterIndex)); // make options
-            }
-        }, answerTimeoutTime);
-    }
-
-    if (gameMode === 'reveal_intro') { // do nothing if quiz answer is given during the intro
-        setTimeout(() => {
-
-            setborderColorFlash('');
-        }, 2 * answerTimeoutTime);
-    }
-
 
     return (
         <>          
