@@ -6,13 +6,10 @@ import { Button, Slider, Typography } from '@mui/material';
 
 import { useDispatch, useSelector } from 'react-redux';
 
-import { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoice, paintingSliderChoice, painterSliderChoice, newGameMode } from './reducers/counterSlice';
+import { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoice, paintingSliderChoice, painterSliderChoice, newGameMode } from './reducers/quizGameSlice';
 
 import './App.css';  
 
-import QuizBlock from './components/QuizBlock';
-import TitleBar from './components/TitleBar';
-import IntroBlock from './components/IntroBlock';
 import CustomButtonGroup from './components/CustomButtonGroup';
 
 
@@ -22,6 +19,21 @@ const preloadedImages = []
 const { paintingNames, painters } = paintingLoader(); 
 const maxPaintingIndex = paintingNames.length - 1;
 const maxPainterIndex = painters.length - 1;
+
+let introText = []
+
+introText[0] = `Gallery Galore is a collection of AI-generated paintings that 
+help you associate famous painters with their distinct painting styles.`;
+
+introText[1] = `In the practice mode, you can browse through random 
+paintings by clicking on the current painting. Alternatively,
+you can change the title with the bottom slider and the painter with the right slider. You can try these options now.`;
+
+introText[2] = `In the quiz mode, your task is to guess the painter's name. 
+Who do you think is the author of this painting? Click one of the buttons below. Good luck!`;
+
+introText[3] = `The border of the painting flashes green for the right answer and red for the wrong answer. Click on 'PRACTICE' or 'QUIZ' to start!`;
+
 
 function paintingLoader() {
     // preloads painting images and populates preloadedImages[thisPaintingNro][thisPainterNro]
@@ -78,7 +90,9 @@ const App = () => {
 
     const nextIntro = () => {
         dispatch(incrementRound());
-        console.log('dada')
+        dispatch(addQuizOptions(maxPainterIndex))
+
+
     };
 
 
@@ -91,7 +105,7 @@ const App = () => {
     };
 
     const clickPaintingRandom = () => { // shows a random painting after clicking a painting 
-        if (gameMode === 'practice') {
+        if (gameMode === 'practice' || (gameMode === 'intro' && roundNro == 1)) {
             dispatch(randomChoice([maxPaintingIndex, maxPainterIndex]));
         }
     }
@@ -112,9 +126,13 @@ const App = () => {
             setborderColorFlash('go-red');
         }
 
-        dispatch(newGameMode('reveal')) 
-
-
+        if (gameMode === 'intro') {
+            dispatch(incrementRound());
+            dispatch(newGameMode('reveal_intro'))
+        }
+        else {
+            dispatch(newGameMode('reveal'))
+        }           
 
     }
  
@@ -144,9 +162,17 @@ const App = () => {
   
     const dispatch = useDispatch();
 
+    if (gameMode === 'reveal_intro') {
+        setTimeout(() => {
+            
+            setborderColorFlash('');
+        }, 2*answerTimeout);
+    }
     if (gameMode === 'reveal') {
                 setTimeout(() => {
-            setborderColorFlash('');
+                setborderColorFlash('');
+
+
             if (roundNro >= roundTotal - 1) {
                 dispatch(newGameMode('finish')) // quiz over
             }
@@ -196,15 +222,15 @@ const App = () => {
                     
                 <div className={`painting-section ${borderColorFlash}`}>
                
-                    {(gameMode === 'practice' || gameMode === 'quiz' || gameMode === 'reveal') && (
+                  
                     <img style={gameMode === 'practice' ? { cursor: 'pointer' } : {}}
                         src={preloadedImages[thisPaintingNro][thisPainterNro].src}
                         alt="Image"
                         onClick={clickPaintingRandom}                       
                     />
-                )}
+                    
 
-                {(gameMode === 'finish') && (
+                    {(gameMode === 'finish') && (
                     <>
                     <div>
                             <h2>Your score: {points} / {roundTotal}</h2>
@@ -212,10 +238,8 @@ const App = () => {
 
                     </>
                 )}
-                {(gameMode === 'intro') && (                                     
-                    <IntroBlock nextIntro={nextIntro} gameMode={gameMode} roundNro={roundNro} imgurl={preloadedImages[thisPaintingNro][thisPainterNro].src} />                  
-                    )}      
-                {(gameMode === 'practice') && (
+                 
+                    {(gameMode === 'practice' || (gameMode === 'intro' && roundNro == 1)) && (
                     <>
                         <div className="painting-slider">
                             <Slider
@@ -237,12 +261,28 @@ const App = () => {
                                 step={1}
                                 marks
                             />
-                        </div>
+                            </div>
+
+
                     </>
+                )}
+                    {(gameMode === 'intro' || gameMode === 'reveal_intro') && (
+                    <div className="intro-info-text">
+                        <p>{introText[roundNro]}</p>
+                            <div>
+                                {(roundNro < 2) && (
+                            <CustomButtonGroup
+                                buttonNames={['read more']}
+                                buttonFunction={nextIntro}
+                                    />
+                                )}
+                        </div>
+                    </div>
                     )}
+
                 </div>
           
-                {(gameMode === 'practice' || gameMode === 'reveal') && (
+                {(gameMode === 'practice' || gameMode === 'reveal' || (gameMode === 'intro' && roundNro<2)) && (
                 <div className="painting-name">
                     <Typography variant="h5">
                         {paintingNames[thisPaintingNro]}
@@ -256,7 +296,7 @@ const App = () => {
 
             )}
 
-                {(gameMode === 'quiz') && (                   
+                {(gameMode === 'quiz' || (gameMode === 'intro' && roundNro === 2)) && (                   
                 <div className="painter-choice-buttons">
                         <CustomButtonGroup
                             buttonNames={[painters[painterOptions[0]], painters[painterOptions[1]], painters[painterOptions[2]], painters[painterOptions[3]]]}
@@ -265,20 +305,6 @@ const App = () => {
                         />                   
                 </div>
                 )}
-                {(gameMode === 'intro' && roundNro<2) && (
-                    <div className="painter-choice-buttons">
-                        <CustomButtonGroup
-                            buttonNames={['read more']}
-                            buttonFunction={nextIntro}
-                        />
-                    </div>
-                )}
-
-
-
-
-
-
             </div>
         </>
     );

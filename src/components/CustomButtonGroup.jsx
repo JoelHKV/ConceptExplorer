@@ -1,43 +1,41 @@
 import React from 'react';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-
+import { Button, Grid } from '@mui/material';
 
 const CustomButtonGroup = ({ buttonNames, buttonFunction, buttonClasses = [], rows = 1 }) => {
-    let horizontalButtonNro = buttonNames.length/rows;
+    const horizontalButtonNro = buttonNames.length / rows;
+
     const styles = `
-        .array-buttons {
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          width: 100%;
+    .array-buttons {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 100%;
+    }
 
-        }
+    .array-button {
+      flex: 0 0 auto;
+      width: 100%;
+      height: clamp(50px, 6vh, 80px);
+    }
 
-        .array-button {
-          flex: 0 0 auto;
-          width: 100%;
-          height: clamp(50px, 6vh, 80px);
-        }
+    .array-button button {
+      background-color: #aaffff;
+      color: black;
+      border: 0.1rem solid black;
+      width: 92%;
+      height: 50%;
+      font-size: 1rem;
+    }
 
-        .array-button button {
-          background-color: #aaffff;
-          color: black;
-          border: 0.1rem solid black;
-          width: 92%;
-          height: 50%;
-          font-size: 1rem;
-        }
-       .button-group-break {
-          margin-top: -15px;  
-        }
-
-   `;
+    .button-group-break {
+      margin-top: -15px;
+    }
+  `;
 
     const buttons = buttonNames.map((name, index) => (
         <Grid item key={index} xs={12 / horizontalButtonNro}>
             <div className={`array-button ${buttonClasses[index]}`}>
-                <Button variant="contained" onClick={() => buttonFunction(name)}>                    
+                <Button variant="contained" onClick={() => buttonFunction(name)}>
                     {name.length > 18 ? `${name.slice(0, 13)}...` : name}
                 </Button>
             </div>
@@ -56,9 +54,7 @@ const CustomButtonGroup = ({ buttonNames, buttonFunction, buttonClasses = [], ro
                 {buttons2D.map((buttons, index) => (
                     <React.Fragment key={index}>
                         <Grid container>{buttons}</Grid>
-                        {index !== buttons2D.length - 1 && (
-                            <div className="button-group-break"></div>
-                        )}
+                        {index !== buttons2D.length - 1 && <div className="button-group-break"></div>}
                     </React.Fragment>
                 ))}
             </div>

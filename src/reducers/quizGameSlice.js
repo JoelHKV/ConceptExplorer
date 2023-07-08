@@ -5,13 +5,13 @@ const initialState = [
         roundNro: 0,
         roundTotal: 3,
         points: 0,
-        randPainter: 0,
-        randPainting: 0,
+        randPainter: 7,
+        randPainting: 3,
         gameMode: 'intro',
     }
 ]
 
-const counterReducer = createSlice({
+const quizGameReducer = createSlice({
     name: 'counter',
     initialState,
     reducers: {
@@ -52,5 +52,5 @@ const counterReducer = createSlice({
 
 });
 
-export const { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoice, paintingSliderChoice, painterSliderChoice, newGameMode } = counterReducer.actions;
-export default counterReducer.reducer;
+export const { incrementRound, incrementPoint, zeroCounter, addQuizOptions, randomChoice, paintingSliderChoice, painterSliderChoice, newGameMode } = quizGameReducer.actions;
+export default quizGameReducer.reducer;
