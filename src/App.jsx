@@ -73,25 +73,6 @@ const App = () => {
         dispatch(newGameMode('intro'))
     }
 
-    const handleUserGuess = (painterGuess) => { // checks if the given quiz answer is correct
-        if (painterGuess === painters[thisPainterNro]) {
-            dispatch(incrementPoint()); // increment point for correct answer
-            setborderColorFlash('go-green');
-        }
-        else {
-            setborderColorFlash('go-red');
-        }
-
-        if (gameMode === 'intro') {
-            dispatch(incrementRound());
-            dispatch(newGameMode('reveal_intro')) //gamestate to reveal the the answer in integrated intro
-        }
-        else {
-            dispatch(newGameMode('reveal')) //gamestate to reveal the the answer
-        }           
-
-    }
- 
     const handleModeChange = (newMode) => {
         dispatch(newGameMode(newMode))
         if (newMode === 'quiz') {
@@ -103,6 +84,11 @@ const App = () => {
             dispatch(zeroCounter())
         }
     };
+
+
+
+
+
  
     const roundNro = useSelector((state) => state.counter[0].roundNro); //round nro
     const thisPainterNro = useSelector((state) => state.counter[0].randPainter); // painter nro
@@ -143,6 +129,35 @@ const App = () => {
 
 
 
+    const handleUserGuess = (painterGuess) => { // checks if the given quiz answer is correct
+        if (painterGuess === painters[thisPainterNro]) {
+            dispatch(incrementPoint()); // increment point for correct answer
+            setborderColorFlash('go-green');
+        }
+        else {
+            setborderColorFlash('go-red');
+        }
+
+        if (gameMode === 'intro') {
+            dispatch(incrementRound());
+            dispatch(newGameMode('reveal_intro')) //gamestate to reveal the the answer in integrated intro
+        }
+        else {
+            dispatch(newGameMode('reveal')) //gamestate to reveal the the answer
+
+
+
+
+
+
+
+        }
+
+    }
+
+
+
+    // handle quiz 
     if (gameMode === 'reveal') { 
         setTimeout(() => {
             setborderColorFlash(''); // stop the flashing
