@@ -2,8 +2,6 @@ import React from 'react';
 
 import { Button } from '@mui/material';
 
-
-
 const instructionsText = [
     "Gallery Galore is a collection of AI-generated paintings that help you associate famous painters with their distinct painting styles.",
     "In the practice mode, you can browse through random paintings by clicking on the current painting. Alternatively, you can change the title with the bottom slider and the painter with the right slider. You can try these options now.",
@@ -11,9 +9,7 @@ const instructionsText = [
     "The border of the painting flashes green for the right answer and red for the wrong answer. Click on 'PRACTICE' or 'QUIZ' to start!"
 ];
 
-
-
-const IntroBlock = ({ nextIntro, roundNro }) => {
+const WelcomeToGG = ({ nextIntro, roundNro }) => {
 
     const styles = `
     .intro-info-text {
@@ -68,4 +64,4 @@ const IntroBlock = ({ nextIntro, roundNro }) => {
     );
 };
 
-export default IntroBlock;
+export default WelcomeToGG;

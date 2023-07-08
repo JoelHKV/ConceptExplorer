@@ -5,31 +5,35 @@ const CustomButtonGroup = ({ buttonNames, buttonFunction, buttonClasses = [], ro
     const horizontalButtonNro = buttonNames.length / rows;
 
     const styles = `
-    .array-buttons {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      width: 100%;
-    }
+        .array-buttons {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          width: 100%;
+        }
 
-    .array-button {
-      flex: 0 0 auto;
-      width: 100%;
-      height: clamp(50px, 6vh, 80px);
-    }
+        .array-button {
+          flex: 0 0 auto;
+          width: 100%;
+          height: clamp(50px, 6vh, 80px);
+        }
 
-    .array-button button {
-      background-color: #aaffff;
-      color: black;
-      border: 0.1rem solid black;
-      width: 92%;
-      height: 50%;
-      font-size: 1rem;
-    }
+        .array-button button {
+          background-color: #eee;
+          color: black;
+          border: 0.1rem solid black;
+          width: 92%;
+          height: 60%;
+          font-size: 1rem;
+        }
 
-    .button-group-break {
-      margin-top: -15px;
-    }
+        .array-button button:hover {
+          background-color: #ccc; 
+        }
+
+        .button-group-break {
+          margin-top: -8px;
+        }
   `;
 
     const buttons = buttonNames.map((name, index) => (

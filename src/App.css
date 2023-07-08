@@ -4,9 +4,6 @@
     user-select: none;
 }
 
-
-
-
 html {
     font-size: 20px; /* Set the root font size */
 }
@@ -14,7 +11,7 @@ html {
 .app-container {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: 9vh 4vh auto 2vh auto;
+    grid-template-rows: 9vh 4vh auto 2vh calc(8vh + var(--extra-height));
     max-width: max-content;
     height: auto;
     width: auto;
@@ -24,6 +21,7 @@ html {
     text-align: center;
     border: 2px solid black;
     border-radius: 1vmax;
+    background-color: #f8f8f8;
 }
 
 .title {
@@ -38,6 +36,8 @@ html {
 }
 
 
+
+
 .info_button {
     display: grid;
     grid-column: 1 / 13;
@@ -49,7 +49,7 @@ html {
         min-width: 4px;
         right: 2%;
         width: 50px;
-        background-color: #aaffff;
+        background-color: #eee;
         color: black;
         border: 0.1rem solid black;
         width: 10%;
@@ -58,7 +58,9 @@ html {
         font-size: 1rem;
     }
 
-
+        .info_button button:hover {
+            background-color: #ccc;
+        }
 
 
 .top-buttons-or-counter {
@@ -69,17 +71,15 @@ html {
     font-weight: bold;
 }
 
-
-
-
 .painting-section {
     grid-column: 1 / 13;
     grid-row: 3;
     height: clamp(300px, 80vw, 600px);
     aspect-ratio: 1;
-    border: 12px solid black;
+    border: 0.5rem solid black;
     margin: auto;
     position: relative;
+     
 }
     .painting-section img {
         height: 100%;
@@ -99,7 +99,7 @@ html {
 .painter-slider {
     position: absolute;
     top: 0;
-    left: 101%;
+    left: 102%;
     height: 100%;
     width: 1%;
 }
@@ -134,13 +134,19 @@ html {
 }
 
 
-.intro-next {
-    grid-column: 1 / 13;
-    grid-row: 4;
+.intro_button button {
     width: 100%;
-    font-size: clamp(18px, 4.5vw, 24px);
-    font-weight: bold;
+    height: clamp(28px, 3.5vw, 35px);
+    margin-bottom: 10px;
+    font-size: 1rem;
+    background-color: #eee;
+    color: black;
+    border: 0.1rem solid black;
 }
+
+    .intro_button button:hover {
+        background-color: #ccc;
+    }
 
 
 
@@ -151,40 +157,37 @@ html {
 }
 
 
-
-
-
-    @keyframes green-flash {
-        0% {
-            border: 12px solid black;
-        }
-
-        50% {
-            border: 12px solid green;
-        }
-
-        100% {
-            border: 12px solid black;
-        }
+@keyframes green-flash {
+    0% {
+        border: 0.5rem solid black;
     }
 
-    @keyframes red-flash {
-        0% {
-            border: 12px solid black;
-        }
-
-        50% {
-            border: 12px solid red;
-        }
-
-        100% {
-            border: 12px solid black;
-        }
+    50% {
+        border: 0.5rem solid green;
     }
 
-    .go-green {
-        animation: green-flash 1.5s infinite;
+    100% {
+        border: 0.5rem solid black;
     }
+}
+
+@keyframes red-flash {
+    0% {
+        border: 0.5rem solid black;
+    }
+
+    50% {
+        border: 0.5rem solid red;
+    }
+
+    100% {
+        border: 0.5rem solid black;
+    }
+}
+
+.go-green {
+    animation: green-flash 1.5s infinite;
+}
 
 .go-red {
     animation: red-flash 1.5s infinite;
