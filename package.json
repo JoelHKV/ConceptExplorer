@@ -1,9 +1,9 @@
 {
-  "name": "GalleryGalore",
+  "name": "ConceptExplorer",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://JoelHKV.github.io/GalleryGalore/",
+  "homepage": "https://JoelHKV.github.io/ConceptExplorer/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -14,12 +14,14 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.13.6",
+    "@mui/material": "^5.14.0",
     "@reduxjs/toolkit": "^1.9.5",
+    "axios": "^1.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.1.1",
-    "redux": "^4.2.1"
+    "redux": "^4.2.1",
+    "victory": "^36.6.11"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",

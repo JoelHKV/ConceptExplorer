@@ -11,7 +11,7 @@ html {
 .app-container {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: 9vh 4vh auto 2vh calc(8vh + var(--extra-height));
+    grid-template-rows: 9vh 4vh auto auto auto auto;
     max-width: max-content;
     height: auto;
     width: auto;
@@ -61,8 +61,41 @@ html {
 
 
 .top-buttons-or-counter {
-    grid-column: 1 / 13;
+    grid-column: 4 / 10;
     grid-row: 2;
+    width: 100%;
+    font-size: clamp(18px, 4.5vw, 24px);
+    font-weight: bold;
+}
+
+.concept-buttons {
+    grid-column: 1 / 13;
+    grid-row: 3;
+    width: 100%;
+    font-size: clamp(18px, 4.5vw, 24px);
+    font-weight: bold;
+}
+
+.concept-details-text {
+    grid-column: 1 / 13;
+    grid-row: 5;
+    width: 100%;
+    font-size: clamp(18px, 4.5vw, 24px);
+    font-weight: bold;
+}
+
+.concept-details-bar {
+    grid-column: 4 / 10;
+    grid-row: 6;
+    width: 100%;
+    font-size: clamp(18px, 4.5vw, 24px);
+    font-weight: bold;
+}
+
+
+.related-buttons {
+    grid-column: 1 / 13;
+    grid-row: 4;
     width: 100%;
     font-size: clamp(18px, 4.5vw, 24px);
     font-weight: bold;
