@@ -23,9 +23,7 @@ import axios from 'axios';
 
 import './App.css'; 
 
-const answerTimeoutTime = 1200;
-const layoutSwitchWidth = 600;
-
+ 
 
 const barData = [
     [
@@ -74,6 +72,11 @@ const BarChartArray = ({ data }) => (
 const App = () => {
 
     const [concepts, setConcepts] = useState()
+    const [conceptRank, setConceptRank] = useState()
+
+    
+
+
     const [loaded, setLoaded] = useState(false);
     const [thisConcept, setThisConcept] = useState('mind');
     const [numData, setNumData] = useState(barData);
@@ -133,8 +136,24 @@ const App = () => {
             .then(response => {
                 console.log('promise fulfilled')
                 setConcepts(response.data)
-                setLoaded(true); 
             })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            })
+            .finally(() => {
+                setLoaded(true);
+            });
+        axios
+            .get('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity')
+            .then(response => {
+                console.log('promise fulfilled for otherData');
+                setConceptRank(response.data);
+            })
+            .catch(error => {
+                console.error('Error fetching otherData:', error);
+            });
+
+
     }, [])
 
 
@@ -148,8 +167,9 @@ const App = () => {
                 <Grid item xs={12} className="second-row centerContent">
                     {loaded && (
                     <EightButtonRow
-                        buttonFunction={handleConceptChange}
-                        buttonNames={concepts[thisConcept]['concepts']}
+                            buttonFunction={handleConceptChange}
+                            buttonNames={concepts[thisConcept]['concepts']}
+                            conceptRank={conceptRank}
                         />
                     )}
                 </Grid>
