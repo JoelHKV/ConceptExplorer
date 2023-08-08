@@ -1,20 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode } from './reducers/quizGameSlice';
+import { newGameMode, setMap } from './reducers/quizGameSlice';
  
-import { Button, Slider, Grid, Box } from '@mui/material'; // use MUI component library
-
-import { VictoryChart, VictoryBar, VictoryTheme } from 'victory';
- 
+import { Grid, Box } from '@mui/material'; // use MUI component library
 
 
-import CustomButtonGroup from './components/CustomButtonGroup'; // custom button array component
+
+
 //import IntroBlock from './components/IntroBlock'; // instructions are here
 
 import HeaderBlock from './components/HeaderBlock';
 import EightButtonRow from './components/EightButtonRow';
-
+import BarChartArray from './components/BarChartArray';
+import GoogleMapsApp from './components/GoogleMapsApp';
 
 //import api from './utilities/api';
 
@@ -39,52 +38,75 @@ const barData = [
 ];
 
 
+const initMapData = {
+    lat: 37.7749, // Default latitude (San Francisco coordinates)
+    lng: -112.4194, // Default longitude (San Francisco coordinates)
+    zoom: 10, // Default zoom level
 
-const BarChart = ({ data }) => (
-    <VictoryChart
-        theme={VictoryTheme.material}
-        domain={{ y: [0, 1] }}
-        domainPadding={{ x: [50, 0] }} 
-        horizontal
-    >
-        <VictoryBar data={data}
-            barWidth={20}  // Adjust the bar width as desired
-            barRatio={1} // Adjust the spacing between bars
+    markers: [
+        {
+            lat: 137.7749, // Latitude of the first marker
+            lng: -112.4194, // Longitude of the first marker
+            title: "Marker 1", // Title of the first marker
+            label: {
+                text: "Koira",
+                color: "yellow",
+            },
+        },
+        {
+            lat: 137.7833, // Latitude of the second marker
+            lng: -112.4494, // Longitude of the second marker
+            title: "Marker 2", // Title of the second marker
+        },
+     
+    ],
+
+    customMarkers: [
+        {
+            lat: 37.8833, // Latitude  
+            lng: -112.4494, // Longitude  
+            diameter: 130,  
+        },
+
+    ],
 
 
-        />
-    </VictoryChart>
-);
+};
 
 
-const BarChartArray = ({ data }) => (
-
-  
-
-
-    <Box display="flex" flexWrap="wrap" justifyContent="center">
-        {data.map((dataset, index) => (
-            <BarChart key={index} data={dataset} />
-        ))}
-    </Box>
-);
 
 const App = () => {
 
     const [concepts, setConcepts] = useState()
     const [conceptRank, setConceptRank] = useState()
 
-    
+    const [map, setMap] = useState(null);
 
-
+    const [mapData, setMapData] = useState(initMapData);
     const [loaded, setLoaded] = useState(false);
+    const [loaded2, setLoaded2] = useState(false);
     const [thisConcept, setThisConcept] = useState('mind');
     const [numData, setNumData] = useState(barData);
+
+    const updateMapCenterAndZoom = (lat2, lng, zoom) => {
+
+        setMapData((mapData) => ({
+            ...mapData,
+            zoom: (mapData.zoom + 1),
+        }));
+
+      
+        
+    };
+
 
     const appContainerRef = useRef(null);
 
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
-   
+
+    const mapState = useSelector((state) => state.counter[0].map); 
+ 
+
     const dispatch = useDispatch();
 
     console.log(thisConcept)
@@ -134,7 +156,7 @@ const App = () => {
         axios
             .get('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore')
             .then(response => {
-                console.log('promise fulfilled')
+               // console.log('promise fulfilled')
                 setConcepts(response.data)
             })
             .catch(error => {
@@ -143,14 +165,18 @@ const App = () => {
             .finally(() => {
                 setLoaded(true);
             });
+   
         axios
             .get('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity')
             .then(response => {
-                console.log('promise fulfilled for otherData');
+                //console.log('promise fulfilled for otherData');
                 setConceptRank(response.data);
             })
             .catch(error => {
                 console.error('Error fetching otherData:', error);
+            })
+            .finally(() => {
+                setLoaded2(true);
             });
 
 
@@ -165,55 +191,46 @@ const App = () => {
                     <HeaderBlock />
                 </Grid>
                 <Grid item xs={12} className="second-row centerContent">
-                    {loaded && (
+                    {loaded && loaded2 && (
                     <EightButtonRow
                             buttonFunction={handleConceptChange}
-                            buttonNames={concepts[thisConcept]['concepts']}
+                            conceptData={concepts[thisConcept]}
+                            thisConcept={thisConcept}
+                            concept={concepts}
                             conceptRank={conceptRank}
                         />
                     )}
                 </Grid>
-     
-
-                 
-
-                {(gameMode !== 'quiz' && gameMode !== 'reveal') && (
-                    <div className="top-buttons-or-counter">
-                        <CustomButtonGroup
-                            buttonNames={[thisConcept]}
-                            buttonFunction={handleModeChange}
-                        />
-                    </div>
-                )}
-                {loaded && (
-                    <>
-                    <div className="concept-buttons">
-                        <CustomButtonGroup
-                            buttonNames={concepts[thisConcept]['concepts']}
-                            buttonFunction={handleConceptChange}
-                            rows={4}
-                        />
-                    </div>
-                        <div className="related-buttons">
-                            <CustomButtonGroup
-                                buttonNames={concepts[thisConcept]['related']}
-                                buttonFunction={handleConceptChange}
-                                rows={4}
-                            />
+                <Grid item xs={12} className="third-row centerContent">
+                    {loaded && (
+                        <div className="concept-details-text">
+                            {concepts[thisConcept]['definition']}
                         </div>
+                    )}
+                </Grid>    
+                <Grid item xs={12} className="fourth-row centerContent">
+                    {loaded && (
+                        <div className="concept-details-bar">
+                            <BarChartArray data={numData} />
+                        </div>
+                    )}
+                </Grid>                                          
+                <button
+                    onClick={() => updateMapCenterAndZoom(40.7128, -74.0060, 14)}
+                >
+                    Change Center to New York
+                </button>
 
-
-                    </>
-                )}
-                {loaded && (
-                <div className="concept-details-text">
-                    {concepts[thisConcept]['definition'] }
+                
+                   
+                <div>
+              
+                    <GoogleMapsApp
+                        map={map}
+                        setMap={setMap}
+                        mapData={mapData}
+                    />
                 </div>
-                )}
-                    <div className="concept-details-bar">
-                    <BarChartArray data={numData} />
-                </div>
-
 
                                 
             

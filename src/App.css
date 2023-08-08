@@ -27,9 +27,16 @@
 }
 
 .second-row {
-    height: 24vh;
+    height: 54vh;
+}
+.third-row {
+    height: 14vh;
 }
 
+.fourth-row {
+    height: 44vh;
+    border: solid black 2px;
+}
 
 .unselectable {
     user-select: none;
@@ -39,38 +46,5 @@ html {
     font-size: 20px; /* Set the root font size */
 }
 
-
-.concept-buttosddns {
-    grid-column: 1 / 13;
-    grid-row: 3;
-    width: 100%;
-    font-size: clamp(18px, 4.5vw, 24px);
-    font-weight: bold;
-}
-
-.concept-details-text {
-    grid-column: 1 / 13;
-    grid-row: 5;
-    width: 100%;
-    font-size: clamp(18px, 4.5vw, 24px);
-    font-weight: bold;
-}
-
-.concept-details-bar {
-    grid-column: 4 / 10;
-    grid-row: 6;
-    width: 100%;
-    font-size: clamp(18px, 4.5vw, 24px);
-    font-weight: bold;
-}
-
-
-.related-buttons {
-    grid-column: 1 / 13;
-    grid-row: 4;
-    width: 100%;
-    font-size: clamp(18px, 4.5vw, 24px);
-    font-weight: bold;
-}
 
 

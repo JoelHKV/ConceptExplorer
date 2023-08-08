@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = [
     {
         gameMode: 'intro',
+        map: null,
     }
 ]
 
@@ -12,9 +13,12 @@ const quizGameReducer = createSlice({
         newGameMode: (state, newValue) => {
             state[0].gameMode = newValue.payload;
         },
+        setMap: (state, action) => {
+            state[0].map = action.payload;
+        },
     }
 
 });
 
-export const { newGameMode } = quizGameReducer.actions;
+export const { newGameMode, setMap } = quizGameReducer.actions;
 export default quizGameReducer.reducer;
