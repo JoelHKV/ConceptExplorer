@@ -5,8 +5,8 @@ import { newGameMode, setMap } from './reducers/quizGameSlice';
  
 import { Grid, Box } from '@mui/material'; // use MUI component library
 
-
-
+ 
+import { drawCanvasReturnDataURL } from './utilities/drawCanvasReturnDataURL';
 
 //import IntroBlock from './components/IntroBlock'; // instructions are here
 
@@ -37,43 +37,47 @@ const barData = [
     // Add more datasets as needed
 ];
 
-
+const diameter = 70;
 const initMapData = {
-    lat: 37.7749, // Default latitude (San Francisco coordinates)
-    lng: -112.4194, // Default longitude (San Francisco coordinates)
+    lat: 37.7749, // Default latitude  
+    lng: -112.4194, // Default longitude  
     zoom: 10, // Default zoom level
 
     markers: [
         {
-            lat: 137.7749, // Latitude of the first marker
+            lat: 37.7749, // Latitude of the first marker
             lng: -112.4194, // Longitude of the first marker
-            title: "Marker 1", // Title of the first marker
+            title: "Koira", // Title of the first marker
             label: {
                 text: "Koira",
-                color: "yellow",
+                color: "black",
             },
+            custom: {
+                diameter: diameter,
+                dataURL: drawCanvasReturnDataURL(new Array(360).fill(1), diameter)
+            }
         },
-        {
-            lat: 137.7833, // Latitude of the second marker
-            lng: -112.4494, // Longitude of the second marker
-            title: "Marker 2", // Title of the second marker
-        },
-     
+    
     ],
 
-    customMarkers: [
+    polylines: [
         {
-            lat: 37.8833, // Latitude  
-            lng: -112.4494, // Longitude  
-            diameter: 130,  
+            lat: [37.8249, 37.7349],  
+            lng: [-112.8194,- 111.9194],   
+            color: '#0000ff',           
         },
 
     ],
+
+
+
 
 
 };
 
 
+
+ 
 
 const App = () => {
 
@@ -81,8 +85,11 @@ const App = () => {
     const [conceptRank, setConceptRank] = useState()
 
     const [map, setMap] = useState(null);
-
+   
     const [mapData, setMapData] = useState(initMapData);
+
+
+
     const [loaded, setLoaded] = useState(false);
     const [loaded2, setLoaded2] = useState(false);
     const [thisConcept, setThisConcept] = useState('mind');
@@ -90,11 +97,28 @@ const App = () => {
 
     const updateMapCenterAndZoom = (lat2, lng, zoom) => {
 
-        setMapData((mapData) => ({
-            ...mapData,
-            zoom: (mapData.zoom + 1),
-        }));
+    //    setMapData((mapData) => ({
+    //        ...mapData,
+    //        zoom: (mapData.zoom + 1),
+     //   }));
+      
+      //  markers[1].setMap(null);
 
+         
+              setMapData((mapData) => ({
+            ...mapData,
+                  markers: mapData.markers.map((marker, index) => {
+                      if (index === 0) {
+                          return {
+                              ...marker,
+                              lat: 37.4349,
+                              lng: -112.4194,
+                          };
+                      }
+                     
+                      return marker;
+                  })    
+        }));
       
         
     };
@@ -104,8 +128,7 @@ const App = () => {
 
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
 
-    const mapState = useSelector((state) => state.counter[0].map); 
- 
+    
 
     const dispatch = useDispatch();
 
@@ -228,6 +251,7 @@ const App = () => {
                     <GoogleMapsApp
                         map={map}
                         setMap={setMap}
+       
                         mapData={mapData}
                     />
                 </div>
