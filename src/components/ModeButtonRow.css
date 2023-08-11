@@ -1,0 +1,22 @@
+.ModeButtonRow {
+    position: relative;
+    width: 100%;
+}
+
+    .ModeButtonRow Button {
+        background-color: var(--button-background-color) !important;
+        color: var(--button-text-color) !important;
+        border: 0.1rem solid black;
+        width: 90%;
+        left: 5%;
+        height: 4vh;
+        font-size: 1rem;
+    }
+        @media(hover: hover) {
+            .ModeButtonRow Button:hover {
+                background-color: var(--button-background-color-hover) !important;
+            }
+        }
+    .practice-button, .quiz-button {
+        width: 40% !important;
+    }

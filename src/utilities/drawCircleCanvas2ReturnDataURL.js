@@ -42,7 +42,7 @@ export function drawCircleCanvas2ReturnDataURL(diameter, text, score) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     // Calculate the position for the text
-    console.log(text.length)
+    //console.log(text.length)
     for (let i = 0; i < text.length; i++) {
         const angle = ((i - text.length / 2) / Math.max(9,(text.length+2))) * Math.PI * 2 - Math.PI/2.5;
         const textX = centerX + Math.cos(angle) * textRadius;

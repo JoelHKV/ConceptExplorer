@@ -27,6 +27,7 @@
 }
 
 .second-row {
+    position: relative;
     height: 54vh;
 }
 .third-row {

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 //import Hyphenator from 'hyphen';
 //import hyphenateText from './hyphenateText';
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode } from './reducers/quizGameSlice';
+import { newGameMode, newConcept } from './reducers/quizGameSlice';
  
 import { Grid, Box } from '@mui/material'; // use MUI component library
 
@@ -16,9 +16,10 @@ import { drawCircleCanvas2ReturnDataURL } from './utilities/drawCircleCanvas2Ret
 //import IntroBlock from './components/IntroBlock'; // instructions are here
 
 import HeaderBlock from './components/HeaderBlock';
-import EightButtonRow from './components/EightButtonRow';
-import BarChartArray from './components/BarChartArray';
 import GoogleMapsApp from './components/GoogleMapsApp';
+import ModeButtonRow from './components/ModeButtonRow';
+import OverlayBlock from './components/OverlayBlock';
+
 
 //import api from './utilities/api';
 
@@ -29,25 +30,9 @@ import './App.css';
 
  
 
-const barData = [
-    [
-        { x: 'Basic vs. Complex', y: 0.3 },
-        { x: 'Concrete vs. Symbolic', y: 0.7 },
-        { x: 'Objective  vs.Subjective', y: 0.3 },
-        { x: 'Intuitive vs.Analytical', y: 0.3 },
-        { x: 'Empirical vs.Theoretical', y: 0.3 },
-        { x: 'Quantitative vs.Qualitative', y: 0.3 },
-        // Add more data points as needed
-    ],
-    // Add more datasets as needed
-];
-
 const diameter = 110;
-//const dataURL = drawCanvasReturnDataURL(new Array(360).fill(1), diameter);
-const dataURL = drawCircleCanvas2ReturnDataURL(diameter, 'CONSCIOUSNESS', 4.2)
-
-
  
+
 
 const initMapData = {
     lat: 37.7749, // Default latitude  
@@ -58,13 +43,14 @@ const initMapData = {
         {
             lat: 37.7749, // Latitude of the first marker
             lng: -112.4194, // Longitude of the first marker
-            title: "mind", // Title of the first marker
+            title: "MIND", // Title of the first marker
+            param: "mind",
             label: {              
                 color: "black",
             },
             custom: {
                 diameter: diameter,
-                dataURL: dataURL,
+                dataURL: drawCircleCanvas2ReturnDataURL(diameter, 'MIND', 2.9),
             }
         },
 
@@ -76,32 +62,22 @@ const initMapData = {
 };
 
 
-//const opacity = i === 0 ? 1 : 0.1;
- 
-
-
-
- 
-
 const App = () => {
 
     const [concepts, setConcepts] = useState()
     const [conceptRank, setConceptRank] = useState()
     const [history, setHistory] = useState([])
 
-    
- 
+    const [step, setStep] = useState(1)
+
+   
     const [mapData, setMapData] = useState(initMapData);
     const [listenIdle, setListenIdle] = useState(false);
 
 
-
     const [loaded, setLoaded] = useState(false);
     const [loaded2, setLoaded2] = useState(false);
-    const [thisConcept, setThisConcept] = useState('mind');
-    const [numData, setNumData] = useState(barData);
-
-
+  
 
     const hexaMarker = (title, lat, lng, opac, index) => {
 
@@ -134,7 +110,8 @@ const App = () => {
             return {
                 lat: lat + radius * Math.cos((i) * angleIncrement),
                 lng: lng + radius * Math.sin((i) * angleIncrement),
-                title: markerTitle,
+                title: markerTitle.toUpperCase(),
+                param: markerTitle,
                 opacity: opacity,
                 
                 custom: {
@@ -165,9 +142,7 @@ const App = () => {
                 .sort((a, b) => b.importanceValue - a.importanceValue)
                 .slice(0, 8)
                 .map((item) => item.button)
-        ];
-
-        
+        ];       
     }
 
     const conceptToRelated2 = (title, special, index) => {
@@ -211,13 +186,35 @@ const App = () => {
        // console.log('koria stoped')
     }
 
+    //let hisstep=-1
 
+    const controlButtons = (param) => {
+       // console.log(param)
+         
+
+        setStep(step + 1)
+        
+        console.log(step)
+        const thisHistory = history[history.length - step]
+       // console.log(thisHistory[0])
+        markerFunction(thisHistory[0], thisHistory[1], thisHistory[2], thisHistory[3])
+    }
+
+    
+
+   
     const markerFunction = (param, index, lat, lng) => {
+        dispatch(newConcept(param))
+        if (index === 0 && param !== 'mind') {
+            dispatch(newGameMode('details'))        
+            return
+        }
+
         if (conceptRank[param]['iskey'] == 0) {
             return
         }
                   
-        setHistory([...history, [param, index]]);
+        setHistory([...history, [param, index, lat, lng]]);
 
         hexaMarker(param, lat, lng, 0.03, index)
 
@@ -228,22 +225,19 @@ const App = () => {
                 hexaMarker(param, lat, lng, opa, index);
             }, 400 * (index + 1)); // Increment timeout for each iteration
         });
-
-
-
-
     }
   
  
-    const appContainerRef = useRef(null);
-
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
+    const thisConcept = useSelector((state) => state.counter[0].concept); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
 
-    
+
+    console.log(thisConcept)
+
 
     const dispatch = useDispatch();
 
-    console.log(thisConcept)
+    //console.log(thisConcept)
 
     
 
@@ -251,39 +245,9 @@ const App = () => {
         dispatch(newGameMode('intro'))
     }
 
-    const handleModeChange = (newMode) => {
-        dispatch(newGameMode(newMode))
-       // setThisConcept()
-    };
-
-    const handleConceptChange = (newConcept) => {
-        if (newConcept in concepts) {
-            setThisConcept(newConcept)
-
-
-            console.log(concepts[newConcept]['numerical'][0])
-            
-
-            const updatedBarData = barData.map((dataset) =>
-                dataset.map((dataPoint, dataIndex) => ({
-                    ...dataPoint,
-                    y: concepts[newConcept]['numerical'][dataIndex],  
-                }))
-            );
-
-
-
-            setNumData(updatedBarData)
-
-        }
-        else {
-            console.log('The key does no exist in the object.');
-        }
-        
-       // setthisDetail(details['forgetting curve'][0])
-
-
-    };
+   
+    
+    
 
     useEffect(() => {
         console.log('effect')
@@ -326,45 +290,26 @@ const App = () => {
                 </Grid>
                 <Grid item xs={12} className="second-row centerContent">
                     {loaded && loaded2 && (
-                    <EightButtonRow
-                            buttonFunction={handleConceptChange}
-                            conceptData={concepts[thisConcept]}
-                            thisConcept={thisConcept}
-                            concept={concepts}
-                            conceptRank={conceptRank}
+                        <>
+                        <GoogleMapsApp
+                            mapData={mapData}
+                            handleIdleFunction={handleIdleFunction}
+                            markerFunction={markerFunction}
                         />
+                            { gameMode==='details' && (
+                            <OverlayBlock
+                                    title={thisConcept}
+                                    text={concepts[thisConcept]['definition']}
+                                />
+                            )}
+                        </>
                     )}
-                </Grid>
+                </Grid> 
                 <Grid item xs={12} className="third-row centerContent">
-                    {loaded && (
-                        <div className="concept-details-text">
-                            {concepts[thisConcept]['definition']}
-                        </div>
-                    )}
-                </Grid>    
-                <Grid item xs={12} className="fourth-row centerContent">
-                    {loaded && (
-                        <div className="concept-details-bar">
-                            <BarChartArray data={numData} />
-                        </div>
-                    )}
-                </Grid>                                          
-                
-                
                    
-                <div>
-                    {loaded && loaded2 && (
-                        <button onClick={() => hexaMarker('mind', 37.7749, -112.4194)}>Reset Map Center</button>
-                    )}
-                    <GoogleMapsApp     
-                        mapData={mapData}
-                        handleIdleFunction={handleIdleFunction}
-                        markerFunction={markerFunction}
-                    />
-                </div>
-
-                                
-            
+                        <ModeButtonRow buttonFunction={controlButtons} />
+                    
+                </Grid>
             </Grid>
         </Box >  
     );
