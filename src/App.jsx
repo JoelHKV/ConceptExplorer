@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-
+//import Hyphenator from 'hyphen';
+//import hyphenateText from './hyphenateText';
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, setMap } from './reducers/quizGameSlice';
+import { newGameMode } from './reducers/quizGameSlice';
  
 import { Grid, Box } from '@mui/material'; // use MUI component library
 
  
 import { drawCanvasReturnDataURL } from './utilities/drawCanvasReturnDataURL';
 import { drawCircleCanvasReturnDataURL } from './utilities/drawCircleCanvasReturnDataURL';
+import { drawCircleCanvas2ReturnDataURL } from './utilities/drawCircleCanvas2ReturnDataURL';
 
  
 
@@ -40,9 +42,12 @@ const barData = [
     // Add more datasets as needed
 ];
 
-const diameter = 90;
+const diameter = 110;
 //const dataURL = drawCanvasReturnDataURL(new Array(360).fill(1), diameter);
-const dataURL =drawCircleCanvasReturnDataURL(diameter,'MIND')
+const dataURL = drawCircleCanvas2ReturnDataURL(diameter, 'CONSCIOUSNESS', 4.2)
+
+
+ 
 
 const initMapData = {
     lat: 37.7749, // Default latitude  
@@ -104,7 +109,6 @@ const App = () => {
         if (history.length > 0) {
         markerArray = conceptToRelated2(title, history[history.length - 1][0], index-1)
         }
-        console.log('index ' + index)
         const updatedMarkers = markerArray.map((markerTitle, i) => {
             const angleIncrement = (2 * Math.PI) / 8;
             const radius = i === 0 ? 0 : 2;
@@ -121,20 +125,21 @@ const App = () => {
                 opacity = 0.3;
             }
 
-
-
+            let formattedValue = 'NaN'
+            if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
+                formattedValue = concepts[markerTitle]['abstract'].toFixed(1);
+                
+            }  
+          
             return {
                 lat: lat + radius * Math.cos((i) * angleIncrement),
                 lng: lng + radius * Math.sin((i) * angleIncrement),
                 title: markerTitle,
                 opacity: opacity,
-                label: {
-                    text: markerTitle,
-                    color: "black",
-                },
+                
                 custom: {
                     diameter: diameter,
-                    dataURL: dataURL,
+                    dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitle.toUpperCase(), formattedValue),
                 },
             };
         });
@@ -145,10 +150,6 @@ const App = () => {
             lat: lat,
             lng: lng,
         }));
-
-
-
-
     };
 
 

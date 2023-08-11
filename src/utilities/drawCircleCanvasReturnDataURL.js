@@ -28,7 +28,7 @@ export function drawCircleCanvasReturnDataURL(diameter, text) {
     ctx.fillStyle = "white";
     ctx.fill();
     ctx.closePath();
-
+     
       
     ctx.font = "25px Arial";
     ctx.fillStyle = "black";
@@ -36,7 +36,7 @@ export function drawCircleCanvasReturnDataURL(diameter, text) {
     ctx.textBaseline = "middle";
     // Calculate the position for the text
     const textX = centerX;
-    const textY = centerY;
+    const textY = centerY-5;
     ctx.fillText(text, textX, textY);
 
 
