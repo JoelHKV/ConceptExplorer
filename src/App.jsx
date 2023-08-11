@@ -7,6 +7,9 @@ import { Grid, Box } from '@mui/material'; // use MUI component library
 
  
 import { drawCanvasReturnDataURL } from './utilities/drawCanvasReturnDataURL';
+import { drawCircleCanvasReturnDataURL } from './utilities/drawCircleCanvasReturnDataURL';
+
+ 
 
 //import IntroBlock from './components/IntroBlock'; // instructions are here
 
@@ -37,43 +40,39 @@ const barData = [
     // Add more datasets as needed
 ];
 
-const diameter = 70;
+const diameter = 90;
+//const dataURL = drawCanvasReturnDataURL(new Array(360).fill(1), diameter);
+const dataURL =drawCircleCanvasReturnDataURL(diameter,'MIND')
+
 const initMapData = {
     lat: 37.7749, // Default latitude  
     lng: -112.4194, // Default longitude  
-    zoom: 10, // Default zoom level
-
+   // zoom: 4, // Default zoom level
+    delta: 2,
     markers: [
         {
             lat: 37.7749, // Latitude of the first marker
             lng: -112.4194, // Longitude of the first marker
-            title: "Koira", // Title of the first marker
-            label: {
-                text: "Koira",
+            title: "mind", // Title of the first marker
+            label: {              
                 color: "black",
             },
             custom: {
                 diameter: diameter,
-                dataURL: drawCanvasReturnDataURL(new Array(360).fill(1), diameter)
+                dataURL: dataURL,
             }
         },
-    
-    ],
-
-    polylines: [
-        {
-            lat: [37.8249, 37.7349],  
-            lng: [-112.8194,- 111.9194],   
-            color: '#0000ff',           
-        },
 
     ],
 
 
-
-
+    polylines: [],
 
 };
+
+
+//const opacity = i === 0 ? 1 : 0.1;
+ 
 
 
 
@@ -83,10 +82,12 @@ const App = () => {
 
     const [concepts, setConcepts] = useState()
     const [conceptRank, setConceptRank] = useState()
+    const [history, setHistory] = useState([])
 
-    const [map, setMap] = useState(null);
-   
+    
+ 
     const [mapData, setMapData] = useState(initMapData);
+    const [listenIdle, setListenIdle] = useState(false);
 
 
 
@@ -95,35 +96,144 @@ const App = () => {
     const [thisConcept, setThisConcept] = useState('mind');
     const [numData, setNumData] = useState(barData);
 
-    const updateMapCenterAndZoom = (lat2, lng, zoom) => {
 
-    //    setMapData((mapData) => ({
-    //        ...mapData,
-    //        zoom: (mapData.zoom + 1),
-     //   }));
-      
-      //  markers[1].setMap(null);
 
-         
-              setMapData((mapData) => ({
+    const hexaMarker = (title, lat, lng, opac, index) => {
+
+        let markerArray = conceptToRelated(title)
+        if (history.length > 0) {
+        markerArray = conceptToRelated2(title, history[history.length - 1][0], index-1)
+        }
+        console.log('index ' + index)
+        const updatedMarkers = markerArray.map((markerTitle, i) => {
+            const angleIncrement = (2 * Math.PI) / 8;
+            const radius = i === 0 ? 0 : 2;
+            let opacity = i === 0 ? 1 : opac;
+             
+            if (history.length > 0)  {
+                if (markerTitle === history[history.length - 1][0]) {
+                    opacity = 1;
+                  // offset = history[history.length][1]
+                }
+            }
+
+            if (conceptRank[markerTitle]['iskey'] == 0) {
+                opacity = 0.3;
+            }
+
+
+
+            return {
+                lat: lat + radius * Math.cos((i) * angleIncrement),
+                lng: lng + radius * Math.sin((i) * angleIncrement),
+                title: markerTitle,
+                opacity: opacity,
+                label: {
+                    text: markerTitle,
+                    color: "black",
+                },
+                custom: {
+                    diameter: diameter,
+                    dataURL: dataURL,
+                },
+            };
+        });
+
+        setMapData((mapData) => ({
             ...mapData,
-                  markers: mapData.markers.map((marker, index) => {
-                      if (index === 0) {
-                          return {
-                              ...marker,
-                              lat: 37.4349,
-                              lng: -112.4194,
-                          };
-                      }
-                     
-                      return marker;
-                  })    
+            markers: updatedMarkers,
+            lat: lat,
+            lng: lng,
         }));
-      
-        
+
+
+
+
     };
 
 
+    const conceptToRelated = (title) => {
+        const buttonNames = [...concepts[title]['concepts'], ...concepts[title]['related']];
+        return [
+            title,
+            ...buttonNames
+                .map((button) => {
+                    let importanceValue = 100 * conceptRank[button]['iskey'] + conceptRank[button]['count'];
+                    return { button, importanceValue };
+                })
+                .sort((a, b) => b.importanceValue - a.importanceValue)
+                .slice(0, 8)
+                .map((item) => item.button)
+        ];
+
+        
+    }
+
+    const conceptToRelated2 = (title, special, index) => {
+        index = index - 4;
+        if (index < 0) { index = index + 8; }
+        const buttonNames = [...concepts[title]['concepts'], ...concepts[title]['related']];
+
+        // Remove duplicates and ensure 'special' is not included twice
+        const uniqueButtonNames = [...new Set(buttonNames.filter(button => button !== special))];
+
+        const sortedButtons = uniqueButtonNames
+            .map((button) => {
+                let importanceValue = 100 * conceptRank[button]['iskey'] + conceptRank[button]['count'];
+                return { button, importanceValue };
+            })
+            .sort((a, b) => b.importanceValue - a.importanceValue)
+            .slice(0, 7)
+            .map((item) => item.button);
+
+        // Insert 'special' at the specified index
+        sortedButtons.splice(index, 0, special);
+
+        return [title, ...sortedButtons];
+    }
+
+
+    const handleIdleFunction = () => {
+        if (listenIdle) { 
+          //  setListenIdle(false)
+        const updatedMarkers = mapData.markers.map((marker) => ({
+            ...marker,
+            opacity: 1,
+        }));
+            console.log('koria stoped')
+        setMapData((mapData) => ({
+            ...mapData,
+            markers: updatedMarkers,
+        }));
+
+        }
+       // console.log('koria stoped')
+    }
+
+
+    const markerFunction = (param, index, lat, lng) => {
+        if (conceptRank[param]['iskey'] == 0) {
+            return
+        }
+                  
+        setHistory([...history, [param, index]]);
+
+        hexaMarker(param, lat, lng, 0.03, index)
+
+        const opacities = [1];
+
+        opacities.forEach((opa, index) => {
+            setTimeout(() => {
+                hexaMarker(param, lat, lng, opa, index);
+            }, 400 * (index + 1)); // Increment timeout for each iteration
+        });
+
+
+
+
+    }
+  
+ 
     const appContainerRef = useRef(null);
 
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
@@ -238,21 +348,17 @@ const App = () => {
                         </div>
                     )}
                 </Grid>                                          
-                <button
-                    onClick={() => updateMapCenterAndZoom(40.7128, -74.0060, 14)}
-                >
-                    Change Center to New York
-                </button>
-
+                
                 
                    
                 <div>
-              
-                    <GoogleMapsApp
-                        map={map}
-                        setMap={setMap}
-       
+                    {loaded && loaded2 && (
+                        <button onClick={() => hexaMarker('mind', 37.7749, -112.4194)}>Reset Map Center</button>
+                    )}
+                    <GoogleMapsApp     
                         mapData={mapData}
+                        handleIdleFunction={handleIdleFunction}
+                        markerFunction={markerFunction}
                     />
                 </div>
 

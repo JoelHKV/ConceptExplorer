@@ -4,13 +4,15 @@ import React, { useState, useEffect } from 'react';
 import './GoogleMapsApp.css';
 
  
-const GoogleMapsApp = ({ map, setMap, mapData }) => {
+const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
 
-    const [markerHandleArray, setMarkerHandleArray] = useState(null);
-
+    const [markerPolylineHandleArray, setMarkerPolylineHandleArray] = useState(null);
+    const [map, setMap] = useState(null);
+   
    
     useEffect(() => {
         // Load the Google Maps JavaScript API
+  
         const script = document.createElement('script');
         script.src = `https://returnsecret-c2cjxe2frq-lz.a.run.app`;
         script.defer = true;
@@ -24,37 +26,61 @@ const GoogleMapsApp = ({ map, setMap, mapData }) => {
         const mapOptions = {
             center: { lat: mapData.lat, lng: mapData.lng }, // San Francisco coordinates
             zoom: mapData.zoom,
+            disableDefaultUI: true,
+            gestureHandling: "none",
         };
 
         const mapElement = document.getElementById('map');
         const newMap = new window.google.maps.Map(mapElement, mapOptions);
+
+
+
+
+        newMap.addListener("idle", () => {           
+            handleIdleFunction()       
+        });
+
+
         setMap(newMap); // Save the map instance in the state
         
     };
 
-    
+  
     useEffect(() => {
         if (map) {     
-            map.setCenter({ lat: mapData.lat, lng: mapData.lng });
-            map.setZoom(mapData.zoom);
+            //map.setCenter({ lat: mapData.lat, lng: mapData.lng });
 
-            const allMarkerHandles = []; 
+            map.panTo({ lat: mapData.lat, lng: mapData.lng });
+
+
+            if (mapData.zoom) { // use zoom if zoom data is given
+                map.setZoom(mapData.zoom);
+            }
+            if (mapData.delta) { // use bounds if delta data is given
+                const bounds = new window.google.maps.LatLngBounds();
+                bounds.extend({ lat: mapData.lat + mapData.delta, lng: mapData.lng + mapData.delta });
+                bounds.extend({ lat: mapData.lat - mapData.delta, lng: mapData.lng - mapData.delta });
+                map.fitBounds(bounds);
+            }
+
+            const allMarkerPolylineHandles = [];
+            if (markerPolylineHandleArray) {
+                markerPolylineHandleArray.forEach((thisMarkerPolylineHandle) => {
+                    thisMarkerPolylineHandle.setMap(null);
+                });
+                setMarkerPolylineHandleArray(null);
+            }
+
             if (mapData.markers) {
-                if (markerHandleArray) {
-                    markerHandleArray.forEach((thisMarkerHandle) => {
-                        thisMarkerHandle.setMap(null);
-                    });
-                    setMarkerHandleArray(null);
-                }
-           
+         
                 const defaultLabelOptions = {
                     text: ' ',
                     color: 'black',
-                    fontSize: '14px',
+                    fontSize: '18px',
                     fontWeight: 'bold'
                 };
            
-                mapData.markers.forEach((markerData) => {
+                mapData.markers.forEach((markerData, index) => {
                     const labelOptions = markerData.label // use specified label data if given, otherwise default
                         ? Object.assign({}, defaultLabelOptions, markerData.label)
                         : defaultLabelOptions;
@@ -76,16 +102,18 @@ const GoogleMapsApp = ({ map, setMap, mapData }) => {
                         icon: markerImage,
                         title: markerData.title,
                         label: labelOptions,
+                        opacity: markerData.opacity || 1,
+                       
                     });
                     markerHandle.addListener("click", () => {
-                        alert(markerData.title);
+                        markerFunction(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
 
                     });             
-                    allMarkerHandles.push(markerHandle)
+                    allMarkerPolylineHandles.push(markerHandle)
                 })
-                setMarkerHandleArray(allMarkerHandles)
+                
             } 
-
+            
             if (mapData.polylines) { // polyline
                 mapData.polylines.forEach((polylineData) => {    
                     const polytype = polylineData.symbol || 'FORWARD_CLOSED_ARROW'
@@ -99,12 +127,12 @@ const GoogleMapsApp = ({ map, setMap, mapData }) => {
                             icon: { path: google.maps.SymbolPath[polytype] },
                             offset: polylineData.arrowOffset || '100%'
                         }],
-                        map: map,
-  
+                        map: map, 
                     });
+                    allMarkerPolylineHandles.push(polylineHandle)
                 });
             }
-            
+            setMarkerPolylineHandleArray(allMarkerPolylineHandles)
         
         }
     }, [map, mapData]);
