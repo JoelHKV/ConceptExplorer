@@ -35,13 +35,13 @@ const diameter = 110;
 
 
 const initMapData = {
-    lat: 37.7749, // Default latitude  
+    lat: 27.7749, // Default latitude  
     lng: -112.4194, // Default longitude  
    // zoom: 4, // Default zoom level
     delta: 2,
     markers: [
         {
-            lat: 37.7749, // Latitude of the first marker
+            lat: 27.7749, // Latitude of the first marker
             lng: -112.4194, // Longitude of the first marker
             title: "MIND", // Title of the first marker
             param: "mind",
@@ -68,7 +68,7 @@ const App = () => {
     const [conceptRank, setConceptRank] = useState()
     const [history, setHistory] = useState([])
 
-    const [step, setStep] = useState(1)
+    const [step, setStep] = useState(0)
 
    
     const [mapData, setMapData] = useState(initMapData);
@@ -79,27 +79,12 @@ const App = () => {
     const [loaded2, setLoaded2] = useState(false);
   
 
-    const hexaMarker = (title, lat, lng, opac, index) => {
+    const hexaMarker = (markerArray, lat, lng, opac, index) => {
 
-        let markerArray = conceptToRelated(title)
-        if (history.length > 0) {
-        markerArray = conceptToRelated2(title, history[history.length - 1][0], index-1)
-        }
         const updatedMarkers = markerArray.map((markerTitle, i) => {
             const angleIncrement = (2 * Math.PI) / 8;
             const radius = i === 0 ? 0 : 2;
-            let opacity = i === 0 ? 1 : opac;
-             
-            if (history.length > 0)  {
-                if (markerTitle === history[history.length - 1][0]) {
-                    opacity = 1;
-                  // offset = history[history.length][1]
-                }
-            }
-
-            if (conceptRank[markerTitle]['iskey'] == 0) {
-                opacity = 0.3;
-            }
+            let opacity = (i === 0 || i === ((index - 4 + 8) % 8)) ? 1 : opac; // this and prev are never transparent
 
             let formattedValue = 'NaN'
             if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
@@ -121,52 +106,16 @@ const App = () => {
             };
         });
 
-        setMapData((mapData) => ({
-            ...mapData,
-            markers: updatedMarkers,
-            lat: lat,
-            lng: lng,
-        }));
+       // console.log(updatedMarkers[0].opacity)
+
+        return updatedMarkers
+        
+    
     };
 
 
-    const conceptToRelated = (title) => {
-        const buttonNames = [...concepts[title]['concepts'], ...concepts[title]['related']];
-        return [
-            title,
-            ...buttonNames
-                .map((button) => {
-                    let importanceValue = 100 * conceptRank[button]['iskey'] + conceptRank[button]['count'];
-                    return { button, importanceValue };
-                })
-                .sort((a, b) => b.importanceValue - a.importanceValue)
-                .slice(0, 8)
-                .map((item) => item.button)
-        ];       
-    }
-
-    const conceptToRelated2 = (title, special, index) => {
-        index = index - 4;
-        if (index < 0) { index = index + 8; }
-        const buttonNames = [...concepts[title]['concepts'], ...concepts[title]['related']];
-
-        // Remove duplicates and ensure 'special' is not included twice
-        const uniqueButtonNames = [...new Set(buttonNames.filter(button => button !== special))];
-
-        const sortedButtons = uniqueButtonNames
-            .map((button) => {
-                let importanceValue = 100 * conceptRank[button]['iskey'] + conceptRank[button]['count'];
-                return { button, importanceValue };
-            })
-            .sort((a, b) => b.importanceValue - a.importanceValue)
-            .slice(0, 7)
-            .map((item) => item.button);
-
-        // Insert 'special' at the specified index
-        sortedButtons.splice(index, 0, special);
-
-        return [title, ...sortedButtons];
-    }
+   
+   
 
 
     const handleIdleFunction = () => {
@@ -190,17 +139,48 @@ const App = () => {
 
     const controlButtons = (param) => {
        // console.log(param)
-         
-
-        setStep(step + 1)
+        let thisHistory
+        if (param === 'back') {
+            setStep(step - 1)
+            thisHistory = history[history.length - 1 - step]
+        }
+        if (param === 'forward') {
+            setStep(step + 1)
+            thisHistory = history[history.length + 1 - step]
+        }
         
-        console.log(step)
-        const thisHistory = history[history.length - step]
+        
+        console.log(history.length + '  ' + step + ' his ' + thisHistory[0][0])
+      //  const thisHistory = history[history.length - step]
        // console.log(thisHistory[0])
-        markerFunction(thisHistory[0], thisHistory[1], thisHistory[2], thisHistory[3])
+      //  markerFunction(thisHistory[0], thisHistory[1], thisHistory[2], thisHistory[3])
     }
 
-    
+ 
+    const makeNewOptions = (thisConcept, lastConcept, lastConceptClickPosition) => {
+        const includesLastConcept = lastConcept.length > 0;
+
+        const allAssociatedConcepts = concepts[thisConcept]['concepts'];
+        const allrelatedConcepts = concepts[thisConcept]['related'];
+        const allConceptsLastRemoved = [...new Set(allAssociatedConcepts.concat(allrelatedConcepts).filter(button => button !== lastConcept))];
+
+        const sortedConcepts = allConceptsLastRemoved
+            .map(button => ({
+                button,
+                importanceValue: 100 * conceptRank[button]['iskey'] + conceptRank[button]['count']
+            }))
+            .sort((a, b) => b.importanceValue - a.importanceValue)
+            .slice(0, includesLastConcept ? 7 : 8)
+            .map(item => item.button);
+
+        if (includesLastConcept) { // if last concept was found include it in the array where it was clicked
+            const insertionIndex = (lastConceptClickPosition - 4 + 8) % 8;
+            sortedConcepts.splice(insertionIndex, 0, lastConcept);
+        }
+
+        return [thisConcept, ...sortedConcepts];
+    };
+
 
    
     const markerFunction = (param, index, lat, lng) => {
@@ -213,21 +193,50 @@ const App = () => {
         if (conceptRank[param]['iskey'] == 0) {
             return
         }
-                  
-        setHistory([...history, [param, index, lat, lng]]);
+  
 
-        hexaMarker(param, lat, lng, 0.03, index)
+        const lastConcept = history.length > 0 ? history[history.length - 1][0][0] : [];
+         
+        const newOptions = makeNewOptions(param, lastConcept, index-1)
 
-        const opacities = [1];
+       
+      
 
-        opacities.forEach((opa, index) => {
-            setTimeout(() => {
-                hexaMarker(param, lat, lng, opa, index);
-            }, 400 * (index + 1)); // Increment timeout for each iteration
-        });
+        setHistory([...history, [newOptions, index, lat, lng]]);
+        
+        const updatedMarkers = hexaMarker(newOptions, lat, lng, 0.05, index)
+        upDateMap(updatedMarkers, lat, lng)
+
+      
+        setTimeout(() => {
+            updatedMarkers.forEach((marker, index) => {
+                let thisOpacity = 1;
+                if (conceptRank[marker.param]['iskey'] == 0) {
+                    thisOpacity = 0.2;
+                }              
+                updatedMarkers[index].opacity = thisOpacity;                                       
+            });
+       
+            upDateMap(updatedMarkers)
+        }, 400)
+
     }
   
- 
+  
+    
+    const upDateMap = (updatedMarkers, lat, lng) => {
+
+        setMapData((mapData) => ({
+            ...mapData,
+            ...(updatedMarkers !== undefined ? { markers: updatedMarkers } : {}),
+            ...(lat !== undefined ? { lat: lat } : {}),
+            ...(lng !== undefined ? { lng: lng } : {}),
+        }));
+
+    }
+
+
+
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
     const thisConcept = useSelector((state) => state.counter[0].concept); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
 

@@ -66,7 +66,7 @@ const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
             const allMarkerPolylineHandles = [];
             if (markerPolylineHandleArray) {
                 markerPolylineHandleArray.forEach((thisMarkerPolylineHandle) => {
-                    thisMarkerPolylineHandle.setMap(null);
+                thisMarkerPolylineHandle.setMap(null);
                 });
                 setMarkerPolylineHandleArray(null);
             }

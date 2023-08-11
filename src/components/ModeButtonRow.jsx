@@ -5,13 +5,13 @@ import './ModeButtonRow.css';
 const buttonData = [
     {
         name: 'back',
-        className: 'practice-button',
+        className: 'navigate-button',
         param: 'back',
     },
     {
-        name: 'quiz',
-        className: 'quiz-button',
-        param: 'quiz',
+        name: 'forward',
+        className: 'navigate-button',
+        param: 'forward',
     },
 ];
 

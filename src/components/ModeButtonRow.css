@@ -17,6 +17,6 @@
                 background-color: var(--button-background-color-hover) !important;
             }
         }
-    .practice-button, .quiz-button {
+    .navigate-button  {
         width: 40% !important;
     }
