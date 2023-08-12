@@ -1,15 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import _ from 'lodash'; 
+import { useDispatch, useSelector } from 'react-redux';
+import { newMapState } from '../reducers/quizGameSlice';
+ 
 import './GoogleMapsApp.css';
  
  
-const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
+const GoogleMapsApp = ({  handleIdleFunction,  markerFunction }) => {
  
     const [markerHandleArray, setMarkerHandleArray] = useState([]);
     const [polylineHandleArray, setPolylineHandleArray] = useState([]);
     const [map, setMap] = useState(null);
 
+    const mapState = useSelector((state) => state.counter[0].mapState);
+   // console.log(mapState.lat)
+    const dispatch = useDispatch();
 
     const updateMarkerPolylineArrayAtIndex = (arraySetter, index, newValue) => {
         arraySetter((prevArray) => {
@@ -26,9 +31,7 @@ const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
     };
 
 
-
-    console.log(markerHandleArray)
-
+ 
 
 
 
@@ -49,10 +52,10 @@ const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
             : defaultLabelOptions;
 
         let markerImage = null; //no marker image for regular marker
-        if (markerData.custom) {
-            const diameter = markerData.custom.diameter;
+        if (markerData.diameter) {
+            const diameter = markerData.diameter;
             markerImage = new google.maps.MarkerImage(
-                markerData.custom.dataURL, // data for custom marker
+                markerData.dataURL, // data for custom marker
                 new google.maps.Size(diameter, diameter),
                 new google.maps.Point(0, 0),
                 new google.maps.Point(diameter / 2, diameter / 2)
@@ -110,8 +113,7 @@ const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
     const initMap = () => {
         // Initialize the map
         const mapOptions = {
-            center: { lat: mapData.lat, lng: mapData.lng }, // San Francisco coordinates
-            zoom: mapData.zoom,
+            center: { lat: mapState.lat, lng: mapState.lng }, // San Francisco coordinates
             disableDefaultUI: true,
             gestureHandling: "none",
         };
@@ -139,40 +141,47 @@ const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
         if (map) {     
             //map.setCenter({ lat: mapData.lat, lng: mapData.lng });
 
-            map.panTo({ lat: mapData.lat, lng: mapData.lng });
+            map.panTo({ lat: mapState.lat, lng: mapState.lng });
 
 
-            if (mapData.zoom) { // use zoom if zoom data is given
-                map.setZoom(mapData.zoom);
+            if (mapState.zoom) { // use zoom if zoom data is given
+                map.setZoom(mapState.zoom);
             }
-            if (mapData.delta) { // use bounds if delta data is given
+            if (mapState.delta) { // use bounds if delta data is given
                 const bounds = new window.google.maps.LatLngBounds();
-                bounds.extend({ lat: mapData.lat + mapData.delta, lng: mapData.lng + mapData.delta });
-                bounds.extend({ lat: mapData.lat - mapData.delta, lng: mapData.lng - mapData.delta });
+                bounds.extend({ lat: mapState.lat + mapState.delta, lng: mapState.lng + mapState.delta });
+                bounds.extend({ lat: mapState.lat - mapState.delta, lng: mapState.lng - mapState.delta });
                 map.fitBounds(bounds);
             }
 
-            if (mapData.markers) {                  
-                mapData.markers.forEach((markerData, index) => {
-                    const oldMarkerHandle = markerHandleArray[index];
-                    if (markerData !== oldMarkerHandle) {                        
+            if (mapState.markers) {                  
+                mapState.markers.forEach((markerData, index) => {
+                   // console.log('from maps' + markerData.param + ' ' + index)
+                    
+                     if (markerData.render) {
+                        
+                        const oldMarkerHandle = markerHandleArray[index];
                         if (oldMarkerHandle && oldMarkerHandle.setMap) {
-                            oldMarkerHandle.setMap(null); // This removes the marker from the map
+                             oldMarkerHandle.setMap(null); // This removes the marker from the map
                         }                     
                         const newMarkerHandle = createMarker(markerData, index)
+                       
                         updateMarkerPolylineArrayAtIndex(setMarkerHandleArray, index, newMarkerHandle)
+                         dispatch(newMapState({ attribute: 'render', value: false, markerIndex: index }));
+                     //   dispatch(newMapState({ attribute: 'handle', value: newMarkerHandle, markerIndex: index }));
+
                      }
-                })
+               })
                 
             } 
             
-            if (mapData.polylines) { // polyline
+            if (mapState.polylines) { // polyline
                 
-                mapData.polylines.forEach((polylineData, index) => {  
-                    polylineData.lat[0] = polylineData.lat[0] + 0.5
+                mapState.polylines.forEach((polylineData, index) => {  
+                 //   polylineData.lat[0] = polylineData.lat[0] + 0.5
 
 
-                    console.log(polylineData.update)
+                   //console.log(polylineData.update)
 
 
 
@@ -196,7 +205,7 @@ const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
           
         
         }
-    }, [map, mapData]);
+    }, [map, mapState]);
     
 
     return (                 
