@@ -1,14 +1,100 @@
 
 import React, { useState, useEffect } from 'react';
- 
+import _ from 'lodash'; 
 import './GoogleMapsApp.css';
-
+ 
  
 const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
-
-    const [markerPolylineHandleArray, setMarkerPolylineHandleArray] = useState(null);
+ 
+    const [markerHandleArray, setMarkerHandleArray] = useState([]);
+    const [polylineHandleArray, setPolylineHandleArray] = useState([]);
     const [map, setMap] = useState(null);
-   
+
+
+    const updateMarkerPolylineArrayAtIndex = (arraySetter, index, newValue) => {
+        arraySetter((prevArray) => {
+            if (index >= 0) {
+                const newArray = [...prevArray];
+                while (newArray.length <= index) {
+                    newArray.push(null); // Fill with null values up to the desired index
+                }
+                newArray[index] = newValue;
+                return newArray;
+            }
+            return prevArray; // Return the array unchanged if index is negative
+        });
+    };
+
+
+
+    console.log(markerHandleArray)
+
+
+
+
+
+
+
+    const createMarker = (markerData, index) => {
+
+        const defaultLabelOptions = {
+            text: ' ',
+            color: 'black',
+            fontSize: '18px',
+            fontWeight: 'bold'
+        };
+
+        const labelOptions = markerData.label // use specified label data if given, otherwise default
+            ? Object.assign({}, defaultLabelOptions, markerData.label)
+            : defaultLabelOptions;
+
+        let markerImage = null; //no marker image for regular marker
+        if (markerData.custom) {
+            const diameter = markerData.custom.diameter;
+            markerImage = new google.maps.MarkerImage(
+                markerData.custom.dataURL, // data for custom marker
+                new google.maps.Size(diameter, diameter),
+                new google.maps.Point(0, 0),
+                new google.maps.Point(diameter / 2, diameter / 2)
+            );
+        }
+
+        const markerHandle = new window.google.maps.Marker({
+            position: { lat: markerData.lat, lng: markerData.lng },
+            map: map,
+            icon: markerImage,
+            title: markerData.title,
+            label: labelOptions,
+            opacity: markerData.opacity || 1,
+
+        });
+        markerHandle.addListener("click", () => {
+            markerFunction(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
+
+        });  
+        return markerHandle
+    }
+
+    const createPolyline = (polylineData) => {
+        const polytype = polylineData.symbol || 'FORWARD_CLOSED_ARROW'
+        const polylineHandle = new window.google.maps.Polyline({
+            path: [{ lat: polylineData.lat[0], lng: polylineData.lng[0] }, { lat: polylineData.lat[1], lng: polylineData.lng[1] }],
+            geodesic: true,
+            strokeColor: polylineData.color || 'red',
+            strokeOpacity: polylineData.opacity || 1,
+            strokeWeight: polylineData.weight || 5,
+            icons: [{
+                icon: { path: google.maps.SymbolPath[polytype] },
+                offset: polylineData.arrowOffset || '100%'
+            }],
+            map: map,
+        });
+        return polylineHandle
+    }
+
+
+
+
    
     useEffect(() => {
         // Load the Google Maps JavaScript API
@@ -45,6 +131,9 @@ const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
         
     };
 
+
+
+
   
     useEffect(() => {
         if (map) {     
@@ -63,76 +152,48 @@ const GoogleMapsApp = ({ mapData, handleIdleFunction,  markerFunction }) => {
                 map.fitBounds(bounds);
             }
 
-            const allMarkerPolylineHandles = [];
-            if (markerPolylineHandleArray) {
-                markerPolylineHandleArray.forEach((thisMarkerPolylineHandle) => {
-                thisMarkerPolylineHandle.setMap(null);
-                });
-                setMarkerPolylineHandleArray(null);
-            }
-
-            if (mapData.markers) {
-         
-                const defaultLabelOptions = {
-                    text: ' ',
-                    color: 'black',
-                    fontSize: '18px',
-                    fontWeight: 'bold'
-                };
-           
+            if (mapData.markers) {                  
                 mapData.markers.forEach((markerData, index) => {
-                    const labelOptions = markerData.label // use specified label data if given, otherwise default
-                        ? Object.assign({}, defaultLabelOptions, markerData.label)
-                        : defaultLabelOptions;
-
-                    let markerImage = null; //no marker image for regular marker
-                    if (markerData.custom) { 
-                        const diameter = markerData.custom.diameter;
-                        markerImage = new google.maps.MarkerImage(
-                            markerData.custom.dataURL, // data for custom marker
-                            new google.maps.Size(diameter, diameter),
-                            new google.maps.Point(0, 0),
-                            new google.maps.Point(diameter / 2, diameter / 2)
-                        );
-                    }
-
-                    const markerHandle = new window.google.maps.Marker({
-                        position: { lat: markerData.lat, lng: markerData.lng },
-                        map: map,
-                        icon: markerImage,
-                        title: markerData.title,
-                        label: labelOptions,
-                        opacity: markerData.opacity || 1,
-                       
-                    });
-                    markerHandle.addListener("click", () => {
-                        markerFunction(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
-
-                    });             
-                    allMarkerPolylineHandles.push(markerHandle)
+                    const oldMarkerHandle = markerHandleArray[index];
+                    if (markerData !== oldMarkerHandle) {                        
+                        if (oldMarkerHandle && oldMarkerHandle.setMap) {
+                            oldMarkerHandle.setMap(null); // This removes the marker from the map
+                        }                     
+                        const newMarkerHandle = createMarker(markerData, index)
+                        updateMarkerPolylineArrayAtIndex(setMarkerHandleArray, index, newMarkerHandle)
+                     }
                 })
                 
             } 
             
             if (mapData.polylines) { // polyline
-                mapData.polylines.forEach((polylineData) => {    
-                    const polytype = polylineData.symbol || 'FORWARD_CLOSED_ARROW'
-                    const polylineHandle = new window.google.maps.Polyline({
-                        path: [{ lat: polylineData.lat[0], lng: polylineData.lng[0] }, { lat: polylineData.lat[1], lng: polylineData.lng[1] }],
-                        geodesic: true,
-                        strokeColor: polylineData.color || 'red',
-                        strokeOpacity: polylineData.opacity || 1,
-                        strokeWeight: polylineData.weight || 5,
-                        icons: [{
-                            icon: { path: google.maps.SymbolPath[polytype] },
-                            offset: polylineData.arrowOffset || '100%'
-                        }],
-                        map: map, 
-                    });
-                    allMarkerPolylineHandles.push(polylineHandle)
+                
+                mapData.polylines.forEach((polylineData, index) => {  
+                    polylineData.lat[0] = polylineData.lat[0] + 0.5
+
+
+                    console.log(polylineData.update)
+
+
+
+                 //   const oldPolylineHandle = polylineHandleArray[index];
+                //    const newPolylineHandle = createPolyline(polylineData)
+                    if (polylineData !== polylineHandleArray[index]) {
+                        console.log('polyloira')
+                        const newPolylineHandle = createPolyline(polylineData)
+                        const oldPolylineHandle = polylineHandleArray[index + 100];
+                       
+                        if (oldPolylineHandle && oldPolylineHandle.setMap) {
+                            oldPolylineHandle.setMap(null); // This removes the marker from the map
+                        } 
+                        
+                        updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index, polylineData)
+                        updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index + 100, newPolylineHandle)
+                    }
+                    
                 });
             }
-            setMarkerPolylineHandleArray(allMarkerPolylineHandles)
+          
         
         }
     }, [map, mapData]);

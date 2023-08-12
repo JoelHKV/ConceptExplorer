@@ -55,9 +55,18 @@ const initMapData = {
         },
 
     ],
+    polylines: [
+        {
+            lat: [27.7749, 26.1349],
+            lng: [-112.4194, -111.4194],
+            color: '#0000ff',
+            update: true,
+        },
+
+    ],
 
 
-    polylines: [],
+  
 
 };
 
