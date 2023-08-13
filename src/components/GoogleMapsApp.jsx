@@ -2,18 +2,39 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { newMapState } from '../reducers/quizGameSlice';
- 
+
+
+import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
+
+
 import './GoogleMapsApp.css';
+
+
+
  
- 
-const GoogleMapsApp = ({ markerFunction, mapLocked }) => {
+const GoogleMapsApp = ({ markerFunction  }) => {
  
     const [markerHandleArray, setMarkerHandleArray] = useState([]);
     const [polylineHandleArray, setPolylineHandleArray] = useState([]);
     const [map, setMap] = useState(null);
 
+    const [mapLocked, setMapLocked] = useState(false);
+
     const mapState = useSelector((state) => state.counter[0].mapState);
     const dispatch = useDispatch();
+
+
+    const handleMapLockChange = (event) => {
+        setMapLocked(event.target.checked);
+        const newGestureHandling = mapLocked ? "auto" : "none";
+        map.setOptions({
+             gestureHandling: newGestureHandling,
+       });
+    };
+
+
+
+
 
     const updateMarkerPolylineArrayAtIndex = (arraySetter, index, newValue) => {
         arraySetter((prevArray) => {
@@ -127,11 +148,7 @@ const GoogleMapsApp = ({ markerFunction, mapLocked }) => {
     };
 
 
-  // const newGestureHandling = mapLocked ? "auto" : "none";
-
-   // map.setOptions({
-   //     gestureHandling: newGestureHandling,
-  //  });
+  
 
   
     useEffect(() => {
@@ -187,8 +204,17 @@ const GoogleMapsApp = ({ markerFunction, mapLocked }) => {
     }, [map, mapState]);
     
 
-    return (                 
-        <div id="map" ></div>        
+    return (   
+        
+        <div className="GoogleMapsApp centerContent">
+                         
+        <div id="map" ></div>
+            <FormControlLabel className="move-or-not-box"
+                control={<Checkbox checked={mapLocked}
+                onChange={handleMapLockChange} />}
+                label="Map Lock"
+            />
+            </div>
     );
         
 };

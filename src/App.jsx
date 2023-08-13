@@ -34,36 +34,31 @@ const App = () => {
 
     const [concepts, setConcepts] = useState()
     const [conceptRank, setConceptRank] = useState()
-    const [history, setHistory] = useState([])
+     
     const [lastConcept, setLastConcept] = useState([])
 
-    const [mapLocked, setMapLocked] = useState(false);
+    const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
 
+    const [backStep, setBackStep] = useState(0);
+
+    
     const [loaded, setLoaded] = useState(false);
     const [loaded2, setLoaded2] = useState(false);
 
-    const handleMapLockChange = (event) => {
-        setMapLocked(event.target.checked);
-    };
+
     const dispatch = useDispatch();
 
 
     const mapState = useSelector((state) => state.counter[0].mapState);
     const round = useSelector((state) => state.counter[0].round);
 
+    console.log(lastConcept)
+
 
     const controlButtons = (param) => {
        // console.log(param)
-        let thisHistory
-        if (param === 'back') {
-            if (typeof attribute !== history[history.length - 1]) {
-
-                dispatch(newMapState({ dall: 'all', value: history[history.length - 1] }));
-                for (let i = 0; i < 8; i++) {
-                    dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
-                }              
-            }        
-        }   
+       // let thisHistory
+         
     }
 
 
@@ -145,53 +140,97 @@ const App = () => {
         if (conceptRank[thisConcept]['iskey'] == 0) {
             return
         }
-             
-        setLastConcept(thisConcept)   
+
 
         
-        const thisPolyline = {
-            lat: [mapState.markers[0].lat * 0.7 + lat * 0.3, mapState.markers[0].lat * 0.3 + lat * 0.7],
-            lng: [mapState.markers[0].lng * 0.7 + lng * 0.3, mapState.markers[0].lng * 0.3 + lng * 0.7],
-            color: '#333333',
-            render: true,
+     
+       // console.log(oldOptionArray)
+       // const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
+
+        drawPolyline(mapState.markers[0].lat, mapState.markers[0].lng, mapState.markers[location].lat, mapState.markers[location].lng, 0)
+
+
+        const lastArray = optionChoiceHistory[optionChoiceHistory.length - 1 - backStep];
+       // const lastArray0 = optionChoiceHistory[optionChoiceHistory.length - 0 - backStep]
+        if (lastArray) {
+            console.log(Math.abs(lastArray[9] - location))
+            if (Math.abs(lastArray[9] - location) == 4) {
+                const lastArray2 = optionChoiceHistory[optionChoiceHistory.length - 2 - backStep];
+                drawPolyline(lastArray2[12], lastArray2[13], lastArray2[10], lastArray2[11], 1)
+                setBackStep(backStep + 1)
+                handleMapVisuals(lastArray.splice(0, 9), [], lat, lng)
+                return
+            }
+            else {
+                setBackStep(0)
+            }
         }
+        
+       
+        
 
-
-
-         
-        dispatch(newMapState({ value: thisPolyline, polylineIndex: 0 }));
-
-
-
-
-
-
-
+        saveHistory(location)
+        setLastConcept(thisConcept)   
+                   
         const oppositeSide = location !== 0 ? ((location + 4) > 8 ? (location + 4 - 8) : (location + 4)) : 0;      
         const newOptions = makeNewOptions(thisConcept, lastConcept, oppositeSide)
            
-        updateMarkers(newOptions, [thisConcept, lastConcept], lat, lng)
+        handleMapVisuals(newOptions, [thisConcept, lastConcept], lat, lng)
+                
+    }
+
+    
+    const handleMapVisuals = (newOptions, PivotItems, lat, lng) => {
+
+        updateMarkers(newOptions, PivotItems, lat, lng)
 
         setTimeout(() => {
-             updateOpacity(newOptions, [thisConcept, lastConcept])
-             
+            updateOpacity(newOptions, PivotItems)
+
         }, 400)
-       
-        console.log(mapState.lat)
 
-        travel(mapState.lat, lat, mapState.lng, lng, 1)
+        dispatch(newMapState({ attribute: 'lat', value: lat }));
+        dispatch(newMapState({ attribute: 'lng', value: lng }));
 
 
-        saveHistory()
+    }
+    const saveHistory = (location) => {
+        const oldOptionArray = new Array(14);
+        for (let i = 0; i < 9; i++) {
+            oldOptionArray[i] = mapState.markers[i] ? mapState.markers[i].param : '';
+        }
+
+        const markerCoordinates = [
+            mapState.markers[0].lat,
+            mapState.markers[0].lng,
+            mapState.markers[location].lat,
+            mapState.markers[location].lng
+        ];
+
+        oldOptionArray[9] = location;
+        oldOptionArray.splice(10, 0, ...markerCoordinates);
+
+        const tempHist = [...optionChoiceHistory];
+        tempHist.push(oldOptionArray);
+        setOptionChoiceHistory(tempHist);
+
     }
 
-    const saveHistory = () => {
-        const tempHist = [...history];
-        tempHist[round] = mapState;
-        setHistory(tempHist)
 
-        dispatch(newRound(1));
+
+    const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
+        const thisPolyline = {
+            lat: [fromlat * 0.7 + tolat * 0.3, fromlat * 0.3 + tolat * 0.7],
+            lng: [fromlng * 0.7 + tolng * 0.3, fromlng * 0.3 + tolng * 0.7],
+            color: '#333333',
+            render: true,
+        }
+        dispatch(newMapState({ value: thisPolyline, polylineIndex: index }));
+
     }
+
+
+  
 
 
     const updateOpacity = (newOptions, excludeMarkers) => {
@@ -289,8 +328,7 @@ const App = () => {
                     {loaded && loaded2 && (
                         <>
                         <GoogleMapsApp
-                                mapLocked={mapLocked} 
-                             
+                                
                             markerFunction={markerFunction}
                         />
                             { gameMode==='details' && (
@@ -308,10 +346,7 @@ const App = () => {
                     
                 </Grid>
 
-                <FormControlLabel
-                    control={<Checkbox checked={mapLocked} onChange={handleMapLockChange} />}
-                    label="Map Lock"
-                />
+      
 
 
                  
