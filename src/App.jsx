@@ -52,20 +52,21 @@ const App = () => {
     const mapState = useSelector((state) => state.counter[0].mapState);
     const round = useSelector((state) => state.counter[0].round);
 
-    console.log(lastConcept)
+   console.log('real round ' + round)
 
 
     const controlButtons = (param) => {
-       // console.log(param)
-       // let thisHistory
-         
+       // dispatch(newMapState({ value: { delete: true, render: true }, markerIndex: 1 }));
+        deleteRoundsFromHistory(3)  
     }
 
 
    
  
-    const makeNewOptions = (thisConcept, lastConcept, index) => {
-         
+    const makeNewOptions = (pivotItems, index) => {
+
+        const thisConcept = pivotItems[0];
+        const lastConcept = pivotItems[1];
 
         const allAssociatedConcepts = concepts[thisConcept]['concepts'];
         const allrelatedConcepts = concepts[thisConcept]['related'];
@@ -130,7 +131,7 @@ const App = () => {
 
    
     const markerFunction = (thisConcept, location, lat, lng) => {
-        
+        console.log('rounds ' + optionChoiceHistory.length)
 
         if (location === 0 && thisConcept !== 'mind') {
             dispatch(newGameMode('details'))
@@ -140,43 +141,43 @@ const App = () => {
         if (conceptRank[thisConcept]['iskey'] == 0) {
             return
         }
-
-
-        
+   
+        if (mapState.polylines[1]) {
+            dispatch(newMapState({ value: { delete: true, render: true }, polylineIndex: 1 }));
+        }
      
-       // console.log(oldOptionArray)
-       // const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
-
         drawPolyline(mapState.markers[0].lat, mapState.markers[0].lng, mapState.markers[location].lat, mapState.markers[location].lng, 0)
 
 
-        const lastArray = optionChoiceHistory[optionChoiceHistory.length - 1 - backStep];
-       // const lastArray0 = optionChoiceHistory[optionChoiceHistory.length - 0 - backStep]
-        if (lastArray) {
-            console.log(Math.abs(lastArray[9] - location))
-            if (Math.abs(lastArray[9] - location) == 4) {
-                const lastArray2 = optionChoiceHistory[optionChoiceHistory.length - 2 - backStep];
-                drawPolyline(lastArray2[12], lastArray2[13], lastArray2[10], lastArray2[11], 1)
-                setBackStep(backStep + 1)
-                handleMapVisuals(lastArray.splice(0, 9), [], lat, lng)
-                return
-            }
-            else {
-                setBackStep(0)
-            }
-        }
-        
-       
-        
+        let clickDirection
+        let pivotItems
+         
+        const lastArray = optionChoiceHistory[round - 1];
+        const lastArray2 = optionChoiceHistory[round - 2];
+        if (lastArray && lastArray2 && Math.abs(lastArray[9] - location) == 4) {
+            // pressed back when enough history 
+            drawPolyline(lastArray2[12], lastArray2[13], lastArray2[10], lastArray2[11], 1)              
+            dispatch(newRound(-1))
+         //   setLastConcept(lastArray[0])
+            pivotItems = [lastArray[0], lastArray2[0]]
+            clickDirection = lastArray2[9]
 
-        saveHistory(location)
-        setLastConcept(thisConcept)   
-                   
-        const oppositeSide = location !== 0 ? ((location + 4) > 8 ? (location + 4 - 8) : (location + 4)) : 0;      
-        const newOptions = makeNewOptions(thisConcept, lastConcept, oppositeSide)
-           
-        handleMapVisuals(newOptions, [thisConcept, lastConcept], lat, lng)
-                
+
+        }
+        else {
+            // regular click 
+            dispatch(newRound(1))
+          //  setLastConcept(thisConcept)          
+            pivotItems = [thisConcept, lastConcept]
+            clickDirection = location;
+            saveHistoryByIndex(location, round)
+            
+        }
+        setLastConcept(pivotItems[0])
+        const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
+        const newOptions = makeNewOptions(pivotItems, oppositeClickDirection)
+        handleMapVisuals(newOptions, pivotItems, lat, lng)
+                      
     }
 
     
@@ -191,10 +192,15 @@ const App = () => {
 
         dispatch(newMapState({ attribute: 'lat', value: lat }));
         dispatch(newMapState({ attribute: 'lng', value: lng }));
-
+        
 
     }
-    const saveHistory = (location) => {
+
+
+
+
+
+    const saveHistoryByIndex = (location, index) => {
         const oldOptionArray = new Array(14);
         for (let i = 0; i < 9; i++) {
             oldOptionArray[i] = mapState.markers[i] ? mapState.markers[i].param : '';
@@ -210,12 +216,50 @@ const App = () => {
         oldOptionArray[9] = location;
         oldOptionArray.splice(10, 0, ...markerCoordinates);
 
-        const tempHist = [...optionChoiceHistory];
+        // Create a new history array up to the specified index
+        const newHistory = [...optionChoiceHistory.slice(0, index)];
+
+        // Add the new history entry at the specified index
+        newHistory[index] = oldOptionArray;
+
+        setOptionChoiceHistory(newHistory);
+    };
+
+
+
+    const saveHistory = (location, numRoundsToDelete) => {
+        const oldOptionArray = new Array(14);
+        for (let i = 0; i < 9; i++) {
+            oldOptionArray[i] = mapState.markers[i] ? mapState.markers[i].param : '';
+        }
+
+        const markerCoordinates = [
+            mapState.markers[0].lat,
+            mapState.markers[0].lng,
+            mapState.markers[location].lat,
+            mapState.markers[location].lng
+        ];
+
+        oldOptionArray[9] = location;
+        oldOptionArray.splice(10, 0, ...markerCoordinates);
+
+        const tempHist = [...optionChoiceHistory].slice(0, optionChoiceHistory.length - numRoundsToDelete);
+         
         tempHist.push(oldOptionArray);
         setOptionChoiceHistory(tempHist);
 
     }
 
+    const deleteRoundsFromHistory = (numRoundsToDelete) => {
+      //  console.log(optionChoiceHistory.length)
+        if (numRoundsToDelete >= optionChoiceHistory.length) {
+            setOptionChoiceHistory([]);
+        } else {
+           // console.log('deldel ' + (optionChoiceHistory.length - numRoundsToDelete))
+            const newHistory = optionChoiceHistory.slice(0, optionChoiceHistory.length - numRoundsToDelete);
+            setOptionChoiceHistory(newHistory);
+        }
+    };
 
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
@@ -230,11 +274,8 @@ const App = () => {
     }
 
 
-  
-
 
     const updateOpacity = (newOptions, excludeMarkers) => {
-        console.log(newOptions)
         const updatedMarkers = newOptions.map((markerTitle, i) => {
             if (!excludeMarkers.includes(markerTitle)) {                          
                 const opacity = conceptRank[markerTitle]['iskey'] ? 1 : 0.6;
@@ -269,11 +310,8 @@ const App = () => {
     const thisConcept = useSelector((state) => state.counter[0].concept); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
 
 
-    console.log(thisConcept)
-
-
     
-    //console.log(thisConcept)
+
 
     
 
@@ -345,13 +383,6 @@ const App = () => {
                         <ModeButtonRow buttonFunction={controlButtons} />
                     
                 </Grid>
-
-      
-
-
-                 
-   
-
 
             </Grid>
         </Box >  

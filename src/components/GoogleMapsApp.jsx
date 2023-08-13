@@ -172,11 +172,13 @@ const GoogleMapsApp = ({ markerFunction  }) => {
                 mapState.markers.forEach((markerData, index) => {                   
                     if (markerData.render) {      
                          const oldMarkerHandle = markerHandleArray[index];                     
-                        if (oldMarkerHandle && oldMarkerHandle.setMap) { //  
-                            
+                        if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
                              oldMarkerHandle.setMap(null); // This removes the marker from the map
-                        }                     
-                        const newMarkerHandle = createMarker(markerData, index)                      
+                        }   
+                        let newMarkerHandle = null
+                        if (!markerData.delete) {
+                            newMarkerHandle = createMarker(markerData, index)
+                        }                   
                         updateMarkerPolylineArrayAtIndex(setMarkerHandleArray, index, newMarkerHandle)
                         dispatch(newMapState({ attribute: 'render', value: false, markerIndex: index }));                      
                      }
@@ -190,8 +192,12 @@ const GoogleMapsApp = ({ markerFunction  }) => {
                         const oldPolylineHandle = polylineHandleArray[index];
                         if (oldPolylineHandle && oldPolylineHandle.setMap) {
                             oldPolylineHandle.setMap(null); // This removes the polyline from the map
-                        }   
-                        const newPolylineHandle = createPolyline(polylineData)                     
+                        }  
+                        let newPolylineHandle = null
+                        if (!polylineData.delete) {
+                            newPolylineHandle = createPolyline(polylineData) 
+                        }
+                                            
                         updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index, newPolylineHandle)
                         dispatch(newMapState({ attribute: 'render', value: false, polylineIndex: index }));                                               
                      }

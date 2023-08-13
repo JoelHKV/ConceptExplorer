@@ -93,7 +93,7 @@ const quizGameReducer = createSlice({
                 if (typeof attribute !== 'undefined') { // updating specific attribute
                     state[0].mapState.polylines[polylineIndex][attribute] = value;
                 }
-                else {  // or the whole marker at once            
+                else {  // or the whole marker at once    
                     state[0].mapState.polylines[polylineIndex] = value;
                 }               
             }
