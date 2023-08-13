@@ -6,14 +6,13 @@ import { newMapState } from '../reducers/quizGameSlice';
 import './GoogleMapsApp.css';
  
  
-const GoogleMapsApp = ({  handleIdleFunction,  markerFunction }) => {
+const GoogleMapsApp = ({ markerFunction, mapLocked }) => {
  
     const [markerHandleArray, setMarkerHandleArray] = useState([]);
     const [polylineHandleArray, setPolylineHandleArray] = useState([]);
     const [map, setMap] = useState(null);
 
     const mapState = useSelector((state) => state.counter[0].mapState);
-   // console.log(mapState.lat)
     const dispatch = useDispatch();
 
     const updateMarkerPolylineArrayAtIndex = (arraySetter, index, newValue) => {
@@ -29,14 +28,6 @@ const GoogleMapsApp = ({  handleIdleFunction,  markerFunction }) => {
             return prevArray; // Return the array unchanged if index is negative
         });
     };
-
-
- 
-
-
-
-
-
 
     const createMarker = (markerData, index) => {
 
@@ -109,37 +100,43 @@ const GoogleMapsApp = ({  handleIdleFunction,  markerFunction }) => {
         window.initMap = initMap;
         document.head.appendChild(script);
     }, []);
-    
+
+
+
+
+
     const initMap = () => {
         // Initialize the map
+
+       // if (mapLocked) { 
+
         const mapOptions = {
             center: { lat: mapState.lat, lng: mapState.lng }, // San Francisco coordinates
             disableDefaultUI: true,
-            gestureHandling: "none",
+            gestureHandling: "auto",
         };
 
         const mapElement = document.getElementById('map');
         const newMap = new window.google.maps.Map(mapElement, mapOptions);
 
-
-
-
         newMap.addListener("idle", () => {           
-            handleIdleFunction()       
+            //handleIdleFunction()       
         });
 
-
-        setMap(newMap); // Save the map instance in the state
-        
+        setMap(newMap); // Save the map instance in the state     
     };
 
 
+  // const newGestureHandling = mapLocked ? "auto" : "none";
 
+   // map.setOptions({
+   //     gestureHandling: newGestureHandling,
+  //  });
 
   
     useEffect(() => {
         if (map) {     
-            //map.setCenter({ lat: mapData.lat, lng: mapData.lng });
+            //map.setCenter({ lat: mapState.lat, lng: mapState.lng });
 
             map.panTo({ lat: mapState.lat, lng: mapState.lng });
 
@@ -155,50 +152,32 @@ const GoogleMapsApp = ({  handleIdleFunction,  markerFunction }) => {
             }
 
             if (mapState.markers) {                  
-                mapState.markers.forEach((markerData, index) => {
-                   // console.log('from maps' + markerData.param + ' ' + index)
-                    
-                     if (markerData.render) {
-                        
-                        const oldMarkerHandle = markerHandleArray[index];
-                        if (oldMarkerHandle && oldMarkerHandle.setMap) {
+                mapState.markers.forEach((markerData, index) => {                   
+                    if (markerData.render) {      
+                         const oldMarkerHandle = markerHandleArray[index];                     
+                        if (oldMarkerHandle && oldMarkerHandle.setMap) { //  
+                            
                              oldMarkerHandle.setMap(null); // This removes the marker from the map
                         }                     
-                        const newMarkerHandle = createMarker(markerData, index)
-                       
+                        const newMarkerHandle = createMarker(markerData, index)                      
                         updateMarkerPolylineArrayAtIndex(setMarkerHandleArray, index, newMarkerHandle)
-                         dispatch(newMapState({ attribute: 'render', value: false, markerIndex: index }));
-                     //   dispatch(newMapState({ attribute: 'handle', value: newMarkerHandle, markerIndex: index }));
-
+                        dispatch(newMapState({ attribute: 'render', value: false, markerIndex: index }));                      
                      }
                })
                 
             } 
             
-            if (mapState.polylines) { // polyline
-                
+            if (mapState.polylines) { // polyline             
                 mapState.polylines.forEach((polylineData, index) => {  
-                 //   polylineData.lat[0] = polylineData.lat[0] + 0.5
-
-
-                   //console.log(polylineData.update)
-
-
-
-                 //   const oldPolylineHandle = polylineHandleArray[index];
-                //    const newPolylineHandle = createPolyline(polylineData)
-                    if (polylineData !== polylineHandleArray[index]) {
-                        console.log('polyloira')
-                        const newPolylineHandle = createPolyline(polylineData)
-                        const oldPolylineHandle = polylineHandleArray[index + 100];
-                       
+                    if (polylineData.render) {
+                        const oldPolylineHandle = polylineHandleArray[index];
                         if (oldPolylineHandle && oldPolylineHandle.setMap) {
-                            oldPolylineHandle.setMap(null); // This removes the marker from the map
-                        } 
-                        
-                        updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index, polylineData)
-                        updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index + 100, newPolylineHandle)
-                    }
+                            oldPolylineHandle.setMap(null); // This removes the polyline from the map
+                        }   
+                        const newPolylineHandle = createPolyline(polylineData)                     
+                        updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index, newPolylineHandle)
+                        dispatch(newMapState({ attribute: 'render', value: false, polylineIndex: index }));                                               
+                     }
                     
                 });
             }

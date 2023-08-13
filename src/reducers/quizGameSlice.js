@@ -26,15 +26,7 @@ const initMapData = {
     
 
     ],
-    polylines: [
-        {
-            lat: [27.7749, 26.1349],
-            lng: [-112.4194, -111.4194],
-            color: '#0000ff',
-            update: true,
-        },
-
-    ],
+    polylines: [ ],
 
 };
 
@@ -43,6 +35,7 @@ const initMapData = {
 
 const initialState = [
     {
+        round: 0,
         gameMode: 'browse',
         concept: 'mind',
         mapState: initMapData,
@@ -53,6 +46,9 @@ const quizGameReducer = createSlice({
     name: 'counter',
     initialState,
     reducers: {     
+        newRound: (state, newValue) => {
+            state[0].round = state[0].round + newValue.payload;
+        },
         newGameMode: (state, newValue) => {
             state[0].gameMode = newValue.payload;
         },
@@ -60,7 +56,19 @@ const quizGameReducer = createSlice({
             state[0].concept = newValue.payload;
         },
         newMapState: (state, action) => {
-            const { attribute, value, markerIndex, polylineIndex } = action.payload;
+            const { attribute, dall, value, markerIndex, polylineIndex } = action.payload;
+            if (typeof dall !== 'undefined') {
+                 
+                state[0].mapState = value;
+
+                
+                    
+            
+
+
+                return
+            }
+
             if (typeof markerIndex === 'undefined' && typeof polylineIndex === 'undefined') {
                 state[0].mapState[attribute] = value;
                 return
@@ -82,7 +90,12 @@ const quizGameReducer = createSlice({
                 if (!state[0].mapState.polylines[polylineIndex]) {
                     state[0].mapState.polylines[polylineIndex] = {}
                 }
-                state[0].mapState.polylines[markerIndex][attribute] = value;
+                if (typeof attribute !== 'undefined') { // updating specific attribute
+                    state[0].mapState.polylines[polylineIndex][attribute] = value;
+                }
+                else {  // or the whole marker at once            
+                    state[0].mapState.polylines[polylineIndex] = value;
+                }               
             }
         },
         updateMarkerLat: (state, action) => {
@@ -94,5 +107,5 @@ const quizGameReducer = createSlice({
 
 });
 
-export const { newGameMode, newConcept, newMapState } = quizGameReducer.actions;
+export const { newGameMode, newConcept, newMapState, newRound } = quizGameReducer.actions;
 export default quizGameReducer.reducer;

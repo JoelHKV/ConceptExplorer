@@ -2,13 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 //import Hyphenator from 'hyphen';
 //import hyphenateText from './hyphenateText';
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, newConcept, newMapState } from './reducers/quizGameSlice';
+import { newGameMode, newConcept, newMapState, newRound } from './reducers/quizGameSlice';
  
-import { Grid, Box } from '@mui/material'; // use MUI component library
+import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
  
-import { drawCanvasReturnDataURL } from './utilities/drawCanvasReturnDataURL';
-import { drawCircleCanvasReturnDataURL } from './utilities/drawCircleCanvasReturnDataURL';
+
 import { drawCircleCanvas2ReturnDataURL } from './utilities/drawCircleCanvas2ReturnDataURL';
 
  
@@ -21,10 +20,7 @@ import ModeButtonRow from './components/ModeButtonRow';
 import OverlayBlock from './components/OverlayBlock';
 
 
-//import api from './utilities/api';
-
 import axios from 'axios';
-
 
 import './App.css'; 
 
@@ -39,84 +35,39 @@ const App = () => {
     const [concepts, setConcepts] = useState()
     const [conceptRank, setConceptRank] = useState()
     const [history, setHistory] = useState([])
+    const [lastConcept, setLastConcept] = useState([])
 
-    const [step, setStep] = useState(0)
+    const [mapLocked, setMapLocked] = useState(false);
 
-   
-   // const [mapData, setMapData] = useState(initMapData);
-    const [listenIdle, setListenIdle] = useState(false);
-    const zeroToEight = Array.from({ length: 9 }, (_, index) => index)
-    const [markerIndexesMap, setMarkerIndexesMap] = useState(zeroToEight);
     const [loaded, setLoaded] = useState(false);
     const [loaded2, setLoaded2] = useState(false);
-  
 
-    const hexaMarker = (markerArray, lat, lng, opac, index) => {
-
-        const updatedMarkers = markerArray.map((markerTitle, i) => {
-            const angleIncrement = (2 * Math.PI) / 8;
-            const radius = i === 0 ? 0 : 2;
-            let opacity = (i === 0 || i === ((index - 4 + 8) % 8)) ? 1 : opac; // this and prev are never transparent
-
-            let formattedValue = 'NaN'
-            if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
-                formattedValue = concepts[markerTitle]['abstract'].toFixed(1);
-                
-            }  
-          
-            return {
-                lat: lat + radius * Math.cos((i) * angleIncrement),
-                lng: lng + radius * Math.sin((i) * angleIncrement),
-                title: markerTitle.toUpperCase(),
-                param: markerTitle,
-                opacity: opacity,
-                
-                custom: {
-                    diameter: diameter,
-                    dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitle.toUpperCase(), formattedValue),
-                },
-            };
-        });
-
-       // console.log(updatedMarkers[0].opacity)
-
-        return updatedMarkers
-        
-    
+    const handleMapLockChange = (event) => {
+        setMapLocked(event.target.checked);
     };
+    const dispatch = useDispatch();
 
 
-   
-   
+    const mapState = useSelector((state) => state.counter[0].mapState);
+    const round = useSelector((state) => state.counter[0].round);
 
-
-    const handleIdleFunction = () => {
-        
-    }
-
-    //let hisstep=-1
 
     const controlButtons = (param) => {
        // console.log(param)
         let thisHistory
         if (param === 'back') {
-            //dispatch(newMapState({ attribute: 'lat', value: 50 }));
-            dispatch(newMapState({ attribute: 'lat', value: 27.9749, element: 'marker', markerIndex: 0 }));
+            if (typeof attribute !== history[history.length - 1]) {
 
-             
-        }
-      //  if (param === 'forward') {
-      //      setStep(step + 1)
-      //      thisHistory = history[history.length + 1 - step]
-      // }
-        
-        
-       // console.log(history.length + '  ' + step + ' his ' + thisHistory[0][0])
-      //  const thisHistory = history[history.length - step]
-       // console.log(thisHistory[0])
-      //  markerFunction(thisHistory[0], thisHistory[1], thisHistory[2], thisHistory[3])
+                dispatch(newMapState({ dall: 'all', value: history[history.length - 1] }));
+                for (let i = 0; i < 8; i++) {
+                    dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
+                }              
+            }        
+        }   
     }
 
+
+   
  
     const makeNewOptions = (thisConcept, lastConcept, index) => {
          
@@ -134,66 +85,37 @@ const App = () => {
             .sort((a, b) => b.importanceValue - a.importanceValue)
             .slice(0, lastConcept.length>0 ? 7 : 8)
             .map(item => item.button);
-        if (index > 0) {
-            sortedConcepts.splice(index, 0, lastConcept);
-        }
-        sortedConcepts.unshift(thisConcept);
+         if (index > 0) {
+             sortedConcepts.splice(index-1, 0, lastConcept);
+         }
+         sortedConcepts.unshift(thisConcept);
         return sortedConcepts
 
          
     };
 
 
-   
-    const markerFunction = (thisConcept, location, lat, lng) => {
-
-       
-       
-        if (location === 0 && thisConcept !== 'mind') {
-            dispatch(newGameMode('details'))        
-            return
-        }
-
-        if (conceptRank[thisConcept]['iskey'] == 0) {
-            return
-        }
-
-        //const [markerIndexesMap, setMarkerIndexesMap] = useState(zeroToNine);
-
-      
-     //   const oppositeSide = (location === 0) ? '' : ((location - 4 + 8) % 8);
-        // do not render the middle concept or the one that was clicked
-
-       // const markerIndexesToRender = Array.from({ length: 9 }, (_, index) => index)
-       //     .filter(index => index !== 0 && index !== location);
-
-       // updatedArray
-       // const markerIndexesToRender = updatedArray
-       //     .filter(index => index !== updatedArray[0] && index !== location);
-
-       
-        const lastConcept = history.length > 0 ? history[history.length - 1][0][0] : [];       
-        const newOptions = makeNewOptions(thisConcept, lastConcept)
-
-        console.log(newOptions)
-
-
+    const updateMarkers = (newOptions, keepBrightArray, lat, lng) => {
 
         const updatedMarkers = newOptions.map((markerTitle, i) => {
-            
-          //  const markerTitle = newOptions[index];
+
+            //  const markerTitle = newOptions[index];
             const angleIncrement = (2 * Math.PI) / 8;
             const radius = i === 0 ? 0 : 2;
-            let opacity = 0.5; // this and prev are never transparent
-             
-                 let formattedValue = 'NaN'
-                 if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
-                     formattedValue = concepts[markerTitle]['abstract'].toFixed(1);
+            let opacity = 0.1;  
 
-                 }
+            if (keepBrightArray.includes(markerTitle)) {
+                opacity = 1;
+            } 
+
+
+            let formattedValue = ''
+            if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
+                formattedValue = concepts[markerTitle]['abstract'].toFixed(1);
+
+            }
 
             const markerTitleUpperCase = markerTitle.toUpperCase()
-             
 
             const thisMarker = {
                 lat: lat + radius * Math.cos((i) * angleIncrement), // Latitude of the first marker
@@ -204,64 +126,101 @@ const App = () => {
                 render: true,
                 diameter: diameter,
                 dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitleUpperCase, formattedValue),
-            
+
             }
-            console.log('udatemarkers' + markerTitle + ' ' + i)
-           dispatch(newMapState({ value: thisMarker, markerIndex: i }));
-
-          //  dispatch(newMapState({ attribute: 'opacity', value: 0, markerIndex: 0 }));
-         //       dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
-          //      dispatch(newMapState({ attribute: 'lat', value: (lat + radius * Math.cos((i) * angleIncrement)), markerIndex: i }));
-          //      dispatch(newMapState({ attribute: 'lng', value: (lng + radius * Math.sin((i) * angleIncrement)), markerIndex: i }));
-           //     dispatch(newMapState({ attribute: 'title', value: markerTitleUpperCase, markerIndex: i }));
-           //     dispatch(newMapState({ attribute: 'param', value: markerTitle, markerIndex: i }));
-           //    dispatch(newMapState({ attribute: 'opacity', value: opacity, markerIndex: i }));
-           //     dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: i }));
-           //     dispatch(newMapState({ attribute: 'dataURL', value: dt, markerIndex: i }));
-            
-           
-      
-            
-                 
+            dispatch(newMapState({ value: thisMarker, markerIndex: i }));
+        })
+    }
 
 
-
-                })
-
-
-
-
-
-      //  setHistory([...history, [newOptions, index, lat, lng]]);
+   
+    const markerFunction = (thisConcept, location, lat, lng) => {
         
-     //   const updatedMarkers = hexaMarker(newOptions, lat, lng, 0.05, index)
-       // upDateMap(updatedMarkers, lat, lng)
 
-      
-    //    setTimeout(() => {
-    //        updatedMarkers.forEach((marker, index) => {
-    //            let thisOpacity = 1;
-    //            if (conceptRank[marker.param]['iskey'] == 0) {
-    //                thisOpacity = 0.2;
-    //            }              
-   //             updatedMarkers[index].opacity = thisOpacity;                                       
-   //         });
+        if (location === 0 && thisConcept !== 'mind') {
+            dispatch(newGameMode('details'))
+            return
+        }
+
+        if (conceptRank[thisConcept]['iskey'] == 0) {
+            return
+        }
+             
+        setLastConcept(thisConcept)   
+
+        
+        const thisPolyline = {
+            lat: [mapState.markers[0].lat * 0.7 + lat * 0.3, mapState.markers[0].lat * 0.3 + lat * 0.7],
+            lng: [mapState.markers[0].lng * 0.7 + lng * 0.3, mapState.markers[0].lng * 0.3 + lng * 0.7],
+            color: '#333333',
+            render: true,
+        }
+
+
+
+         
+        dispatch(newMapState({ value: thisPolyline, polylineIndex: 0 }));
+
+
+
+
+
+
+
+        const oppositeSide = location !== 0 ? ((location + 4) > 8 ? (location + 4 - 8) : (location + 4)) : 0;      
+        const newOptions = makeNewOptions(thisConcept, lastConcept, oppositeSide)
+           
+        updateMarkers(newOptions, [thisConcept, lastConcept], lat, lng)
+
+        setTimeout(() => {
+             updateOpacity(newOptions, [thisConcept, lastConcept])
+             
+        }, 400)
        
-           // upDateMap(updatedMarkers)
-  //      }, 400)
+        console.log(mapState.lat)
+
+        travel(mapState.lat, lat, mapState.lng, lng, 1)
+
+
+        saveHistory()
+    }
+
+    const saveHistory = () => {
+        const tempHist = [...history];
+        tempHist[round] = mapState;
+        setHistory(tempHist)
+
+        dispatch(newRound(1));
+    }
+
+
+    const updateOpacity = (newOptions, excludeMarkers) => {
+        console.log(newOptions)
+        const updatedMarkers = newOptions.map((markerTitle, i) => {
+            if (!excludeMarkers.includes(markerTitle)) {                          
+                const opacity = conceptRank[markerTitle]['iskey'] ? 1 : 0.6;
+                dispatch(newMapState({ attribute: 'opacity', value: opacity, markerIndex: i }));
+                dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
+        }
+        })
+
 
     }
-  
-  
-    
-    const upDateMap = (updatedMarkers, lat, lng) => {
 
-     //   setMapData((mapData) => ({
-      //      ...mapData,
-      //     ...(updatedMarkers !== undefined ? { markers: updatedMarkers } : {}),
-      //      ...(lat !== undefined ? { lat: lat } : {}),
-      //      ...(lng !== undefined ? { lng: lng } : {}),
-       // }));
+    const travel = (latStart, latEnd, lngStart, lngEnd, position) => {
+         
+        const latThis = latStart * (1 - position) + latEnd * position;
+        const lngThis = lngStart * (1 - position) + lngEnd * position;
+
+        dispatch(newMapState({ attribute: 'lat', value: latThis }));
+        dispatch(newMapState({ attribute: 'lng', value: lngThis }));
+
+        if (position < 1) {
+            setTimeout(() => {
+                travel(latStart, latEnd, lngStart, lngEnd, position+0.5)
+
+            }, 200)
+        }
 
     }
 
@@ -274,8 +233,7 @@ const App = () => {
     console.log(thisConcept)
 
 
-    const dispatch = useDispatch();
-
+    
     //console.log(thisConcept)
 
     
@@ -331,14 +289,14 @@ const App = () => {
                     {loaded && loaded2 && (
                         <>
                         <GoogleMapsApp
+                                mapLocked={mapLocked} 
                              
-                            handleIdleFunction={handleIdleFunction}
                             markerFunction={markerFunction}
                         />
                             { gameMode==='details' && (
                             <OverlayBlock
-                                    title={thisConcept}
-                                    text={concepts[thisConcept]['definition']}
+                                    title={lastConcept}
+                                    text={concepts[lastConcept]['definition']}
                                 />
                             )}
                         </>
@@ -349,6 +307,17 @@ const App = () => {
                         <ModeButtonRow buttonFunction={controlButtons} />
                     
                 </Grid>
+
+                <FormControlLabel
+                    control={<Checkbox checked={mapLocked} onChange={handleMapLockChange} />}
+                    label="Map Lock"
+                />
+
+
+                 
+   
+
+
             </Grid>
         </Box >  
     );
