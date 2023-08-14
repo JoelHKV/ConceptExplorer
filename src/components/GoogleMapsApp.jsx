@@ -84,6 +84,7 @@ const GoogleMapsApp = ({ markerFunction  }) => {
 
         });
         markerHandle.addListener("click", () => {
+            if (markerData.param === null) { return }
             markerFunction(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
 
         });  
@@ -160,12 +161,19 @@ const GoogleMapsApp = ({ markerFunction  }) => {
 
             if (mapState.zoom) { // use zoom if zoom data is given
                 map.setZoom(mapState.zoom);
+                dispatch(newMapState({ attribute: 'zoom', value: null }));
             }
             if (mapState.delta) { // use bounds if delta data is given
                 const bounds = new window.google.maps.LatLngBounds();
                 bounds.extend({ lat: mapState.lat + mapState.delta, lng: mapState.lng + mapState.delta });
                 bounds.extend({ lat: mapState.lat - mapState.delta, lng: mapState.lng - mapState.delta });
                 map.fitBounds(bounds);
+
+                dispatch(newMapState({ attribute: 'delta', value: null }));
+
+                const updatedZoom = map.getZoom();
+                console.log("Updated Zoom Level:", updatedZoom);
+
             }
 
             if (mapState.markers) {                  

@@ -11,12 +11,19 @@
         left: 5%;
         height: 4vh;
         font-size: 1rem;
+       
     }
         @media(hover: hover) {
             .ModeButtonRow Button:hover {
                 background-color: var(--button-background-color-hover) !important;
             }
         }
-    .navigate-button  {
-        width: 40% !important;
-    }
+.fly-control {
+    width: 30% !important;
+}
+
+
+.mode-button-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}

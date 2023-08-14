@@ -4,20 +4,34 @@ import './ModeButtonRow.css';
 
 const buttonData = [
     {
+        name: 'home',
+        className: 'fly-control',
+        param: 'home',
+    },
+    {
         name: 'back',
-        className: 'navigate-button',
+        className: 'fly-control',
         param: 'back',
     },
     {
-        name: 'forward',
-        className: 'navigate-button',
-        param: 'forward',
+        name: 'route',
+        className: 'fly-control',
+        param: 'route',
     },
+    {
+        name: 'globe',
+        className: 'fly-control',
+        param: 'globe',
+    },
+
 ];
 
-const ModeButtonRow = ({ buttonFunction }) => {
+const ModeButtonRow = ({ buttonFunction, enabled }) => {
+   // const disabledClass = enabled ? '' : 'mode-button-disabled';
+   // console.log(disabledClass)
+    //const disabledClass = 'mode-button-disabled'
     const buttons = buttonData.map((button, index) => (
-        <div key={index} className={`${button.className}`}>
+        <div key={index} className={`${button.className} ${enabled[index] ? '' : 'mode-button-disabled'}`}>
             <Button variant="contained" onClick={() => buttonFunction(button.param)}>
                 {button.name}
             </Button>

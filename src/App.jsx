@@ -52,12 +52,78 @@ const App = () => {
     const mapState = useSelector((state) => state.counter[0].mapState);
     const round = useSelector((state) => state.counter[0].round);
 
-   console.log('real round ' + round)
-
+    
 
     const controlButtons = (param) => {
-       // dispatch(newMapState({ value: { delete: true, render: true }, markerIndex: 1 }));
-        deleteRoundsFromHistory(3)  
+
+        if (param === 'back') {
+            const prevChoice = optionChoiceHistory[round - 1];
+            const oppositeClickDirection = prevChoice[9] !== 0 ? ((prevChoice[9] + 4) > 8 ? (prevChoice[9] + 4 - 8) : (prevChoice[9] + 4)) : 0;
+            markerFunction(prevChoice[0], oppositeClickDirection, prevChoice[10], prevChoice[11]);
+
+        }
+        if (param === 'home') {
+            const firstChoice = optionChoiceHistory[0];
+            dispatch(newMapState({ attribute: 'lat', value: firstChoice[10] }));
+            dispatch(newMapState({ attribute: 'lng', value: firstChoice[11] }));        
+        }
+
+        if (param === 'route') {
+
+            for (let i = 0; i < 9; i++) {
+                dispatch(newMapState({ value: { delete: true, render: true }, markerIndex: i }));
+            }
+
+            let minLat = Number.POSITIVE_INFINITY;
+            let maxLat = Number.NEGATIVE_INFINITY;
+            let minLng = Number.POSITIVE_INFINITY;
+            let maxLng = Number.NEGATIVE_INFINITY;
+
+
+            for (let i = 0; i < optionChoiceHistory.length; i++) {
+
+                const thisStep = optionChoiceHistory[i];
+                const lat = thisStep[10];
+                const lng = thisStep[11];
+                minLat = Math.min(minLat, lat);
+                maxLat = Math.max(maxLat, lat);
+                minLng = Math.min(minLng, lng);
+                maxLng = Math.max(maxLng, lng);
+                const thisMarker = {
+                    lat: lat,  
+                    lng: lng,   
+                    title: thisStep[0].toUpperCase(),  
+                    param: null,
+                    opacity: 1,
+                    render: true,
+                    diameter: diameter/2,
+                    dataURL: drawCircleCanvas2ReturnDataURL(diameter/2, thisStep[0].toUpperCase(), ''),
+
+                }
+                dispatch(newMapState({ value: thisMarker, markerIndex: i }));
+
+
+
+                drawPolyline(thisStep[10], thisStep[11], thisStep[12], thisStep[13], i)
+
+                 
+            }
+
+            dispatch(newMapState({ attribute: 'lat', value: (minLat + maxLat) / 2 }));
+            dispatch(newMapState({ attribute: 'lng', value: (minLng + maxLng) / 2 }));
+            dispatch(newMapState({ attribute: 'delta', value: Math.max((minLng - maxLng), (minLat - maxLat)) / 3 }));
+
+
+            
+        }
+        if (param === 'globe') {
+            dispatch(newMapState({ attribute: 'lat', value: 10 }));
+            dispatch(newMapState({ attribute: 'lng', value: 0 }));
+            dispatch(newMapState({ attribute: 'delta', value: null }));
+            dispatch(newMapState({ attribute: 'zoom', value: 1.5 }));
+        }
+
+          
     }
 
 
@@ -131,7 +197,11 @@ const App = () => {
 
    
     const markerFunction = (thisConcept, location, lat, lng) => {
-        console.log('rounds ' + optionChoiceHistory.length)
+
+       // console.log(mapState.lat + ' ' + mapState.lng + ' ' + mapState.zoom + ' ' + mapState.delta)
+
+
+     
 
         if (location === 0 && thisConcept !== 'mind') {
             dispatch(newGameMode('details'))
@@ -158,7 +228,6 @@ const App = () => {
             // pressed back when enough history 
             drawPolyline(lastArray2[12], lastArray2[13], lastArray2[10], lastArray2[11], 1)              
             dispatch(newRound(-1))
-         //   setLastConcept(lastArray[0])
             pivotItems = [lastArray[0], lastArray2[0]]
             clickDirection = lastArray2[9]
 
@@ -166,8 +235,7 @@ const App = () => {
         }
         else {
             // regular click 
-            dispatch(newRound(1))
-          //  setLastConcept(thisConcept)          
+            dispatch(newRound(1))         
             pivotItems = [thisConcept, lastConcept]
             clickDirection = location;
             saveHistoryByIndex(location, round)
@@ -224,43 +292,7 @@ const App = () => {
 
         setOptionChoiceHistory(newHistory);
     };
-
-
-
-    const saveHistory = (location, numRoundsToDelete) => {
-        const oldOptionArray = new Array(14);
-        for (let i = 0; i < 9; i++) {
-            oldOptionArray[i] = mapState.markers[i] ? mapState.markers[i].param : '';
-        }
-
-        const markerCoordinates = [
-            mapState.markers[0].lat,
-            mapState.markers[0].lng,
-            mapState.markers[location].lat,
-            mapState.markers[location].lng
-        ];
-
-        oldOptionArray[9] = location;
-        oldOptionArray.splice(10, 0, ...markerCoordinates);
-
-        const tempHist = [...optionChoiceHistory].slice(0, optionChoiceHistory.length - numRoundsToDelete);
-         
-        tempHist.push(oldOptionArray);
-        setOptionChoiceHistory(tempHist);
-
-    }
-
-    const deleteRoundsFromHistory = (numRoundsToDelete) => {
-      //  console.log(optionChoiceHistory.length)
-        if (numRoundsToDelete >= optionChoiceHistory.length) {
-            setOptionChoiceHistory([]);
-        } else {
-           // console.log('deldel ' + (optionChoiceHistory.length - numRoundsToDelete))
-            const newHistory = optionChoiceHistory.slice(0, optionChoiceHistory.length - numRoundsToDelete);
-            setOptionChoiceHistory(newHistory);
-        }
-    };
-
+ 
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
         const thisPolyline = {
@@ -380,7 +412,10 @@ const App = () => {
                 </Grid> 
                 <Grid item xs={12} className="third-row centerContent">
                    
-                        <ModeButtonRow buttonFunction={controlButtons} />
+                    <ModeButtonRow
+                        buttonFunction={controlButtons}
+                        enabled={[round > 1, round > 1, round > 1, true]}
+                    />
                     
                 </Grid>
 

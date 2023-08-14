@@ -6,8 +6,8 @@ const diameter=90
 const initMapData = {
     lat: 27.7749, // Default latitude  
     lng: -112.4194, // Default longitude  
-    // zoom: 4, // Default zoom level
-    delta: 2,
+    // zoom: 7, // Default zoom level
+     delta: 2,
     markers: [
        
         {
