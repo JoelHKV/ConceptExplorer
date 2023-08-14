@@ -196,12 +196,11 @@ const App = () => {
 
 
    
-    const markerFunction = (thisConcept, location, lat, lng) => {
+    const markerFunction = (thisConcept, location, lat, lng) => { 
 
        // console.log(mapState.lat + ' ' + mapState.lng + ' ' + mapState.zoom + ' ' + mapState.delta)
 
-
-     
+       
 
         if (location === 0 && thisConcept !== 'mind') {
             dispatch(newGameMode('details'))
@@ -230,12 +229,16 @@ const App = () => {
             dispatch(newRound(-1))
             pivotItems = [lastArray[0], lastArray2[0]]
             clickDirection = lastArray2[9]
+            console.log(round + ' ' + clickDirection)
 
+             
 
         }
         else {
             // regular click 
-            dispatch(newRound(1))         
+            if (location > 0) { 
+                dispatch(newRound(1))  
+            }
             pivotItems = [thisConcept, lastConcept]
             clickDirection = location;
             saveHistoryByIndex(location, round)
@@ -250,6 +253,8 @@ const App = () => {
 
     
     const handleMapVisuals = (newOptions, PivotItems, lat, lng) => {
+
+
 
         updateMarkers(newOptions, PivotItems, lat, lng)
 
@@ -414,7 +419,7 @@ const App = () => {
                    
                     <ModeButtonRow
                         buttonFunction={controlButtons}
-                        enabled={[round > 1, round > 1, round > 1, true]}
+                        enabled={[round > 0, round > 0, round > 0, true]}
                     />
                     
                 </Grid>

@@ -23,6 +23,22 @@ const initMapData = {
             dataURL: drawCircleCanvas2ReturnDataURL(diameter, 'MIND', 2.9),
 
         },
+
+        {
+            lat: 29.7749, // Latitude of the first marker
+            lng: -112.4194, // Longitude of the first marker
+            title: "SPACE", // Title of the first marker
+            param: "space",
+            label: {
+                color: "black",
+            },
+            render: true,
+            diameter: diameter,
+            dataURL: drawCircleCanvas2ReturnDataURL(diameter, 'SPACE', 2.9),
+
+        },
+
+
     
 
     ],
