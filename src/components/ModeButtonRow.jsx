@@ -23,7 +23,11 @@ const buttonData = [
         className: 'fly-control',
         param: 'globe',
     },
-
+    {
+        name: 'random',
+        className: 'fly-control',
+        param: 'random',
+    },
 ];
 
 const ModeButtonRow = ({ buttonFunction, enabled }) => {

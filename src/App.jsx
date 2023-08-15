@@ -51,6 +51,7 @@ const App = () => {
 
     const mapState = useSelector((state) => state.counter[0].mapState);
     const round = useSelector((state) => state.counter[0].round);
+    const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
 
     
 
@@ -117,17 +118,82 @@ const App = () => {
             
         }
         if (param === 'globe') {
+            dispatch(newGameMode('globe'))
+            dispatch(newMapState({ markerIndex: null })); // delete existing markers
+
+
             dispatch(newMapState({ attribute: 'lat', value: 10 }));
             dispatch(newMapState({ attribute: 'lng', value: 0 }));
             dispatch(newMapState({ attribute: 'delta', value: null }));
-            dispatch(newMapState({ attribute: 'zoom', value: 1.5 }));
+            dispatch(newMapState({ attribute: 'zoom', value: 1 }));
+
+            //const globeOptions = ['mind', 'emotion']
+            const globeOptions = Object.keys(concepts).slice(0,1);
+            const lat = [];
+            const lng = [];
+
+            for (let i = 0; i < globeOptions.length; i++) {
+               lat.push(Math.random() * 180 - 90);
+               lng.push(Math.random() * 360 - 180);
+            }
+
+            updateMarkers(globeOptions, globeOptions, lat, lng, 1)
+
+
+
         }
+
+
+       
+        if (param === 'random') {
+        //    dispatch(newMapState({ attribute: 'delete', value: null }));
+          // dispatch(newMapState({ markerIndex: null }));
+
+            const diameter = 180;
+
+            const dataURL = drawCircleCanvas2ReturnDataURL(diameter, 'ASA', '');
+
+
+            dispatch(newMapState({ attribute: 'lat', value: null}));
+            dispatch(newMapState({ attribute: 'lng', value: null }));
+
+            dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: 0 }));
+            dispatch(newMapState({ attribute: 'diameter', value: 180, markerIndex: 0 }));
+            dispatch(newMapState({ attribute: 'render', value: true, markerIndex: 0 }));
+
+
+
+
+           // dispatch(newMapState({ polylineIndex: null }));
+            console.log('dada')
+        }
+
 
           
     }
 
 
-   
+    
+
+    const handleZoomChangedFunction = (zoomLevel) => {
+
+
+        const diameter = 30 + 20 * zoomLevel;
+
+        const dataURL = drawCircleCanvas2ReturnDataURL(diameter, 'ASA', '');
+
+       dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: 0 }));
+        dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: 0 }));
+        dispatch(newMapState({ attribute: 'render', value: true, markerIndex: 0 }));
+
+
+     //   console.log(gameMode)
+     //   if (gameMode === 'globe') {
+            console.log(zoomLevel)
+      //  }
+       
+    }
+
  
     const makeNewOptions = (pivotItems, index) => {
 
@@ -157,19 +223,9 @@ const App = () => {
     };
 
 
-    const updateMarkers = (newOptions, keepBrightArray, lat, lng) => {
+    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity) => {
 
         const updatedMarkers = newOptions.map((markerTitle, i) => {
-
-            //  const markerTitle = newOptions[index];
-            const angleIncrement = (2 * Math.PI) / 8;
-            const radius = i === 0 ? 0 : 2;
-            let opacity = 0.1;  
-
-            if (keepBrightArray.includes(markerTitle)) {
-                opacity = 1;
-            } 
-
 
             let formattedValue = ''
             if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
@@ -179,12 +235,20 @@ const App = () => {
 
             const markerTitleUpperCase = markerTitle.toUpperCase()
 
+
+            const thisOpacity = keepBrightArray.includes(markerTitle) ? 1 : opacity
+
+            const fireMarker = conceptRank[markerTitle]['iskey'] ? markerTitle : null;
+            // markers representing key concepts get to fire, periferials do not
+             
+
+
             const thisMarker = {
-                lat: lat + radius * Math.cos((i) * angleIncrement), // Latitude of the first marker
-                lng: lng + radius * Math.sin((i) * angleIncrement), // Longitude of the first marker
+                lat: lat[i],  
+                lng: lng[i],  
                 title: markerTitleUpperCase, // Title of the first marker
-                param: markerTitle,
-                opacity: opacity,
+                param: fireMarker,
+                opacity: thisOpacity,
                 render: true,
                 diameter: diameter,
                 dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitleUpperCase, formattedValue),
@@ -197,20 +261,17 @@ const App = () => {
 
    
     const markerFunction = (thisConcept, location, lat, lng) => { 
-
-       // console.log(mapState.lat + ' ' + mapState.lng + ' ' + mapState.zoom + ' ' + mapState.delta)
-
-       
-
-        if (location === 0 && thisConcept !== 'mind') {
+        console.log(thisConcept)
+        if (gameMode === 'globe') { // we have chosen a concept to explore from the global view
+            setOptionChoiceHistory([]) // delete browsing history
+            dispatch(newMapState({ attribute: 'delta', value: 2 }));
+            dispatch(newGameMode('browse'))
+        }
+        if (location === 0 && optionChoiceHistory.length >0) {
             dispatch(newGameMode('details'))
             return
         }
-
-        if (conceptRank[thisConcept]['iskey'] == 0) {
-            return
-        }
-   
+ 
         if (mapState.polylines[1]) {
             dispatch(newMapState({ value: { delete: true, render: true }, polylineIndex: 1 }));
         }
@@ -251,12 +312,25 @@ const App = () => {
                       
     }
 
+
+    const conceptFlowerCoordinates = (lat, lng) => {
+        const latArray = [];
+        const lngArray = [];
+        const angleIncrement = (2 * Math.PI) / 8;
+        for (let i = 0; i < 9; i++) {
+            const radius = i === 0 ? 0 : 2;
+            latArray[i] = lat + radius * Math.cos(i * angleIncrement);
+            lngArray[i] = lng + radius * Math.sin(i * angleIncrement);
+        }
+        return [latArray, lngArray]; 
+    }
+
     
     const handleMapVisuals = (newOptions, PivotItems, lat, lng) => {
 
-
-
-        updateMarkers(newOptions, PivotItems, lat, lng)
+        const flowerCoordinates = conceptFlowerCoordinates(lat, lng)
+        const opacity = 0.1
+        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity)
 
         setTimeout(() => {
             updateOpacity(newOptions, PivotItems)
@@ -343,7 +417,6 @@ const App = () => {
 
 
 
-    const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
     const thisConcept = useSelector((state) => state.counter[0].concept); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
 
 
@@ -403,7 +476,7 @@ const App = () => {
                     {loaded && loaded2 && (
                         <>
                         <GoogleMapsApp
-                                
+                            handleZoomChangedFunction={handleZoomChangedFunction}
                             markerFunction={markerFunction}
                         />
                             { gameMode==='details' && (
@@ -419,7 +492,7 @@ const App = () => {
                    
                     <ModeButtonRow
                         buttonFunction={controlButtons}
-                        enabled={[round > 0, round > 0, round > 0, true]}
+                        enabled={[round > 0, round > 0, round > 0, true, true]}
                     />
                     
                 </Grid>

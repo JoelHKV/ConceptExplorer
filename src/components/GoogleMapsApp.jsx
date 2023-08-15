@@ -12,7 +12,7 @@ import './GoogleMapsApp.css';
 
 
  
-const GoogleMapsApp = ({ markerFunction  }) => {
+const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
  
     const [markerHandleArray, setMarkerHandleArray] = useState([]);
     const [polylineHandleArray, setPolylineHandleArray] = useState([]);
@@ -145,6 +145,11 @@ const GoogleMapsApp = ({ markerFunction  }) => {
             //handleIdleFunction()       
         });
 
+        newMap.addListener("zoom_changed", () => {
+            const newZoomLevel = newMap.getZoom();
+            handleZoomChangedFunction(newZoomLevel)
+        });
+
         setMap(newMap); // Save the map instance in the state     
     };
 
@@ -176,8 +181,16 @@ const GoogleMapsApp = ({ markerFunction  }) => {
 
             }
 
+            if (Array.isArray(mapState.markers) && mapState.markers.length === 0) {
+                markerHandleArray.forEach((oldMarkerHandle) => {
+                    if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
+                        oldMarkerHandle.setMap(null); // This removes the marker from the map
+                    }
+                })
+                setMarkerHandleArray([]);
+            }
             if (mapState.markers) {                  
-                mapState.markers.forEach((markerData, index) => {                   
+                mapState.markers.forEach((markerData, index) => {
                     if (markerData.render) {      
                          const oldMarkerHandle = markerHandleArray[index];                     
                         if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
@@ -193,7 +206,17 @@ const GoogleMapsApp = ({ markerFunction  }) => {
                })
                 
             } 
-            
+
+            if (Array.isArray(mapState.polylines) && mapState.polylines.length === 0) {
+                polylineHandleArray.forEach((oldPolylineHandle) => {
+                    if (oldPolylineHandle && oldPolylineHandle.setMap) {
+                        oldPolylineHandle.setMap(null); // This removes the polyline from the map
+                    }  
+                })
+                setPolylineHandleArray([]);
+            }
+
+
             if (mapState.polylines) { // polyline             
                 mapState.polylines.forEach((polylineData, index) => {  
                     if (polylineData.render) {

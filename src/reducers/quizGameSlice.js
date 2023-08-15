@@ -91,6 +91,15 @@ const quizGameReducer = createSlice({
             }
             
             if (typeof markerIndex !== 'undefined') {
+
+                if (markerIndex === null) {
+                    state[0].mapState.markers = [];
+                    console.log('del')
+                    return
+                }
+
+
+
                // console.log(markerIndex)
                 if (!state[0].mapState.markers[markerIndex]) {
                     state[0].mapState.markers[markerIndex] = {}
@@ -103,6 +112,14 @@ const quizGameReducer = createSlice({
                 }
             }
             if (typeof polylineIndex !== 'undefined') {
+
+                if (polylineIndex === null) {
+                    state[0].mapState.polylines = [];
+                    console.log('del')
+                    return
+                }
+
+
                 if (!state[0].mapState.polylines[polylineIndex]) {
                     state[0].mapState.polylines[polylineIndex] = {}
                 }
