@@ -52,7 +52,7 @@ const initMapData = {
 const initialState = [
     {
         round: 0,
-        gameMode: 'browse',
+        gameMode: 'browse2',
         concept: 'mind',
         mapState: initMapData,
     }
@@ -65,12 +65,20 @@ const quizGameReducer = createSlice({
         newRound: (state, newValue) => {
             state[0].round = state[0].round + newValue.payload;
         },
-        newGameMode: (state, newValue) => {
-            state[0].gameMode = newValue.payload;
+        newGameMode: (state, action) => {
+            return [
+                {
+                    ...state[0],
+                    gameMode: action.payload
+                },
+                ...state.slice(1) // Copy the rest of the state array
+            ];
         },
         newConcept: (state, newValue) => {
             state[0].concept = newValue.payload;
         },
+
+
         newMapState: (state, action) => {
             const { attribute, dall, value, markerIndex, polylineIndex } = action.payload;
             if (typeof dall !== 'undefined') {

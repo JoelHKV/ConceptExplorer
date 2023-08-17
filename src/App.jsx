@@ -40,12 +40,16 @@ const App = () => {
     const mapState = useSelector((state) => state.counter[0].mapState);
     const round = useSelector((state) => state.counter[0].round);
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
-
+ 
     const { concepts, conceptRank, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore', 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity');
-    console.log(loaded)
+    //console.log(loaded)
+
+    console.log(gameMode)
+
 
     const controlButtons = (param) => {
-
+        console.log(gameMode)
+        console.log(round)
         if (param === 'back') {
             const prevChoice = optionChoiceHistory[round - 1];
             const oppositeClickDirection = prevChoice[9] !== 0 ? ((prevChoice[9] + 4) > 8 ? (prevChoice[9] + 4 - 8) : (prevChoice[9] + 4)) : 0;
@@ -107,7 +111,7 @@ const App = () => {
             
         }
         if (param === 'globe') {
-            dispatch(newGameMode('globe'))
+            dispatch(newGameMode('globe2'))
             dispatch(newMapState({ markerIndex: null })); // delete existing markers
 
 
@@ -117,7 +121,7 @@ const App = () => {
             dispatch(newMapState({ attribute: 'zoom', value: 1 }));
 
             //const globeOptions = ['mind', 'emotion']
-            const globeOptions = Object.keys(concepts).slice(0,1);
+            const globeOptions = Object.keys(concepts).slice(0,10);
             const lat = [];
             const lng = [];
 
@@ -147,14 +151,14 @@ const App = () => {
             dispatch(newMapState({ attribute: 'lng', value: null }));
 
             dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: 0 }));
-            dispatch(newMapState({ attribute: 'diameter', value: 180, markerIndex: 0 }));
+            dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: 0 }));
             dispatch(newMapState({ attribute: 'render', value: true, markerIndex: 0 }));
 
 
 
 
            // dispatch(newMapState({ polylineIndex: null }));
-            console.log('dada')
+            console.log(gameMode)
         }
 
 
@@ -165,16 +169,23 @@ const App = () => {
     
 
     const handleZoomChangedFunction = (zoomLevel) => {
+      
+        console.log(gameMode)
+        if (gameMode !== 'globe') { return }
+        console.log('b')
+        dispatch(newMapState({ attribute: 'lat', value: null }));
+        dispatch(newMapState({ attribute: 'lng', value: null }));
+        const diameter = 20 + 40 * zoomLevel;
 
+        for (let i = 0; i < 8; i++) {
+            console.log(mapState.markers[i].title)
+            const thisName = 'dada'; 
+            const dataURL = drawCircleCanvas2ReturnDataURL(diameter, thisName, '');
 
-        const diameter = 30 + 20 * zoomLevel;
-
-        const dataURL = drawCircleCanvas2ReturnDataURL(diameter, 'ASA', '');
-
-       dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: 0 }));
-        dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: 0 }));
-        dispatch(newMapState({ attribute: 'render', value: true, markerIndex: 0 }));
-
+            dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: i }));
+            dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: i }));
+            dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
+        }
 
      //   console.log(gameMode)
      //   if (gameMode === 'globe') {
@@ -211,7 +222,7 @@ const App = () => {
          
     };
 
-
+    
     const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity) => {
 
         const updatedMarkers = newOptions.map((markerTitle, i) => {
@@ -254,7 +265,7 @@ const App = () => {
         if (gameMode === 'globe') { // we have chosen a concept to explore from the global view
             setOptionChoiceHistory([]) // delete browsing history
             dispatch(newMapState({ attribute: 'delta', value: 2 }));
-            dispatch(newGameMode('browse'))
+         //   dispatch(newGameMode('browse'))
         }
         if (location === 0 && optionChoiceHistory.length >0) {
             dispatch(newGameMode('details'))
@@ -406,7 +417,7 @@ const App = () => {
 
 
 
-    const thisConcept = useSelector((state) => state.counter[0].concept); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
+    //const thisConcept = useSelector((state) => state.counter[0].concept); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
 
 
     
@@ -420,8 +431,7 @@ const App = () => {
 
    
     
-    
-
+     
 
    
     return (

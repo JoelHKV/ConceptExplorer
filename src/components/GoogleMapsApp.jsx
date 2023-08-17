@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { newMapState } from '../reducers/quizGameSlice';
+import { newMapState, newGameMode } from '../reducers/quizGameSlice';
 
 
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
@@ -21,6 +21,7 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
     const [mapLocked, setMapLocked] = useState(false);
 
     const mapState = useSelector((state) => state.counter[0].mapState);
+    const gameMode = useSelector((state) => state.counter[0].gameMode);
     const dispatch = useDispatch();
 
 
@@ -40,9 +41,9 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
     useEffect(() => {
         if (map) {
             //map.setCenter({ lat: mapState.lat, lng: mapState.lng });
-
-            map.panTo({ lat: mapState.lat, lng: mapState.lng });
-
+            if (mapState.lat) {
+                map.panTo({ lat: mapState.lat, lng: mapState.lng });
+            }
 
             if (mapState.zoom) { // use zoom if zoom data is given
                 map.setZoom(mapState.zoom);
@@ -235,6 +236,7 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
         });
 
         newMap.addListener("zoom_changed", () => {
+            console.log(gameMode)
             const newZoomLevel = newMap.getZoom();
             handleZoomChangedFunction(newZoomLevel)
         });
