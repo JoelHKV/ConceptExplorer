@@ -24,6 +24,105 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
     const dispatch = useDispatch();
 
 
+
+    useEffect(() => {
+        // Load the Google Maps JavaScript API
+
+        const script = document.createElement('script');
+        script.src = `https://returnsecret-c2cjxe2frq-lz.a.run.app`;
+        script.defer = true;
+        script.async = true;
+        window.initMap = initMap;
+        document.head.appendChild(script);
+    }, []);
+
+
+    useEffect(() => {
+        if (map) {
+            //map.setCenter({ lat: mapState.lat, lng: mapState.lng });
+
+            map.panTo({ lat: mapState.lat, lng: mapState.lng });
+
+
+            if (mapState.zoom) { // use zoom if zoom data is given
+                map.setZoom(mapState.zoom);
+                dispatch(newMapState({ attribute: 'zoom', value: null }));
+            }
+            if (mapState.delta) { // use bounds if delta data is given
+                const bounds = new window.google.maps.LatLngBounds();
+                bounds.extend({ lat: mapState.lat + mapState.delta, lng: mapState.lng + mapState.delta });
+                bounds.extend({ lat: mapState.lat - mapState.delta, lng: mapState.lng - mapState.delta });
+                map.fitBounds(bounds);
+
+                dispatch(newMapState({ attribute: 'delta', value: null }));
+
+                const updatedZoom = map.getZoom();
+                console.log("Updated Zoom Level:", updatedZoom);
+
+            }
+
+            if (Array.isArray(mapState.markers) && mapState.markers.length === 0) {
+                markerHandleArray.forEach((oldMarkerHandle) => {
+                    if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
+                        oldMarkerHandle.setMap(null); // This removes the marker from the map
+                    }
+                })
+                setMarkerHandleArray([]);
+            }
+            if (mapState.markers) {
+                mapState.markers.forEach((markerData, index) => {
+                    if (markerData.render) {
+                        const oldMarkerHandle = markerHandleArray[index];
+                        if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
+                            oldMarkerHandle.setMap(null); // This removes the marker from the map
+                        }
+                        let newMarkerHandle = null
+                        if (!markerData.delete) {
+                            newMarkerHandle = createMarker(markerData, index)
+                        }
+                        updateMarkerPolylineArrayAtIndex(setMarkerHandleArray, index, newMarkerHandle)
+                        dispatch(newMapState({ attribute: 'render', value: false, markerIndex: index }));
+                    }
+                })
+
+            }
+
+            if (Array.isArray(mapState.polylines) && mapState.polylines.length === 0) {
+                polylineHandleArray.forEach((oldPolylineHandle) => {
+                    if (oldPolylineHandle && oldPolylineHandle.setMap) {
+                        oldPolylineHandle.setMap(null); // This removes the polyline from the map
+                    }
+                })
+                setPolylineHandleArray([]);
+            }
+
+
+            if (mapState.polylines) { // polyline             
+                mapState.polylines.forEach((polylineData, index) => {
+                    if (polylineData.render) {
+                        const oldPolylineHandle = polylineHandleArray[index];
+                        if (oldPolylineHandle && oldPolylineHandle.setMap) {
+                            oldPolylineHandle.setMap(null); // This removes the polyline from the map
+                        }
+                        let newPolylineHandle = null
+                        if (!polylineData.delete) {
+                            newPolylineHandle = createPolyline(polylineData)
+                        }
+
+                        updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index, newPolylineHandle)
+                        dispatch(newMapState({ attribute: 'render', value: false, polylineIndex: index }));
+                    }
+
+                });
+            }
+
+
+        }
+    }, [map, mapState]);
+
+
+
+
     const handleMapLockChange = (event) => {
         setMapLocked(event.target.checked);
         const newGestureHandling = mapLocked ? "auto" : "none";
@@ -112,16 +211,6 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
 
 
    
-    useEffect(() => {
-        // Load the Google Maps JavaScript API
-  
-        const script = document.createElement('script');
-        script.src = `https://returnsecret-c2cjxe2frq-lz.a.run.app`;
-        script.defer = true;
-        script.async = true;
-        window.initMap = initMap;
-        document.head.appendChild(script);
-    }, []);
 
 
 
@@ -157,89 +246,6 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
   
 
   
-    useEffect(() => {
-        if (map) {     
-            //map.setCenter({ lat: mapState.lat, lng: mapState.lng });
-
-            map.panTo({ lat: mapState.lat, lng: mapState.lng });
-
-
-            if (mapState.zoom) { // use zoom if zoom data is given
-                map.setZoom(mapState.zoom);
-                dispatch(newMapState({ attribute: 'zoom', value: null }));
-            }
-            if (mapState.delta) { // use bounds if delta data is given
-                const bounds = new window.google.maps.LatLngBounds();
-                bounds.extend({ lat: mapState.lat + mapState.delta, lng: mapState.lng + mapState.delta });
-                bounds.extend({ lat: mapState.lat - mapState.delta, lng: mapState.lng - mapState.delta });
-                map.fitBounds(bounds);
-
-                dispatch(newMapState({ attribute: 'delta', value: null }));
-
-                const updatedZoom = map.getZoom();
-                console.log("Updated Zoom Level:", updatedZoom);
-
-            }
-
-            if (Array.isArray(mapState.markers) && mapState.markers.length === 0) {
-                markerHandleArray.forEach((oldMarkerHandle) => {
-                    if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
-                        oldMarkerHandle.setMap(null); // This removes the marker from the map
-                    }
-                })
-                setMarkerHandleArray([]);
-            }
-            if (mapState.markers) {                  
-                mapState.markers.forEach((markerData, index) => {
-                    if (markerData.render) {      
-                         const oldMarkerHandle = markerHandleArray[index];                     
-                        if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
-                             oldMarkerHandle.setMap(null); // This removes the marker from the map
-                        }   
-                        let newMarkerHandle = null
-                        if (!markerData.delete) {
-                            newMarkerHandle = createMarker(markerData, index)
-                        }                   
-                        updateMarkerPolylineArrayAtIndex(setMarkerHandleArray, index, newMarkerHandle)
-                        dispatch(newMapState({ attribute: 'render', value: false, markerIndex: index }));                      
-                     }
-               })
-                
-            } 
-
-            if (Array.isArray(mapState.polylines) && mapState.polylines.length === 0) {
-                polylineHandleArray.forEach((oldPolylineHandle) => {
-                    if (oldPolylineHandle && oldPolylineHandle.setMap) {
-                        oldPolylineHandle.setMap(null); // This removes the polyline from the map
-                    }  
-                })
-                setPolylineHandleArray([]);
-            }
-
-
-            if (mapState.polylines) { // polyline             
-                mapState.polylines.forEach((polylineData, index) => {  
-                    if (polylineData.render) {
-                        const oldPolylineHandle = polylineHandleArray[index];
-                        if (oldPolylineHandle && oldPolylineHandle.setMap) {
-                            oldPolylineHandle.setMap(null); // This removes the polyline from the map
-                        }  
-                        let newPolylineHandle = null
-                        if (!polylineData.delete) {
-                            newPolylineHandle = createPolyline(polylineData) 
-                        }
-                                            
-                        updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index, newPolylineHandle)
-                        dispatch(newMapState({ attribute: 'render', value: false, polylineIndex: index }));                                               
-                     }
-                    
-                });
-            }
-          
-        
-        }
-    }, [map, mapState]);
-    
 
     return (   
         

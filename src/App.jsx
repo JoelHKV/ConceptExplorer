@@ -1,15 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-//import Hyphenator from 'hyphen';
-//import hyphenateText from './hyphenateText';
+
+
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newConcept, newMapState, newRound } from './reducers/quizGameSlice';
  
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
- 
-
 import { drawCircleCanvas2ReturnDataURL } from './utilities/drawCircleCanvas2ReturnDataURL';
 
+import { getConcept } from './hooks/getConcept';
  
 
 //import IntroBlock from './components/IntroBlock'; // instructions are here
@@ -20,7 +19,7 @@ import ModeButtonRow from './components/ModeButtonRow';
 import OverlayBlock from './components/OverlayBlock';
 
 
-import axios from 'axios';
+//import axios from 'axios';
 
 import './App.css'; 
 
@@ -31,29 +30,19 @@ const diameter = 90;
 
 
 const App = () => {
-
-    const [concepts, setConcepts] = useState()
-    const [conceptRank, setConceptRank] = useState()
-     
+ 
     const [lastConcept, setLastConcept] = useState([])
 
     const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
 
-    const [backStep, setBackStep] = useState(0);
-
-    
-    const [loaded, setLoaded] = useState(false);
-    const [loaded2, setLoaded2] = useState(false);
-
-
     const dispatch = useDispatch();
-
 
     const mapState = useSelector((state) => state.counter[0].mapState);
     const round = useSelector((state) => state.counter[0].round);
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
 
-    
+    const { concepts, conceptRank, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore', 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity');
+    console.log(loaded)
 
     const controlButtons = (param) => {
 
@@ -433,37 +422,6 @@ const App = () => {
     
     
 
-    useEffect(() => {
-        console.log('effect')
-        axios
-            .get('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore')
-            .then(response => {
-               // console.log('promise fulfilled')
-                setConcepts(response.data)
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            })
-            .finally(() => {
-                setLoaded(true);
-            });
-   
-        axios
-            .get('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity')
-            .then(response => {
-                //console.log('promise fulfilled for otherData');
-                setConceptRank(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching otherData:', error);
-            })
-            .finally(() => {
-                setLoaded2(true);
-            });
-
-
-    }, [])
-
 
    
     return (
@@ -473,7 +431,7 @@ const App = () => {
                     <HeaderBlock />
                 </Grid>
                 <Grid item xs={12} className="second-row centerContent">
-                    {loaded && loaded2 && (
+                    {loaded && (
                         <>
                         <GoogleMapsApp
                             handleZoomChangedFunction={handleZoomChangedFunction}
