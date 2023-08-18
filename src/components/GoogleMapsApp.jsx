@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { newMapState, newMapLocation, newPolylineState, newMarkerState, newGameMode } from '../reducers/quizGameSlice';
+import { newMapLocation, newPolylineState, newMarkerState, newGameMode } from '../reducers/quizGameSlice';
 
 
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
@@ -14,25 +14,22 @@ import './GoogleMapsApp.css';
  
 const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
  
-    const [markerHandleArray, setMarkerHandleArray] = useState([]);
-    const [polylineHandleArray, setPolylineHandleArray] = useState([]);
+ 
     const [map, setMap] = useState(null);
-
-
-     //const [oldMarkerDataArray, setOldMarkerDataArray] = useState({});
-
+    const oldMarkerHandleArray = useRef({});
+    const oldPolylineHandleArray = useRef({});
+ 
 
     const [mapLocked, setMapLocked] = useState(false);
 
-    const mapState = useSelector((state) => state.counter[0].mapState);
+   
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const markerState = useSelector((state) => state.counter[0].markerState);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
-   // const gameMode = useSelector((state) => state.counter[0].gameMode);
+  
     const dispatch = useDispatch();
 
-    const oldMarkerHandleArray = useRef({});
-    const oldPolylineHandleArray = useRef({});
+
 
 
    
@@ -160,7 +157,6 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
                 ) {
 
                     if (oldPolylineHandleArray[polylineName]) {
-                        console.log(oldPolylineHandleArray[polylineName].handle)
                         oldPolylineHandleArray[polylineName].handle.setMap(null);
                     }
 

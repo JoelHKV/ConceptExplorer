@@ -23,30 +23,11 @@ const initMarkerData = {
         dataURL: drawCircleCanvas2ReturnDataURL(diameter, 'MIND', 2.9),
     },
 
- 
-
 }
 
 const initPolylineData = {
-    "Polyline0": {
-        lat: [27.7749, 28.7749],
-        lng: [-112.4194, -113.4194],
-    color: '#333333',
-},
-    "Polyline1": {
-        lat: [27.7749, 28.7749],
-        lng: [-111.4194, -111.4194],
-        color: '#333333',
-    }
+   
 }
-
-const initMapData = {
-    
-    markers: [ ],
-    polylines: [ ],
-
-};
-
 
 
 
@@ -55,7 +36,6 @@ const initialState = [
         round: 0,
         gameMode: 'browse2',
         concept: 'mind',
-        mapState: initMapData,
         markerState: initMarkerData,
         polylineState: initPolylineData,
         mapLocation: initMapLocation, 
@@ -178,79 +158,10 @@ const quizGameReducer = createSlice({
                 }
             }));
         },
- 
-
-
-
-
-
-
-
-        newMapState: (state, action) => {
-            const { attribute, dall, value, markerIndex, polylineIndex } = action.payload;
-            if (typeof dall !== 'undefined') {
-                 
-                state[0].mapState = value;
-
-                
-                    
-            
-
-
-                return
-            }
-
-             
-            
-            if (typeof markerIndex !== 'undefined') {
-
-                if (markerIndex === null) {
-                    state[0].mapState.markers = [];
-                    console.log('del')
-                    return
-                }
-
-
-
-               // console.log(markerIndex)
-                if (!state[0].mapState.markers[markerIndex]) {
-                    state[0].mapState.markers[markerIndex] = {}
-                }
-                if (typeof attribute !== 'undefined') { // updating specific attribute
-                    state[0].mapState.markers[markerIndex][attribute] = value;
-                }
-                else {  // or the whole marker at once            
-                    state[0].mapState.markers[markerIndex] = value;
-                }
-            }
-            if (typeof polylineIndex !== 'undefined') {
-
-                if (polylineIndex === null) {
-                    state[0].mapState.polylines = [];
-                    console.log('del')
-                    return
-                }
-
-
-                if (!state[0].mapState.polylines[polylineIndex]) {
-                    state[0].mapState.polylines[polylineIndex] = {}
-                }
-                if (typeof attribute !== 'undefined') { // updating specific attribute
-                    state[0].mapState.polylines[polylineIndex][attribute] = value;
-                }
-                else {  // or the whole marker at once    
-                    state[0].mapState.polylines[polylineIndex] = value;
-                }               
-            }
-        },
-        updateMarkerLat: (state, action) => {
-            const { markerIndex, newLat } = action.payload;
-            state[0].mapState.markers[markerIndex].lat = newLat;
-        },
-
+        
     }
 
 });
 
-export const { newGameMode, newConcept, newMapState, newMapLocation, newMarkerState, newPolylineState, newRound } = quizGameReducer.actions;
+export const { newGameMode, newConcept,   newMapLocation, newMarkerState, newPolylineState, newRound } = quizGameReducer.actions;
 export default quizGameReducer.reducer;

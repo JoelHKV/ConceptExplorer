@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, newConcept, newMapState, newMapLocation, newMarkerState, newPolylineState, newRound } from './reducers/quizGameSlice';
+import { newGameMode, newConcept,  newMapLocation, newMarkerState, newPolylineState, newRound } from './reducers/quizGameSlice';
  
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
@@ -37,7 +37,7 @@ const App = () => {
 
     const dispatch = useDispatch();
 
-    const mapState = useSelector((state) => state.counter[0].mapState);
+   // const mapState = useSelector((state) => state.counter[0].mapState);
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
@@ -47,8 +47,7 @@ const App = () => {
     const { concepts, conceptRank, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore', 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity');
     //console.log(loaded)
 
-    console.log(polylineState)
-
+     
 
     const controlButtons = (param) => {
         console.log(gameMode)
@@ -67,10 +66,9 @@ const App = () => {
 
         if (param === 'route') {
 
-            for (let i = 0; i < 9; i++) {
-                dispatch(newMapState({ value: { delete: true, render: true }, markerIndex: i }));
-            }
-
+            dispatch(newMarkerState({ markerName: 'ALL', updatedData: { delete: true } }))
+            dispatch(newPolylineState({ polylineName: 'ALL', updatedData: { delete: true } }))
+           // return
             let minLat = Number.POSITIVE_INFINITY;
             let maxLat = Number.NEGATIVE_INFINITY;
             let minLng = Number.POSITIVE_INFINITY;
@@ -92,38 +90,51 @@ const App = () => {
                     title: thisStep[0].toUpperCase(),  
                     param: null,
                     opacity: 1,
-                    render: true,
                     diameter: diameter/2,
                     dataURL: drawCircleCanvas2ReturnDataURL(diameter/2, thisStep[0].toUpperCase(), ''),
 
                 }
-                dispatch(newMapState({ value: thisMarker, markerIndex: i }));
-
-
+                
+                dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
 
                 drawPolyline(thisStep[10], thisStep[11], thisStep[12], thisStep[13], i)
 
                  
             }
 
-            dispatch(newMapLocation({ attribute: 'lat', value: (minLat + maxLat) / 2 }));
-            dispatch(newMapLocation({ attribute: 'lng', value: (minLng + maxLng) / 2 }));
-            dispatch(newMapLocation({ attribute: 'delta', value: Math.max((minLng - maxLng), (minLat - maxLat)) / 3 }));
+            const thisMapLocation = {
+                lat: (minLat + maxLat) / 2, // Default latitude  
+                lng: (minLng + maxLng) / 2, // Default longitude  dall
+                delta: Math.max((minLng - maxLng), (minLat - maxLat)),
+            }
+
+            dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
+
+        //    dispatch(newMapLocation({ attribute: 'lat', value: (minLat + maxLat) / 2 }));
+        //    dispatch(newMapLocation({ attribute: 'lng', value: (minLng + maxLng) / 2 }));
+        //    dispatch(newMapLocation({ attribute: 'delta', value: Math.max((maxLng - minLng), (maxLat - minLat)) /3  }));
 
 
             
         }
         if (param === 'globe') {
             dispatch(newGameMode('globe2'))
-            dispatch(newMapState({ markerIndex: null })); // delete existing markers
+           // dispatch(newMapState({ markerIndex: null })); // delete existing markers
 
+            dispatch(newMarkerState({ markerName: 'ALL', updatedData: { delete: true } }))
+            
 
-            dispatch(newMapLocation({ attribute: 'lat', value: 10 }));
-            dispatch(newMapLocation({ attribute: 'lng', value: 0 }));
+       //     dispatch(newMapLocation({ attribute: 'lat', value: 10 }));
+       //     dispatch(newMapLocation({ attribute: 'lng', value: 0 }));
            // dispatch(newMapLocation({ attribute: 'delta', value: null }));
-            dispatch(newMapLocation({ attribute: 'zoom', value: 1 }));
+     //       dispatch(newMapLocation({ attribute: 'zoom', value: 1 }));
 
-            //const globeOptions = ['mind', 'emotion']
+
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: 10, lng: 0, zoom: 1  } }));
+
+
+
+             
             const globeOptions = Object.keys(concepts).slice(0,10);
             const lat = [];
             const lng = [];
@@ -142,15 +153,7 @@ const App = () => {
 
        
         if (param === 'random') {
-        //    dispatch(newMapState({ attribute: 'delete', value: null }));
-          // dispatch(newMapState({ markerIndex: null }));
-
-        //    const diameter = 180;
-        //    const dataURL = drawCircleCanvas2ReturnDataURL(diameter, 'ASA', '');
-         //   dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: 0 }));
-          //  dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: 0 }));
-          //  dispatch(newMapState({ attribute: 'render', value: true, markerIndex: 0 }));
-            
+      
             const updatedMarkerData = {
                 lat: 28.12345,
                 lng: -113.6789,
@@ -188,7 +191,7 @@ const App = () => {
                         color: '#ff3333',
                 }
 
-            dispatch(newPolylineState({ polylineName: "ALL", updatedData: { delete: true } }))
+            dispatch(newPolylineState({ polylineName: "PL2", updatedData: updatedPolylineData }))
 
          //   dispatch(newMarkerState({ markerName: 'Marker8', updatedData: updatedMarkerData }))
         }
@@ -205,16 +208,20 @@ const App = () => {
         console.log('b')
        // dispatch(newMapLocation({ attribute: 'lat', value: null }));
        // dispatch(newMapLocation({ attribute: 'lng', value: null }));
-        const diameter = 20 + 40 * zoomLevel;
+       const diameter = 20 + 40 * zoomLevel;
 
-        for (let i = 0; i < 8; i++) {
-            console.log(mapState.markers[i].title)
+        for (let i = 0; i < 1; i++) {
+          //   console.log(mapState.markers[i].title)
             const thisName = 'dada'; 
             const dataURL = drawCircleCanvas2ReturnDataURL(diameter, thisName, '');
-
-            dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: i }));
-            dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: i }));
-            dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
+           // let thismarker = markerState['Marker' + i];
+            let thismarker = { ...markerState['Marker' + i] };
+           // thismarker.diameter = diameter;
+            thismarker.diameter = diameter;
+           dispatch(newMarkerState({ markerName: ('Marker' + i), updatedData: thismarker }))
+           // dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: i }));
+           // dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: i }));
+            //dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
         }
 
      //   console.log(gameMode)
@@ -279,7 +286,6 @@ const App = () => {
                 title: markerTitleUpperCase, // Title of the first marker
                 param: fireMarker,
                 opacity: thisOpacity,
-                render: true,
                 diameter: diameter,
                 dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitleUpperCase, formattedValue),
 
@@ -296,7 +302,6 @@ const App = () => {
 
    
     const markerFunction = (thisConcept, location, lat, lng) => { 
-        console.log(thisConcept)
         if (gameMode === 'globe') { // we have chosen a concept to explore from the global view
             setOptionChoiceHistory([]) // delete browsing history
             dispatch(newMapLocation({ attribute: 'delta', value: 2 }));
@@ -306,11 +311,20 @@ const App = () => {
             dispatch(newGameMode('details'))
             return
         }
- 
-        if (mapState.polylines[1]) {
-            dispatch(newMapState({ value: { delete: true, render: true }, polylineIndex: 1 }));
-        }
 
+       // dispatch(newPolylineState({ polylineName: 'ALL', updatedData: { delete: true } }))
+
+
+      //  if (polylineState['Polyline0']) {
+             
+       //     dispatch(newPolylineState({ markerName: 'Polyline0', updatedData: { delete: true } }));
+      //      dispatch(newMapState({ value: { delete: true, render: true }, polylineIndex: 1 }));
+        //}
+       // if (polylineState['Polyline1']) {
+             
+         //   dispatch(newPolylineState({ markerName: 'Polyline1', updatedData: { delete: true } }));
+            //      dispatch(newMapState({ value: { delete: true, render: true }, polylineIndex: 1 }));
+        //}
         if (markerState['Marker0']) {
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + location].lat, markerState['Marker' + location].lng, 0)
 
@@ -342,9 +356,9 @@ const App = () => {
             }
             pivotItems = [thisConcept, lastConcept]
             clickDirection = location;
-            if (round > 0) {
+         //   if (round > 0) {
                 saveHistoryByIndex(location, round)
-            }
+          //  }
             
         }
         setLastConcept(pivotItems[0])
@@ -379,8 +393,9 @@ const App = () => {
 
         }, 400)
 
-        dispatch(newMapLocation({ attribute: 'lat', value: lat }));
-        dispatch(newMapLocation({ attribute: 'lng', value: lng }));
+
+        dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, } }));
+
         
 
     }
@@ -392,7 +407,9 @@ const App = () => {
     const saveHistoryByIndex = (location, index) => {
         const oldOptionArray = new Array(14);
         for (let i = 0; i < 9; i++) {
-            oldOptionArray[i] = mapState.markers[i] ? mapState.markers[i].param : '';
+    //        oldOptionArray[i] = mapState.markers[i] ? mapState.markers[i].param : '';
+
+            oldOptionArray[i] = markerState['Marker' + i] ? markerState['Marker' + i].param : ''; 
         }
 
         const markerCoordinates = [
@@ -422,7 +439,8 @@ const App = () => {
             color: '#333333',
             render: true,
         }
-        dispatch(newMapState({ value: thisPolyline, polylineIndex: index }));
+
+        dispatch(newPolylineState({ polylineName: 'Polyline' + index, updatedData: thisPolyline }))
 
     }
 
@@ -445,8 +463,13 @@ const App = () => {
         const latThis = latStart * (1 - position) + latEnd * position;
         const lngThis = lngStart * (1 - position) + lngEnd * position;
 
-        dispatch(newMapLocation({ attribute: 'lat', value: latThis }));
-        dispatch(newMapLocation({ attribute: 'lng', value: lngThis }));
+     //   dispatch(newMapLocation({ attribute: 'lat', value: latThis }));
+     //   dispatch(newMapLocation({ attribute: 'lng', value: lngThis }));
+
+        dispatch(newMapLocation({ dall: 'dall', value: { lat: latThis, lng: lngThis } }));
+
+
+
 
         if (position < 1) {
             setTimeout(() => {
