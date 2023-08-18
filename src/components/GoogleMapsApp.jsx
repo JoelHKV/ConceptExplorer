@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { newMapState, newGameMode } from '../reducers/quizGameSlice';
+import { newMapState, newMapLocation, newPolylineState, newMarkerState, newGameMode } from '../reducers/quizGameSlice';
 
 
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
@@ -18,14 +18,24 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
     const [polylineHandleArray, setPolylineHandleArray] = useState([]);
     const [map, setMap] = useState(null);
 
+
+     //const [oldMarkerDataArray, setOldMarkerDataArray] = useState({});
+
+
     const [mapLocked, setMapLocked] = useState(false);
 
     const mapState = useSelector((state) => state.counter[0].mapState);
-    const gameMode = useSelector((state) => state.counter[0].gameMode);
+    const polylineState = useSelector((state) => state.counter[0].polylineState);
+    const markerState = useSelector((state) => state.counter[0].markerState);
+    const mapLocation = useSelector((state) => state.counter[0].mapLocation);
+   // const gameMode = useSelector((state) => state.counter[0].gameMode);
     const dispatch = useDispatch();
 
+    const oldMarkerHandleArray = useRef({});
+    const oldPolylineHandleArray = useRef({});
 
 
+   
     useEffect(() => {
         // Load the Google Maps JavaScript API
 
@@ -37,90 +47,140 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
         document.head.appendChild(script);
     }, []);
 
-
     useEffect(() => {
         if (map) {
+             
             //map.setCenter({ lat: mapState.lat, lng: mapState.lng });
-            if (mapState.lat) {
-                map.panTo({ lat: mapState.lat, lng: mapState.lng });
-            }
+          //  if (mapLocation.lat) {
+                map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng });
+          //  }
 
-            if (mapState.zoom) { // use zoom if zoom data is given
-                map.setZoom(mapState.zoom);
-                dispatch(newMapState({ attribute: 'zoom', value: null }));
+            if (mapLocation.zoom) { // use zoom if zoom data is given
+                map.setZoom(mapLocation.zoom);
+                dispatch(newMapLocation({ attribute: 'zoom', value: null }));
             }
-            if (mapState.delta) { // use bounds if delta data is given
+            if (mapLocation.delta) { // use bounds if delta data is given
                 const bounds = new window.google.maps.LatLngBounds();
-                bounds.extend({ lat: mapState.lat + mapState.delta, lng: mapState.lng + mapState.delta });
-                bounds.extend({ lat: mapState.lat - mapState.delta, lng: mapState.lng - mapState.delta });
+                bounds.extend({ lat: mapLocation.lat + mapLocation.delta, lng: mapLocation.lng + mapLocation.delta });
+                bounds.extend({ lat: mapLocation.lat - mapLocation.delta, lng: mapLocation.lng - mapLocation.delta });
                 map.fitBounds(bounds);
 
-                dispatch(newMapState({ attribute: 'delta', value: null }));
+                dispatch(newMapLocation({ attribute: 'delta', value: null }));
 
                 const updatedZoom = map.getZoom();
                 console.log("Updated Zoom Level:", updatedZoom);
 
-            }
+            }                                 
+        }
+    }, [map, mapLocation]);
 
-            if (Array.isArray(mapState.markers) && mapState.markers.length === 0) {
-                markerHandleArray.forEach((oldMarkerHandle) => {
-                    if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
-                        oldMarkerHandle.setMap(null); // This removes the marker from the map
+
+    useEffect(() => {
+        if (map) {
+
+            let markerNames = Object.keys(markerState); // this is what we want
+            let oldMarkerNames = Object.keys(oldMarkerHandleArray); // this is the prev state
+            if (markerNames.length === 0) {  // all markers deleted  
+                oldMarkerNames.forEach((markerName) => {
+                    if (markerName !== 'current') {
+                        oldMarkerHandleArray[markerName].handle.setMap(null); // iterate handles and delete markers
                     }
                 })
-                setMarkerHandleArray([]);
-            }
-            if (mapState.markers) {
-                mapState.markers.forEach((markerData, index) => {
-                    if (markerData.render) {
-                        const oldMarkerHandle = markerHandleArray[index];
-                        if (oldMarkerHandle && oldMarkerHandle.setMap) { //                             
-                            oldMarkerHandle.setMap(null); // This removes the marker from the map
-                        }
-                        let newMarkerHandle = null
-                        if (!markerData.delete) {
-                            newMarkerHandle = createMarker(markerData, index)
-                        }
-                        updateMarkerPolylineArrayAtIndex(setMarkerHandleArray, index, newMarkerHandle)
-                        dispatch(newMapState({ attribute: 'render', value: false, markerIndex: index }));
-                    }
-                })
-
-            }
-
-            if (Array.isArray(mapState.polylines) && mapState.polylines.length === 0) {
-                polylineHandleArray.forEach((oldPolylineHandle) => {
-                    if (oldPolylineHandle && oldPolylineHandle.setMap) {
-                        oldPolylineHandle.setMap(null); // This removes the polyline from the map
-                    }
-                })
-                setPolylineHandleArray([]);
+                oldMarkerHandleArray.current = {}; //delete handles
+                return
             }
 
 
-            if (mapState.polylines) { // polyline             
-                mapState.polylines.forEach((polylineData, index) => {
-                    if (polylineData.render) {
-                        const oldPolylineHandle = polylineHandleArray[index];
-                        if (oldPolylineHandle && oldPolylineHandle.setMap) {
-                            oldPolylineHandle.setMap(null); // This removes the polyline from the map
-                        }
-                        let newPolylineHandle = null
-                        if (!polylineData.delete) {
-                            newPolylineHandle = createPolyline(polylineData)
-                        }
+            let deleteMarkerNames = oldMarkerNames.filter(name => name !== 'current' && !markerNames.includes(name));
+                if (oldMarkerHandleArray[deleteMarkerNames]) { // check the handle
+                oldMarkerHandleArray[deleteMarkerNames].handle.setMap(null); // delete marker
+                    delete oldMarkerHandleArray.current[deleteMarkerNames];
+                return
+                }
+            
 
-                        updateMarkerPolylineArrayAtIndex(setPolylineHandleArray, index, newPolylineHandle)
-                        dispatch(newMapState({ attribute: 'render', value: false, polylineIndex: index }));
+
+            markerNames.forEach((markerName, index) => {
+                
+                const markerData = markerState[markerName]; // Access the value using the key
+                if (
+                    !oldMarkerHandleArray[markerName] || // If oldMarkerDataArray[markerName] doesn't exist
+                    (oldMarkerHandleArray[markerName].timestamp !== markerData.timestamp)
+                ) {
+
+                    if (oldMarkerHandleArray[markerName]) {
+                        oldMarkerHandleArray[markerName].handle.setMap(null);
                     }
 
-                });
-            }
+                    const newMarkerHandle = createMarker2(markerData, index)
+                    oldMarkerHandleArray[markerName] = {}
+                    oldMarkerHandleArray[markerName].handle = newMarkerHandle
+                    oldMarkerHandleArray[markerName].timestamp = markerData.timestamp
+                     
 
+                     
+                }
+            });
 
         }
-    }, [map, mapState]);
+    }, [map, markerState]);
 
+
+    useEffect(() => {
+        if (map) {
+
+            let polylineNames = Object.keys(polylineState); // this is what we want
+            let oldPolylineNames = Object.keys(oldPolylineHandleArray); // this is the prev state
+            if (polylineNames.length === 0) {  // all markers deleted  
+                oldPolylineNames.forEach((polylineName) => {
+                    if (polylineName !== 'current') {
+                        oldPolylineHandleArray[polylineName].handle.setMap(null); // iterate handles and delete markers
+                    }
+                })
+                oldPolylineHandleArray.current = {}; //delete handles
+                return
+            }
+
+
+            let deletePolylineNames = oldPolylineNames.filter(name => name !== 'current' && !polylineNames.includes(name));
+            if (oldPolylineHandleArray[deletePolylineNames]) { // check the handle
+                oldPolylineHandleArray[deletePolylineNames].handle.setMap(null); // delete marker
+                delete oldPolylineHandleArray.current[deletePolylineNames];
+                return
+            }
+
+
+
+            polylineNames.forEach((polylineName, index) => {
+                
+                const polylineData = polylineState[polylineName]; // Access the value using the key
+                if (
+                    !oldPolylineHandleArray[polylineName] || // If oldMarkerDataArray[markerName] doesn't exist
+                    (oldPolylineHandleArray[polylineName].timestamp !== polylineData.timestamp)
+                ) {
+
+                    if (oldPolylineHandleArray[polylineName]) {
+                        console.log(oldPolylineHandleArray[polylineName].handle)
+                        oldPolylineHandleArray[polylineName].handle.setMap(null);
+                    }
+
+                  //  const newPolylineHandle = createMarker2(polylineData, index)
+                    const newPolylineHandle = createPolyline(polylineData)
+                    oldPolylineHandleArray[polylineName] = {}
+                    oldPolylineHandleArray[polylineName].handle = newPolylineHandle
+                    oldPolylineHandleArray[polylineName].timestamp = polylineData.timestamp
+
+
+
+                }
+            });
+
+        }
+    }, [map, polylineState]);
+
+
+
+ 
 
 
 
@@ -133,36 +193,16 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
     };
 
 
+     
 
 
-
-    const updateMarkerPolylineArrayAtIndex = (arraySetter, index, newValue) => {
-        arraySetter((prevArray) => {
-            if (index >= 0) {
-                const newArray = [...prevArray];
-                while (newArray.length <= index) {
-                    newArray.push(null); // Fill with null values up to the desired index
-                }
-                newArray[index] = newValue;
-                return newArray;
-            }
-            return prevArray; // Return the array unchanged if index is negative
-        });
-    };
-
-    const createMarker = (markerData, index) => {
-
-        const defaultLabelOptions = {
+    const createMarker2 = (markerData, index) => {
+        const labelOptions = {
             text: ' ',
             color: 'black',
             fontSize: '18px',
             fontWeight: 'bold'
         };
-
-        const labelOptions = markerData.label // use specified label data if given, otherwise default
-            ? Object.assign({}, defaultLabelOptions, markerData.label)
-            : defaultLabelOptions;
-
         let markerImage = null; //no marker image for regular marker
         if (markerData.diameter) {
             const diameter = markerData.diameter;
@@ -187,9 +227,12 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
             if (markerData.param === null) { return }
             markerFunction(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
 
-        });  
+        });
         return markerHandle
+     
+    
     }
+     
 
     const createPolyline = (polylineData) => {
         const polytype = polylineData.symbol || 'FORWARD_CLOSED_ARROW'
@@ -223,7 +266,7 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
        // if (mapLocked) { 
 
         const mapOptions = {
-            center: { lat: mapState.lat, lng: mapState.lng }, // San Francisco coordinates
+            center: { lat: mapLocation.lat, lng: mapLocation.lng },  
             disableDefaultUI: true,
             gestureHandling: "auto",
         };
@@ -236,7 +279,7 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
         });
 
         newMap.addListener("zoom_changed", () => {
-            console.log(gameMode)
+          //  console.log(gameMode)
             const newZoomLevel = newMap.getZoom();
             handleZoomChangedFunction(newZoomLevel)
         });

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, newConcept, newMapState, newRound } from './reducers/quizGameSlice';
+import { newGameMode, newConcept, newMapState, newMapLocation, newMarkerState, newPolylineState, newRound } from './reducers/quizGameSlice';
  
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
@@ -38,13 +38,16 @@ const App = () => {
     const dispatch = useDispatch();
 
     const mapState = useSelector((state) => state.counter[0].mapState);
+    const markerState = useSelector((state) => state.counter[0].markerState);
+    const polylineState = useSelector((state) => state.counter[0].polylineState);
+    const mapLocation = useSelector((state) => state.counter[0].mapLocation);
     const round = useSelector((state) => state.counter[0].round);
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
  
     const { concepts, conceptRank, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore', 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity');
     //console.log(loaded)
 
-    console.log(gameMode)
+    console.log(polylineState)
 
 
     const controlButtons = (param) => {
@@ -58,8 +61,8 @@ const App = () => {
         }
         if (param === 'home') {
             const firstChoice = optionChoiceHistory[0];
-            dispatch(newMapState({ attribute: 'lat', value: firstChoice[10] }));
-            dispatch(newMapState({ attribute: 'lng', value: firstChoice[11] }));        
+            dispatch(newMapLocation({ attribute: 'lat', value: firstChoice[10] }));
+            dispatch(newMapLocation({ attribute: 'lng', value: firstChoice[11] }));        
         }
 
         if (param === 'route') {
@@ -103,9 +106,9 @@ const App = () => {
                  
             }
 
-            dispatch(newMapState({ attribute: 'lat', value: (minLat + maxLat) / 2 }));
-            dispatch(newMapState({ attribute: 'lng', value: (minLng + maxLng) / 2 }));
-            dispatch(newMapState({ attribute: 'delta', value: Math.max((minLng - maxLng), (minLat - maxLat)) / 3 }));
+            dispatch(newMapLocation({ attribute: 'lat', value: (minLat + maxLat) / 2 }));
+            dispatch(newMapLocation({ attribute: 'lng', value: (minLng + maxLng) / 2 }));
+            dispatch(newMapLocation({ attribute: 'delta', value: Math.max((minLng - maxLng), (minLat - maxLat)) / 3 }));
 
 
             
@@ -115,10 +118,10 @@ const App = () => {
             dispatch(newMapState({ markerIndex: null })); // delete existing markers
 
 
-            dispatch(newMapState({ attribute: 'lat', value: 10 }));
-            dispatch(newMapState({ attribute: 'lng', value: 0 }));
-            dispatch(newMapState({ attribute: 'delta', value: null }));
-            dispatch(newMapState({ attribute: 'zoom', value: 1 }));
+            dispatch(newMapLocation({ attribute: 'lat', value: 10 }));
+            dispatch(newMapLocation({ attribute: 'lng', value: 0 }));
+           // dispatch(newMapLocation({ attribute: 'delta', value: null }));
+            dispatch(newMapLocation({ attribute: 'zoom', value: 1 }));
 
             //const globeOptions = ['mind', 'emotion']
             const globeOptions = Object.keys(concepts).slice(0,10);
@@ -142,26 +145,53 @@ const App = () => {
         //    dispatch(newMapState({ attribute: 'delete', value: null }));
           // dispatch(newMapState({ markerIndex: null }));
 
-            const diameter = 180;
+        //    const diameter = 180;
+        //    const dataURL = drawCircleCanvas2ReturnDataURL(diameter, 'ASA', '');
+         //   dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: 0 }));
+          //  dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: 0 }));
+          //  dispatch(newMapState({ attribute: 'render', value: true, markerIndex: 0 }));
+            
+            const updatedMarkerData = {
+                lat: 28.12345,
+                lng: -113.6789,
+                titdle: "Marker11",
+                param: "newParam",
+                render: false,
+                diameter: 30,
+                dataURL: drawCircleCanvas2ReturnDataURL(30, 'ASA', ''),
+            };
+           // dispatch(newMarkerState({ markerName: 'Marker1', updatedData: { delete: true } }));
 
-            const dataURL = drawCircleCanvas2ReturnDataURL(diameter, 'ASA', '');
+            dispatch(newMarkerState({ markerName: 'Marker1', updatedData: { delete: true } }));
+            // dispatch(newMarkerState({ markerName: 'Marker2', updatedData: updatedMarkerData }));
+           // dispatch(updatedState);
+           // console.log(updatedState) markerName, updatedData
 
-
-            dispatch(newMapState({ attribute: 'lat', value: null}));
-            dispatch(newMapState({ attribute: 'lng', value: null }));
-
-            dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: 0 }));
-            dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: 0 }));
-            dispatch(newMapState({ attribute: 'render', value: true, markerIndex: 0 }));
-
-
-
-
-           // dispatch(newMapState({ polylineIndex: null }));
-            console.log(gameMode)
         }
 
+        if (param === 'add') {
+            const updatedMarkerData = {
+                lat: 29.12345,
+                lng: -113.6789,
+                titdle: "Marker2",
+                param: "newParam",
+                render: false,
+                diameter: 130,
+                dataURL: drawCircleCanvas2ReturnDataURL(130, 'ASA', ''),
 
+
+            };
+
+            const updatedPolylineData =  {
+                lat: [26.7749, 28.7749],
+                    lng: [-113.4194, -113.4194],
+                        color: '#ff3333',
+                }
+
+            dispatch(newPolylineState({ polylineName: "ALL", updatedData: { delete: true } }))
+
+         //   dispatch(newMarkerState({ markerName: 'Marker8', updatedData: updatedMarkerData }))
+        }
           
     }
 
@@ -173,8 +203,8 @@ const App = () => {
         console.log(gameMode)
         if (gameMode !== 'globe') { return }
         console.log('b')
-        dispatch(newMapState({ attribute: 'lat', value: null }));
-        dispatch(newMapState({ attribute: 'lng', value: null }));
+       // dispatch(newMapLocation({ attribute: 'lat', value: null }));
+       // dispatch(newMapLocation({ attribute: 'lng', value: null }));
         const diameter = 20 + 40 * zoomLevel;
 
         for (let i = 0; i < 8; i++) {
@@ -254,7 +284,12 @@ const App = () => {
                 dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitleUpperCase, formattedValue),
 
             }
-            dispatch(newMapState({ value: thisMarker, markerIndex: i }));
+          //  dispatch(newMapState({ value: thisMarker, markerIndex: i }));
+
+
+            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+
+
         })
     }
 
@@ -264,7 +299,7 @@ const App = () => {
         console.log(thisConcept)
         if (gameMode === 'globe') { // we have chosen a concept to explore from the global view
             setOptionChoiceHistory([]) // delete browsing history
-            dispatch(newMapState({ attribute: 'delta', value: 2 }));
+            dispatch(newMapLocation({ attribute: 'delta', value: 2 }));
          //   dispatch(newGameMode('browse'))
         }
         if (location === 0 && optionChoiceHistory.length >0) {
@@ -275,8 +310,13 @@ const App = () => {
         if (mapState.polylines[1]) {
             dispatch(newMapState({ value: { delete: true, render: true }, polylineIndex: 1 }));
         }
-     
-        drawPolyline(mapState.markers[0].lat, mapState.markers[0].lng, mapState.markers[location].lat, mapState.markers[location].lng, 0)
+
+        if (markerState['Marker0']) {
+            drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + location].lat, markerState['Marker' + location].lng, 0)
+
+        }
+        
+        
 
 
         let clickDirection
@@ -302,7 +342,9 @@ const App = () => {
             }
             pivotItems = [thisConcept, lastConcept]
             clickDirection = location;
-            saveHistoryByIndex(location, round)
+            if (round > 0) {
+                saveHistoryByIndex(location, round)
+            }
             
         }
         setLastConcept(pivotItems[0])
@@ -337,8 +379,8 @@ const App = () => {
 
         }, 400)
 
-        dispatch(newMapState({ attribute: 'lat', value: lat }));
-        dispatch(newMapState({ attribute: 'lng', value: lng }));
+        dispatch(newMapLocation({ attribute: 'lat', value: lat }));
+        dispatch(newMapLocation({ attribute: 'lng', value: lng }));
         
 
     }
@@ -354,10 +396,10 @@ const App = () => {
         }
 
         const markerCoordinates = [
-            mapState.markers[0].lat,
-            mapState.markers[0].lng,
-            mapState.markers[location].lat,
-            mapState.markers[location].lng
+            markerState['Marker0'].lat,
+            markerState['Marker0'].lng,
+            markerState['Marker' + location].lat,
+            markerState['Marker' + location].lng
         ];
 
         oldOptionArray[9] = location;
@@ -390,8 +432,8 @@ const App = () => {
         const updatedMarkers = newOptions.map((markerTitle, i) => {
             if (!excludeMarkers.includes(markerTitle)) {                          
                 const opacity = conceptRank[markerTitle]['iskey'] ? 1 : 0.6;
-                dispatch(newMapState({ attribute: 'opacity', value: opacity, markerIndex: i }));
-                dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
+                dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: { opacity: opacity } }));
+
         }
         })
 
@@ -403,8 +445,8 @@ const App = () => {
         const latThis = latStart * (1 - position) + latEnd * position;
         const lngThis = lngStart * (1 - position) + lngEnd * position;
 
-        dispatch(newMapState({ attribute: 'lat', value: latThis }));
-        dispatch(newMapState({ attribute: 'lng', value: lngThis }));
+        dispatch(newMapLocation({ attribute: 'lat', value: latThis }));
+        dispatch(newMapLocation({ attribute: 'lng', value: lngThis }));
 
         if (position < 1) {
             setTimeout(() => {
@@ -460,7 +502,7 @@ const App = () => {
                    
                     <ModeButtonRow
                         buttonFunction={controlButtons}
-                        enabled={[round > 0, round > 0, round > 0, true, true]}
+                        enabled={[round > 0, round > 0, round > 0, true, true, true]}
                     />
                     
                 </Grid>

@@ -3,45 +3,46 @@ import { drawCircleCanvas2ReturnDataURL } from '../utilities/drawCircleCanvas2Re
 
 const diameter=90
 
-const initMapData = {
+const initMapLocation = {
     lat: 27.7749, // Default latitude  
     lng: -112.4194, // Default longitude  
     // zoom: 7, // Default zoom level
-     delta: 2,
-    markers: [
-       
-        {
-            lat: 27.7749, // Latitude of the first marker
-            lng: -112.4194, // Longitude of the first marker
-            title: "MIND", // Title of the first marker
-            param: "mind",
-            label: {
-                color: "black",
-            },
-            render: true,
-            diameter: diameter,
-            dataURL: drawCircleCanvas2ReturnDataURL(diameter, 'MIND', 2.9),
-
-        },
-
-        {
-            lat: 29.7749, // Latitude of the first marker
-            lng: -112.4194, // Longitude of the first marker
-            title: "SPACE", // Title of the first marker
-            param: "space",
-            label: {
-                color: "black",
-            },
-            render: true,
-            diameter: diameter,
-            dataURL: drawCircleCanvas2ReturnDataURL(diameter, 'SPACE', 2.9),
-
-        },
+    delta: 2,
+}
 
 
+
+const initMarkerData = {
+    "Marker0": {
+        lat: 27.7749,
+        lng: -112.4194,
+        title: "MIND",
+        param: "mind",
+        timestamp: 23232,
+        diameter: diameter,
+        dataURL: drawCircleCanvas2ReturnDataURL(diameter, 'MIND', 2.9),
+    },
+
+ 
+
+}
+
+const initPolylineData = {
+    "Polyline0": {
+        lat: [27.7749, 28.7749],
+        lng: [-112.4194, -113.4194],
+    color: '#333333',
+},
+    "Polyline1": {
+        lat: [27.7749, 28.7749],
+        lng: [-111.4194, -111.4194],
+        color: '#333333',
+    }
+}
+
+const initMapData = {
     
-
-    ],
+    markers: [ ],
     polylines: [ ],
 
 };
@@ -55,6 +56,9 @@ const initialState = [
         gameMode: 'browse2',
         concept: 'mind',
         mapState: initMapData,
+        markerState: initMarkerData,
+        polylineState: initPolylineData,
+        mapLocation: initMapLocation, 
     }
 ]
 
@@ -79,6 +83,109 @@ const quizGameReducer = createSlice({
         },
 
 
+        newMapLocation: (state, action) => {
+            const { attribute, dall, value } = action.payload;
+            const newState = [...state];
+
+            if (typeof dall !== 'undefined') {
+                newState[0] = {
+                    ...newState[0],
+                    mapLocation: value
+                };
+            } else {
+                newState[0] = {
+                    ...newState[0],
+                    mapLocation: {
+                        ...newState[0].mapLocation,
+                        [attribute]: value
+                    }
+                };
+            }
+
+            return newState;
+            
+
+        },
+        newMarkerState: (state, action) => {      
+            const { markerName, updatedData } = action.payload;
+
+            if (markerName === 'ALL' && updatedData.delete) {
+                return state.map(item => ({
+                    ...item,
+                    markerState: {}
+                }));
+                 
+            }
+            if (markerName !== 'ALL' && updatedData.delete) {
+                console.log('go here')
+                return state.map(item => ({
+                    ...item,
+                    markerState: Object.keys(item.markerState).reduce((acc, key) => {
+                        if (key !== markerName) {
+                            acc[key] = item.markerState[key];
+                        }
+                        return acc;
+                    }, {})
+                }));
+            }
+
+
+            updatedData.timestamp=Date.now()
+            return state.map(item => ({
+                ...item,
+                markerState: {
+                    ...item.markerState,
+                    [markerName]: {
+                        ...item.markerState[markerName],
+                        ...updatedData
+                    }
+                }
+            }));           
+        },
+
+        newPolylineState: (state, action) => {
+            const { polylineName, updatedData } = action.payload;
+
+            if (polylineName === 'ALL' && updatedData.delete) {
+                return state.map(item => ({
+                    ...item,
+                    polylineState: {}
+                }));
+            }
+
+            if (polylineName !== 'ALL' && updatedData.delete) {
+                console.log('go here')
+                return state.map(item => ({
+                    ...item,
+                    polylineState: Object.keys(item.polylineState).reduce((acc, key) => {
+                        if (key !== polylineName) {
+                            acc[key] = item.polylineState[key];
+                        }
+                        return acc;
+                    }, {})
+                }));
+            }
+
+            updatedData.timestamp = Date.now();
+            return state.map(item => ({
+                ...item,
+                polylineState: {
+                    ...item.polylineState,
+                    [polylineName]: {
+                        ...item.polylineState[polylineName],
+                        ...updatedData
+                    }
+                }
+            }));
+        },
+ 
+
+
+
+
+
+
+
         newMapState: (state, action) => {
             const { attribute, dall, value, markerIndex, polylineIndex } = action.payload;
             if (typeof dall !== 'undefined') {
@@ -93,10 +200,7 @@ const quizGameReducer = createSlice({
                 return
             }
 
-            if (typeof markerIndex === 'undefined' && typeof polylineIndex === 'undefined') {
-                state[0].mapState[attribute] = value;
-                return
-            }
+             
             
             if (typeof markerIndex !== 'undefined') {
 
@@ -148,5 +252,5 @@ const quizGameReducer = createSlice({
 
 });
 
-export const { newGameMode, newConcept, newMapState, newRound } = quizGameReducer.actions;
+export const { newGameMode, newConcept, newMapState, newMapLocation, newMarkerState, newPolylineState, newRound } = quizGameReducer.actions;
 export default quizGameReducer.reducer;

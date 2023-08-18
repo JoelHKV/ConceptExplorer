@@ -28,6 +28,12 @@ const buttonData = [
         className: 'fly-control',
         param: 'random',
     },
+    {
+        name: 'add',
+        className: 'fly-control',
+        param: 'add',
+    },
+
 ];
 
 const ModeButtonRow = ({ buttonFunction, enabled }) => {
