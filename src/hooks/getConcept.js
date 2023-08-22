@@ -1,15 +1,22 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 
 
 export const getConcept = (thisURL, thisURL2) => {
     const [concepts, setConcepts] = useState([]);
+    const [globeConcepts, setGlobeConcepts] = useState([]);
+
+
     const [conceptRank, setConceptRank] = useState()
 
     const [load1, setLoad1] = useState(false);
     const [load2, setLoad2] = useState(false);  
     const [error, setError] = useState(null);
+
+    //let latLngData2;
+
+
     
     const fetchData = () => { 
 
@@ -18,6 +25,10 @@ export const getConcept = (thisURL, thisURL2) => {
             .get(thisURL)
             .then(response => {
                 setConcepts(response.data)
+                const tempGlobalConcepts = Object.keys(response.data).slice(0, 20);
+                
+
+                setGlobeConcepts(tempGlobalConcepts)
                 setLoad1(true)
 
             })
@@ -50,9 +61,24 @@ export const getConcept = (thisURL, thisURL2) => {
         fetchData()
     }, [])
 
+    const latLngData = useMemo(() => {
+        const newLat = [];
+        const newLng = [];
+
+        for (let i = 0; i < globeConcepts.length; i++) {
+            newLat.push(Math.random() * 140 - 70);
+            newLng.push(Math.random() * 360 - 180);
+        }
+
+        return { lat: newLat, lng: newLng };
+    }, [globeConcepts]);
+
+
+
+
     const loaded = load1 && load2;
 
-    return { concepts, conceptRank, loaded, error }
+    return { concepts, conceptRank, globeConcepts, latLngData, loaded, error }
 
 
 };

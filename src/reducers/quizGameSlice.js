@@ -34,7 +34,7 @@ const initPolylineData = {
 const initialState = [
     {
         round: 0,
-        gameMode: 'browse2',
+        gameMode: 'browse3',
         concept: 'mind',
         markerState: initMarkerData,
         polylineState: initPolylineData,
@@ -46,9 +46,7 @@ const quizGameReducer = createSlice({
     name: 'counter',
     initialState,
     reducers: {     
-        newRound: (state, newValue) => {
-            state[0].round = state[0].round + newValue.payload;
-        },
+
         newGameMode: (state, action) => {
             return [
                 {
@@ -58,9 +56,7 @@ const quizGameReducer = createSlice({
                 ...state.slice(1) // Copy the rest of the state array
             ];
         },
-        newConcept: (state, newValue) => {
-            state[0].concept = newValue.payload;
-        },
+  
 
 
         newMapLocation: (state, action) => {
@@ -86,18 +82,15 @@ const quizGameReducer = createSlice({
             
 
         },
-        newMarkerState: (state, action) => {      
-            const { markerName, updatedData } = action.payload;
-
-            if (markerName === 'ALL' && updatedData.delete) {
+        deleteMarkerState: (state, action) => {
+            const { markerName } = action.payload;
+            if (markerName==='ALL') {
                 return state.map(item => ({
                     ...item,
                     markerState: {}
-                }));
-                 
+                }))
             }
-            if (markerName !== 'ALL' && updatedData.delete) {
-                console.log('go here')
+            else {          
                 return state.map(item => ({
                     ...item,
                     markerState: Object.keys(item.markerState).reduce((acc, key) => {
@@ -107,9 +100,10 @@ const quizGameReducer = createSlice({
                         return acc;
                     }, {})
                 }));
-            }
-
-
+            };
+        },
+        newMarkerState: (state, action) => { 
+            const { markerName, updatedData } = action.payload;      
             updatedData.timestamp=Date.now()
             return state.map(item => ({
                 ...item,
@@ -123,18 +117,15 @@ const quizGameReducer = createSlice({
             }));           
         },
 
-        newPolylineState: (state, action) => {
-            const { polylineName, updatedData } = action.payload;
-
-            if (polylineName === 'ALL' && updatedData.delete) {
+        deletePolylineState: (state, action) => {
+            const { polylineName } = action.payload;
+            if (polylineName === 'ALL') {
                 return state.map(item => ({
                     ...item,
                     polylineState: {}
                 }));
             }
-
-            if (polylineName !== 'ALL' && updatedData.delete) {
-                console.log('go here')
+            else {
                 return state.map(item => ({
                     ...item,
                     polylineState: Object.keys(item.polylineState).reduce((acc, key) => {
@@ -144,8 +135,11 @@ const quizGameReducer = createSlice({
                         return acc;
                     }, {})
                 }));
-            }
+            };
+        },
 
+        newPolylineState: (state, action) => {
+            const { polylineName, updatedData } = action.payload;         
             updatedData.timestamp = Date.now();
             return state.map(item => ({
                 ...item,
@@ -163,5 +157,5 @@ const quizGameReducer = createSlice({
 
 });
 
-export const { newGameMode, newConcept,   newMapLocation, newMarkerState, newPolylineState, newRound } = quizGameReducer.actions;
+export const { newGameMode, newConcept, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState, newRound } = quizGameReducer.actions;
 export default quizGameReducer.reducer;

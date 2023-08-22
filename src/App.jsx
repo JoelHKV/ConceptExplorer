@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, newConcept,  newMapLocation, newMarkerState, newPolylineState, newRound } from './reducers/quizGameSlice';
+import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState  } from './reducers/quizGameSlice';
  
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
@@ -33,41 +33,85 @@ const App = () => {
  
     const [lastConcept, setLastConcept] = useState([])
 
-    const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
+   
 
+    const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
+    const [roundCounter, setRoundCounter] = useState(0)
+  
     const dispatch = useDispatch();
 
    // const mapState = useSelector((state) => state.counter[0].mapState);
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
-    const round = useSelector((state) => state.counter[0].round);
+    
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
- 
-    const { concepts, conceptRank, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore', 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity');
+  
+    const { concepts, conceptRank, globeConcepts, latLngData, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore', 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity');
     //console.log(loaded)
 
-     
+  
 
     const controlButtons = (param) => {
         console.log(gameMode)
-        console.log(round)
+        
+
+        if (param === 'home') {
+            setOptionChoiceHistory([]) // delete browsing history
+            setRoundCounter(0);
+            const firstChoice = optionChoiceHistory[0];
+
+            markerFunction(firstChoice[0], 10, firstChoice[10], firstChoice[11]) 
+
+            return
+
+            dispatch(newMapLocation({ attribute: 'lat', value: firstChoice[10] }));
+            dispatch(newMapLocation({ attribute: 'lng', value: firstChoice[11] }));
+
+         
+
+            dispatch(deletePolylineState({ polylineName: 'ALL' }))
+            dispatch(deleteMarkerState({ markerName: 'ALL' }))
+            
+
+           // dispatch(newGameMode('globe'))
+            
+
+           
+
+
+            //updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, diameter)
+
+            
+
+
+
+        }
+
         if (param === 'back') {
-            const prevChoice = optionChoiceHistory[round - 1];
+
+            
+            //const prevChoice = optionChoiceHistory[round - 1];
+            const prevChoice = optionChoiceHistory[roundCounter - 1];
+
+
+            
+
             const oppositeClickDirection = prevChoice[9] !== 0 ? ((prevChoice[9] + 4) > 8 ? (prevChoice[9] + 4 - 8) : (prevChoice[9] + 4)) : 0;
             markerFunction(prevChoice[0], oppositeClickDirection, prevChoice[10], prevChoice[11]);
 
         }
-        if (param === 'home') {
-            const firstChoice = optionChoiceHistory[0];
-            dispatch(newMapLocation({ attribute: 'lat', value: firstChoice[10] }));
-            dispatch(newMapLocation({ attribute: 'lng', value: firstChoice[11] }));        
-        }
+  
 
         if (param === 'route') {
 
-            dispatch(newMarkerState({ markerName: 'ALL', updatedData: { delete: true } }))
-            dispatch(newPolylineState({ polylineName: 'ALL', updatedData: { delete: true } }))
+
+            dispatch(deleteMarkerState({ markerName: 'ALL' }))
+
+            dispatch(deletePolylineState({ polylineName: 'Polyline0' }))
+
+            return
+     
            // return
             let minLat = Number.POSITIVE_INFINITY;
             let maxLat = Number.NEGATIVE_INFINITY;
@@ -117,117 +161,73 @@ const App = () => {
 
             
         }
-        if (param === 'globe') {
-            dispatch(newGameMode('globe2'))
-           // dispatch(newMapState({ markerIndex: null })); // delete existing markers
+        if (param === 'globe') {          
+            dispatch(newGameMode('globe'))
+            setOptionChoiceHistory([]) // delete browsing history
+            setRoundCounter(0);
 
-            dispatch(newMarkerState({ markerName: 'ALL', updatedData: { delete: true } }))
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: 2  } }));
+
+           
+           // dispatch(newMarkerState({ markerName: 'ALL', updatedData: { delete: true } }))
+            dispatch(deleteMarkerState({ markerName: 'ALL' }))
+           
+        
+
+            updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, 60)
+
             
-
-       //     dispatch(newMapLocation({ attribute: 'lat', value: 10 }));
-       //     dispatch(newMapLocation({ attribute: 'lng', value: 0 }));
-           // dispatch(newMapLocation({ attribute: 'delta', value: null }));
-     //       dispatch(newMapLocation({ attribute: 'zoom', value: 1 }));
-
-
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: 10, lng: 0, zoom: 1  } }));
-
-
-
-             
-            const globeOptions = Object.keys(concepts).slice(0,10);
-            const lat = [];
-            const lng = [];
-
-            for (let i = 0; i < globeOptions.length; i++) {
-               lat.push(Math.random() * 180 - 90);
-               lng.push(Math.random() * 360 - 180);
-            }
-
-            updateMarkers(globeOptions, globeOptions, lat, lng, 1)
-
-
 
         }
 
 
        
         if (param === 'random') {
-      
-            const updatedMarkerData = {
-                lat: 28.12345,
-                lng: -113.6789,
-                titdle: "Marker11",
-                param: "newParam",
-                render: false,
-                diameter: 30,
-                dataURL: drawCircleCanvas2ReturnDataURL(30, 'ASA', ''),
-            };
-           // dispatch(newMarkerState({ markerName: 'Marker1', updatedData: { delete: true } }));
+          
+            const randInd = Math.floor(Math.random() * (globeConcepts.length + 0));
+             const markerName = 'Marker' + randInd;
+            showBaseConcept(randInd)
+            //dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, delta: 5 } }));
 
-            dispatch(newMarkerState({ markerName: 'Marker1', updatedData: { delete: true } }));
-            // dispatch(newMarkerState({ markerName: 'Marker2', updatedData: updatedMarkerData }));
-           // dispatch(updatedState);
-           // console.log(updatedState) markerName, updatedData
+           // markerFunction(markerState[markerName].param, 0, markerState[markerName].lat, markerState[markerName].lng)
+
+            
 
         }
 
-        if (param === 'add') {
-            const updatedMarkerData = {
-                lat: 29.12345,
-                lng: -113.6789,
-                titdle: "Marker2",
-                param: "newParam",
-                render: false,
-                diameter: 130,
-                dataURL: drawCircleCanvas2ReturnDataURL(130, 'ASA', ''),
+       
 
 
-            };
-
-            const updatedPolylineData =  {
-                lat: [26.7749, 28.7749],
-                    lng: [-113.4194, -113.4194],
-                        color: '#ff3333',
-                }
-
-            dispatch(newPolylineState({ polylineName: "PL2", updatedData: updatedPolylineData }))
-
-         //   dispatch(newMarkerState({ markerName: 'Marker8', updatedData: updatedMarkerData }))
-        }
           
     }
 
 
-    
+
+    const showBaseConcept = (nro) => {
+        const markerName = 'Marker' + nro;
+
+        setLastConcept(markerState[markerName].param)
+
+
+       // dispatch(newGameMode('zoomin'))
+        dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, delta: 5 } }));
+      //  dispatch(newGameMode('zoomin'))
+       // updateMarkers(globeConcepts, globeConcepts, [], [], 1, 220)
+    }
+
 
     const handleZoomChangedFunction = (zoomLevel) => {
-      
-        console.log(gameMode)
-        if (gameMode !== 'globe') { return }
-        console.log('b')
-       // dispatch(newMapLocation({ attribute: 'lat', value: null }));
-       // dispatch(newMapLocation({ attribute: 'lng', value: null }));
-       const diameter = 20 + 40 * zoomLevel;
+   
+        
+        if (gameMode === 'globe') {
 
-        for (let i = 0; i < 1; i++) {
-          //   console.log(mapState.markers[i].title)
-            const thisName = 'dada'; 
-            const dataURL = drawCircleCanvas2ReturnDataURL(diameter, thisName, '');
-           // let thismarker = markerState['Marker' + i];
-            let thismarker = { ...markerState['Marker' + i] };
-           // thismarker.diameter = diameter;
-            thismarker.diameter = diameter;
-           dispatch(newMarkerState({ markerName: ('Marker' + i), updatedData: thismarker }))
-           // dispatch(newMapState({ attribute: 'dataURL', value: dataURL, markerIndex: i }));
-           // dispatch(newMapState({ attribute: 'diameter', value: diameter, markerIndex: i }));
-            //dispatch(newMapState({ attribute: 'render', value: true, markerIndex: i }));
+            const diamArray = [20, 40, 60, 80, 120, 160, 200, 280, 360, 420, 520, 620]
+            // const diameter = 30 + 20 * zoomLevel;
+            const diameter = diamArray[zoomLevel];
+
+            updateMarkers(globeConcepts, globeConcepts, [], [], 1, diameter)
+
         }
-
-     //   console.log(gameMode)
-     //   if (gameMode === 'globe') {
-            console.log(zoomLevel)
-      //  }
        
     }
 
@@ -260,10 +260,10 @@ const App = () => {
     };
 
     
-    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity) => {
+    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
 
         const updatedMarkers = newOptions.map((markerTitle, i) => {
-
+             
             let formattedValue = ''
             if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
                 formattedValue = concepts[markerTitle]['abstract'].toFixed(1);
@@ -271,18 +271,15 @@ const App = () => {
             }
 
             const markerTitleUpperCase = markerTitle.toUpperCase()
-
-
             const thisOpacity = keepBrightArray.includes(markerTitle) ? 1 : opacity
-
             const fireMarker = conceptRank[markerTitle]['iskey'] ? markerTitle : null;
             // markers representing key concepts get to fire, periferials do not
              
 
 
             const thisMarker = {
-                lat: lat[i],  
-                lng: lng[i],  
+                ...(lat[i] !== undefined ? { lat: lat[i] } : {}),  
+                ...(lng[i] !== undefined ? { lng: lng[i] } : {}),
                 title: markerTitleUpperCase, // Title of the first marker
                 param: fireMarker,
                 opacity: thisOpacity,
@@ -302,49 +299,67 @@ const App = () => {
 
    
     const markerFunction = (thisConcept, location, lat, lng) => { 
-        if (gameMode === 'globe') { // we have chosen a concept to explore from the global view
-            setOptionChoiceHistory([]) // delete browsing history
-            dispatch(newMapLocation({ attribute: 'delta', value: 2 }));
-         //   dispatch(newGameMode('browse'))
+
+        
+        console.log(roundCounter)
+  
+
+        if (gameMode === 'globe' && lastConcept !== thisConcept) { // we have chosen a concept to explore from the global view
+             //dispatch(newGameMode('browse'))
+           // setLastConcept(thisConcept)
+            showBaseConcept(location)
+            return
         }
+        if (gameMode === 'globe' && lastConcept === thisConcept) {
+             
+            dispatch(deleteMarkerState({ markerName: 'ALL' }))
+             
+                dispatch(newGameMode('browse'))
+
+             
+            
+
+
+
+
+            location = 0;
+        }
+
+
         if (location === 0 && optionChoiceHistory.length >0) {
             dispatch(newGameMode('details'))
             return
         }
 
-       // dispatch(newPolylineState({ polylineName: 'ALL', updatedData: { delete: true } }))
+        if (location === 10) {
+            location = 0;
+        }
 
 
-      //  if (polylineState['Polyline0']) {
-             
-       //     dispatch(newPolylineState({ markerName: 'Polyline0', updatedData: { delete: true } }));
-      //      dispatch(newMapState({ value: { delete: true, render: true }, polylineIndex: 1 }));
-        //}
-       // if (polylineState['Polyline1']) {
-             
-         //   dispatch(newPolylineState({ markerName: 'Polyline1', updatedData: { delete: true } }));
-            //      dispatch(newMapState({ value: { delete: true, render: true }, polylineIndex: 1 }));
-        //}
         if (markerState['Marker0']) {
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + location].lat, markerState['Marker' + location].lng, 0)
 
         }
         
         
-
-
         let clickDirection
         let pivotItems
-         
-        const lastArray = optionChoiceHistory[round - 1];
-        const lastArray2 = optionChoiceHistory[round - 2];
+        
+       // const lastArray = optionChoiceHistory[round - 1];
+       // const lastArray2 = optionChoiceHistory[round - 2];
+        const lastArray = optionChoiceHistory[roundCounter - 1];
+        const lastArray2 = optionChoiceHistory[roundCounter - 2];
+
+
         if (lastArray && lastArray2 && Math.abs(lastArray[9] - location) == 4) {
             // pressed back when enough history 
             drawPolyline(lastArray2[12], lastArray2[13], lastArray2[10], lastArray2[11], 1)              
-            dispatch(newRound(-1))
+            
+            console.log('dada')
+           setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
             pivotItems = [lastArray[0], lastArray2[0]]
             clickDirection = lastArray2[9]
-            console.log(round + ' ' + clickDirection)
+          //  console.log(round + ' ' + clickDirection)
 
              
 
@@ -352,19 +367,34 @@ const App = () => {
         else {
             // regular click 
             if (location > 0) { 
-                dispatch(newRound(1))  
+              //  dispatch(newRound(1)) 
+               // setRoundCounter(roundCounter + 1);
+                setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
             }
             pivotItems = [thisConcept, lastConcept]
+            if (gameMode === 'globe') {
+                pivotItems = [thisConcept,'' ]
+            }
             clickDirection = location;
          //   if (round > 0) {
-                saveHistoryByIndex(location, round)
+            //saveHistoryByIndex(location, round)
+            saveHistoryByIndex(location, roundCounter)
+
+            
           //  }
             
         }
         setLastConcept(pivotItems[0])
         const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
         const newOptions = makeNewOptions(pivotItems, oppositeClickDirection)
-        handleMapVisuals(newOptions, pivotItems, lat, lng)
+
+
+        setTimeout(() => {
+            handleMapVisuals(newOptions, pivotItems, lat, lng)
+
+        }, 50)
+
+        
                       
     }
 
@@ -386,16 +416,19 @@ const App = () => {
 
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng)
         const opacity = 0.1
-        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity)
+        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
 
         setTimeout(() => {
             updateOpacity(newOptions, PivotItems)
 
         }, 400)
 
-
-        dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, } }));
-
+        if (gameMode === 'globe') {
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, delta: 2 } }));
+        }
+        else {
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng } }));
+        }
         
 
     }
@@ -525,10 +558,12 @@ const App = () => {
                    
                     <ModeButtonRow
                         buttonFunction={controlButtons}
-                        enabled={[round > 0, round > 0, round > 0, true, true, true]}
+                        enabled={[roundCounter > 0, roundCounter > 0, roundCounter > 0, loaded, (gameMode === 'globe' || gameMode === 'zoomin')]}
                     />
                     
                 </Grid>
+
+                
 
             </Grid>
         </Box >  

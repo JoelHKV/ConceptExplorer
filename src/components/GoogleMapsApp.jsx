@@ -12,7 +12,7 @@ import './GoogleMapsApp.css';
 
 
  
-const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
+const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
  
  
     const [map, setMap] = useState(null);
@@ -21,12 +21,16 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
  
 
     const [mapLocked, setMapLocked] = useState(false);
-
+    const [zoomListenerHandle, setZoomListenerHandle] = useState();
    
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const markerState = useSelector((state) => state.counter[0].markerState);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
-  
+    const gameMode = useSelector((state) => state.counter[0].gameMode);
+
+   
+
+
     const dispatch = useDispatch();
 
 
@@ -35,7 +39,6 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
    
     useEffect(() => {
         // Load the Google Maps JavaScript API
-
         const script = document.createElement('script');
         script.src = `https://returnsecret-c2cjxe2frq-lz.a.run.app`;
         script.defer = true;
@@ -54,7 +57,7 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
 
             if (mapLocation.zoom) { // use zoom if zoom data is given
                 map.setZoom(mapLocation.zoom);
-                dispatch(newMapLocation({ attribute: 'zoom', value: null }));
+              //  dispatch(newMapLocation({ attribute: 'zoom', value: null }));
             }
             if (mapLocation.delta) { // use bounds if delta data is given
                 const bounds = new window.google.maps.LatLngBounds();
@@ -62,15 +65,39 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
                 bounds.extend({ lat: mapLocation.lat - mapLocation.delta, lng: mapLocation.lng - mapLocation.delta });
                 map.fitBounds(bounds);
 
-                dispatch(newMapLocation({ attribute: 'delta', value: null }));
+             //   dispatch(newMapLocation({ attribute: 'delta', value: null }));
 
-                const updatedZoom = map.getZoom();
-                console.log("Updated Zoom Level:", updatedZoom);
+              //  const updatedZoom = map.getZoom();
+              //  console.log("Updated Zoom Level:", updatedZoom);
 
-            }                                 
+            } 
+
+
+           
+
+
+             
+
+
         }
     }, [map, mapLocation]);
 
+
+    useEffect(() => {
+
+        console.log('add listener')
+        const zoomChangeListener = map?.addListener('zoom_changed', zoomFunction);
+        const zoomListenerRef = React.createRef();
+        zoomListenerRef.current = zoomChangeListener;
+
+        return () => {
+            if (zoomListenerRef.current) {
+                console.log('remove listener');
+                google.maps.event.removeListener(zoomListenerRef.current);
+            }
+        };
+
+    }, [map, gameMode]);
 
     useEffect(() => {
         if (map) {
@@ -274,18 +301,36 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction  }) => {
             //handleIdleFunction()       
         });
 
-        newMap.addListener("zoom_changed", () => {
-          //  console.log(gameMode)
-            const newZoomLevel = newMap.getZoom();
-            handleZoomChangedFunction(newZoomLevel)
-        });
+       // newMap.addListener("zoom_changed", () => {
+            
+        //    const newZoomLevel = newMap.getZoom();
+        //    handleZoomChangedFunction(newZoomLevel)
+       // });
 
         setMap(newMap); // Save the map instance in the state     
     };
 
+    const zoomFunction = () => {
+        console.log(gameMode)
+        const newZoomLevel = map.getZoom();
+      //  console.log(newZoomLevel)
 
-  
+        handleZoomChangedFunction(newZoomLevel)
 
+
+    }
+    
+   // useEffect(() => {
+        // Attach the event listener when the component mounts
+     //   if (map) {
+      //      map.addListener(map, 'zoom_changed', handleZoomChangedFunction);
+
+            // Clean up the event listener when the component unmounts
+         //   return () => {
+         //       map.removeListener(map, 'zoom_changed', handleZoomChangedFunction);
+         //   };
+      //  }
+   // }, [map, gameMode]);
   
 
     return (   
