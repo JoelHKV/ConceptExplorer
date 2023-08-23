@@ -1,62 +1,38 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { newMapLocation, newPolylineState, newMarkerState, newGameMode } from '../reducers/conceptExplorerSlice';
+import { useSelector } from 'react-redux';
+import { Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
+import { createMarker, createPolyline } from '../utilities/googleMapHelper';
 
-import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
+import { googleMapLoader } from '../utilities/googleMapLoader';
 
 
 import './GoogleMapsApp.css';
 
 
-
- 
 const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
  
- 
-    const [map, setMap] = useState(null);
     const oldMarkerHandleArray = useRef({});
     const oldPolylineHandleArray = useRef({});
  
 
     const [mapLocked, setMapLocked] = useState(false);
 
-    const polylineState = useSelector((state) => state.counter[0].polylineState);
-    const markerState = useSelector((state) => state.counter[0].markerState);
-    const mapLocation = useSelector((state) => state.counter[0].mapLocation);
     const gameMode = useSelector((state) => state.counter[0].gameMode);
+    const mapLocation = useSelector((state) => state.counter[0].mapLocation);
+    const markerState = useSelector((state) => state.counter[0].markerState);
+    const polylineState = useSelector((state) => state.counter[0].polylineState);
 
-   
-
-
-    const dispatch = useDispatch();
-
-
-
-
-   
-    useEffect(() => {
-        // Load the Google Maps JavaScript API
-        const script = document.createElement('script');
-        script.src = `https://returnsecret-c2cjxe2frq-lz.a.run.app`;
-        script.defer = true;
-        script.async = true;
-        window.initMap = initMap;
-        document.head.appendChild(script);
-    }, []);
+    const map  = googleMapLoader(mapLocation);
 
     useEffect(() => {
-        if (map) {
-             
-            //map.setCenter({ lat: mapState.lat, lng: mapState.lng });
-          //  if (mapLocation.lat) {
-                map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng });
-          //  }
-
+        if (map) {          
+            //map.setCenter({ lat: mapState.lat, lng: mapState.lng });       
+            map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng });
+        
             if (mapLocation.zoom) { // use zoom if zoom data is given
                 map.setZoom(mapLocation.zoom);
-              //  dispatch(newMapLocation({ attribute: 'zoom', value: null }));
             }
             if (mapLocation.delta) { // use bounds if delta data is given
                 const bounds = new window.google.maps.LatLngBounds();
@@ -64,39 +40,9 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
                 bounds.extend({ lat: mapLocation.lat - mapLocation.delta, lng: mapLocation.lng - mapLocation.delta });
                 map.fitBounds(bounds);
 
-             //   dispatch(newMapLocation({ attribute: 'delta', value: null }));
-
-              //  const updatedZoom = map.getZoom();
-              //  console.log("Updated Zoom Level:", updatedZoom);
-
-            } 
-
-
-           
-
-
-             
-
-
+            }                
         }
     }, [map, mapLocation]);
-
-
-    useEffect(() => {
-
-        const zoomChangeListener = map?.addListener('zoom_changed', () => {
-            handleZoomChangedFunction(map.getZoom());  
-        });
-        const zoomListenerRef = React.createRef();
-        zoomListenerRef.current = zoomChangeListener;
-
-        return () => {
-            if (zoomListenerRef.current) {
-                google.maps.event.removeListener(zoomListenerRef.current);
-            }
-        };
-
-    }, [map, gameMode]);
 
     useEffect(() => {
         if (map) {
@@ -113,7 +59,6 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
                 return
             }
 
-
             let deleteMarkerNames = oldMarkerNames.filter(name => name !== 'current' && !markerNames.includes(name));
                 if (oldMarkerHandleArray[deleteMarkerNames]) { // check the handle
                 oldMarkerHandleArray[deleteMarkerNames].handle.setMap(null); // delete marker
@@ -121,8 +66,6 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
                 return
                 }
             
-
-
             markerNames.forEach((markerName, index) => {
                 
                 const markerData = markerState[markerName]; // Access the value using the key
@@ -135,13 +78,16 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
                         oldMarkerHandleArray[markerName].handle.setMap(null);
                     }
 
-                    const newMarkerHandle = createMarker2(markerData, index)
+                    const newMarkerHandle = createMarker(map, markerData)
+                    newMarkerHandle.addListener("click", () => {          
+                        if (markerData.param === null) { return }
+                        markerFunction(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
+                    });
+
                     oldMarkerHandleArray[markerName] = {}
                     oldMarkerHandleArray[markerName].handle = newMarkerHandle
                     oldMarkerHandleArray[markerName].timestamp = markerData.timestamp
-                     
-
-                     
+                                        
                 }
             });
 
@@ -164,15 +110,12 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
                 return
             }
 
-
             let deletePolylineNames = oldPolylineNames.filter(name => name !== 'current' && !polylineNames.includes(name));
             if (oldPolylineHandleArray[deletePolylineNames]) { // check the handle
                 oldPolylineHandleArray[deletePolylineNames].handle.setMap(null); // delete marker
                 delete oldPolylineHandleArray.current[deletePolylineNames];
                 return
             }
-
-
 
             polylineNames.forEach((polylineName, index) => {
                 
@@ -186,8 +129,8 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
                         oldPolylineHandleArray[polylineName].handle.setMap(null);
                     }
 
-                  //  const newPolylineHandle = createMarker2(polylineData, index)
-                    const newPolylineHandle = createPolyline(polylineData)
+                 
+                    const newPolylineHandle = createPolyline(map, polylineData)
                     oldPolylineHandleArray[polylineName] = {}
                     oldPolylineHandleArray[polylineName].handle = newPolylineHandle
                     oldPolylineHandleArray[polylineName].timestamp = polylineData.timestamp
@@ -201,106 +144,36 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
     }, [map, polylineState]);
 
 
+    useEffect(() => {
 
- 
+        const zoomChangeListener = map?.addListener('zoom_changed', () => {
+            handleZoomChangedFunction(map.getZoom());
+        });
+        const zoomListenerRef = React.createRef();
+        zoomListenerRef.current = zoomChangeListener;
 
+        return () => {
+            if (zoomListenerRef.current) {
+                google.maps.event.removeListener(zoomListenerRef.current);
+            }
+        };
 
+    }, [map, gameMode]);
+
+    useEffect(() => {
+        const idleListener = map?.addListener("idle", () => {          
+            //handleIdleFunction()
+        });
+    }, [map]);
 
     const handleMapLockChange = (event) => {
         setMapLocked(event.target.checked);
         const newGestureHandling = mapLocked ? "auto" : "none";
         map.setOptions({
-             gestureHandling: newGestureHandling,
-       });
+            gestureHandling: newGestureHandling,
+        });
     };
-
-
-     
-
-
-    const createMarker2 = (markerData, index) => {
-        const labelOptions = {
-            text: ' ',
-            color: 'black',
-            fontSize: '18px',
-            fontWeight: 'bold'
-        };
-        let markerImage = null; //no marker image for regular marker
-        if (markerData.diameter) {
-            const diameter = markerData.diameter;
-            markerImage = new google.maps.MarkerImage(
-                markerData.dataURL, // data for custom marker
-                new google.maps.Size(diameter, diameter),
-                new google.maps.Point(0, 0),
-                new google.maps.Point(diameter / 2, diameter / 2)
-            );
-        }
-
-        const markerHandle = new window.google.maps.Marker({
-            position: { lat: markerData.lat, lng: markerData.lng },
-            map: map,
-            icon: markerImage,
-            title: markerData.title,
-            label: labelOptions,
-            opacity: markerData.opacity || 1,
-
-        });
-        markerHandle.addListener("click", () => {
-            if (markerData.param === null) { return }
-            markerFunction(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
-
-        });
-        return markerHandle
-     
-    
-    }
-     
-
-    const createPolyline = (polylineData) => {
-        const polytype = polylineData.symbol || 'FORWARD_CLOSED_ARROW'
-        const polylineHandle = new window.google.maps.Polyline({
-            path: [{ lat: polylineData.lat[0], lng: polylineData.lng[0] }, { lat: polylineData.lat[1], lng: polylineData.lng[1] }],
-            geodesic: true,
-            strokeColor: polylineData.color || 'red',
-            strokeOpacity: polylineData.opacity || 1,
-            strokeWeight: polylineData.weight || 5,
-            icons: [{
-                icon: { path: google.maps.SymbolPath[polytype] },
-                offset: polylineData.arrowOffset || '100%'
-            }],
-            map: map,
-        });
-        return polylineHandle
-    }
-
-
-    const initMap = () => {
-        // Initialize the map
-
-        
-
-        const mapOptions = {
-          //  center: { lat: mapLocation.lat, lng: mapLocation.lng },  
-            disableDefaultUI: true,
-            gestureHandling: "auto",
-        };
-
-        if (mapLocation && mapLocation.lat && mapLocation.lng) {
-            mapOptions.center = { lat: mapLocation.lat, lng: mapLocation.lng };
-        }
-
-        const mapElement = document.getElementById('map');
-        const newMap = new window.google.maps.Map(mapElement, mapOptions);
-
-        newMap.addListener("idle", () => {           
-            //handleIdleFunction()       
-        });
-
-        setMap(newMap); // Save the map instance in the state     
-    };
-
  
-    
     return (   
         
         <div className="GoogleMapsApp centerContent">
