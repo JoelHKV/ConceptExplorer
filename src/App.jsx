@@ -97,10 +97,14 @@ const App = () => {
 
     }
 
-    const makeNewOptions = (pivotItems, index) => {
+    const makeNewOptions = (pivotItems, clickDirection) => {
 
         const thisConcept = pivotItems[0];
         const lastConcept = pivotItems[1];
+
+        const oppositeClickDirection = (clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4);
+
+
 
         const allAssociatedConcepts = concepts[thisConcept]['concepts'];
         const allrelatedConcepts = concepts[thisConcept]['related'];
@@ -115,8 +119,8 @@ const App = () => {
             .sort((a, b) => b.importanceValue - a.importanceValue)
             .slice(0, lastConcept.length>0 ? 7 : 8)
             .map(item => item.button);
-         if (index > 0) {
-             sortedConcepts.splice(index-1, 0, lastConcept);
+        if (clickDirection > 0) {
+            sortedConcepts.splice(oppositeClickDirection -1, 0, lastConcept);
          }
          sortedConcepts.unshift(thisConcept);
         return sortedConcepts
@@ -161,10 +165,10 @@ const App = () => {
 
 
    
-    const markerFunction = (thisConcept, location, lat, lng) => {
+    const markerFunction = (thisConcept, clickDirection, lat, lng) => {
 
         if (gameMode === 'globe' && lastConcept !== thisConcept) { // concept clicked in the global view
-            showBaseConcept(location) // centering and zooming in
+            showBaseConcept(clickDirection) // centering and zooming in
             return
         }
 
@@ -179,77 +183,59 @@ const App = () => {
             return
         }
 
-        if (gameMode === 'browse' && location === 0) { // center concept in the browse mode clicked
+        if (gameMode === 'browse' && clickDirection === 0) { // center concept in the browse mode clicked
             dispatch(newGameMode('details')) // we explore details
             return
         }
 
-        if (gameMode === 'browse' && location > 0) {// edge concept in the browse mode clicked
-            processMarkers(thisConcept, location, lat, lng, 'hist', true) // we make it the center concept
+        if (gameMode === 'browse' && clickDirection > 0) {// edge concept in the browse mode clicked
+            processMarkers(thisConcept, clickDirection, lat, lng, 'hist', true) // we make it the center concept
             return
         }
 
     }
 
-    const isBackClick = () => {
+   
 
-
-    }
-
-
-
-    const processMarkers = (thisConcept, location, lat, lng, history, enablepolyline) => { 
+    const processMarkers = (thisConcept, clickDirection, lat, lng, history, enablepolyline) => { 
         
         if (markerState['Marker0'] && enablepolyline) {
-            drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + location].lat, markerState['Marker' + location].lng, 0)
+            drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + clickDirection].lat, markerState['Marker' + clickDirection].lng, 0)
 
         }
         
         
-        let clickDirection
+         
         let pivotItems
         
-        const lastArray = optionChoiceHistory[roundCounter - 1];
-        const lastArray2 = optionChoiceHistory[roundCounter - 2];
+        const lastChoice = optionChoiceHistory[roundCounter - 1];
+        const last2ndChoice = optionChoiceHistory[roundCounter - 2];
+        const clickBack = lastChoice ? Math.abs(lastChoice[9] - clickDirection) == 4 : false;
 
-
-        if (lastArray && lastArray2 && Math.abs(lastArray[9] - location) == 4) {
-            // pressed back when enough history 
+        if (lastChoice && last2ndChoice && clickBack) { // click where we came from 
             if (enablepolyline) {
-                drawPolyline(lastArray2[12], lastArray2[13], lastArray2[10], lastArray2[11], 1)
+                drawPolyline(last2ndChoice[12], last2ndChoice[13], last2ndChoice[10], last2ndChoice[11], 1)
             }
-            console.log('dada')
             setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
-            pivotItems = [lastArray[0], lastArray2[0]]
-            clickDirection = lastArray2[9]
-          //  console.log(round + ' ' + clickDirection)
-
-             
+            pivotItems = [lastChoice[0], last2ndChoice[0]]
+            clickDirection = last2ndChoice[9]
 
         }
         else {
-            // regular click 
-            if (location > 0) { 
-              //  dispatch(newRound(1)) 
-               // setRoundCounter(roundCounter + 1);
+
+            if (clickDirection > 0) {  // click non-center marker and thereby move on
                 setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
             }
-            pivotItems = [thisConcept, lastConcept]
-            if (history === 'nohist') {
-                pivotItems = [thisConcept,'' ]
-            }
-            clickDirection = location;
-         //   if (round > 0) {
-            //saveHistoryByIndex(location, round)
-            saveHistoryByIndex(location, roundCounter)
 
+            pivotItems = history === 'nohist' ? [thisConcept, ''] : [thisConcept, lastConcept];
             
-          //  }
+
+            saveHistoryByIndex(clickDirection, roundCounter)
+
             
         }
         setLastConcept(pivotItems[0])
-        const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
-        const newOptions = makeNewOptions(pivotItems, oppositeClickDirection)
+       const newOptions = makeNewOptions(pivotItems, clickDirection)
 
 
         setTimeout(() => {
