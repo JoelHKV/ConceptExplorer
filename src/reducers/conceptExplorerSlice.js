@@ -10,7 +10,7 @@ const initialState = [
     }
 ]
 
-const quizGameReducer = createSlice({
+const conceptExplorerReducer = createSlice({
     name: 'counter',
     initialState,
     reducers: {     
@@ -125,5 +125,5 @@ const quizGameReducer = createSlice({
 
 });
 
-export const { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState  } = quizGameReducer.actions;
-export default quizGameReducer.reducer;
+export const { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
+export default conceptExplorerReducer.reducer;

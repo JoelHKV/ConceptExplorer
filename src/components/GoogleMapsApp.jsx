@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { newMapLocation, newPolylineState, newMarkerState, newGameMode } from '../reducers/quizGameSlice';
+import { newMapLocation, newPolylineState, newMarkerState, newGameMode } from '../reducers/conceptExplorerSlice';
 
 
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library

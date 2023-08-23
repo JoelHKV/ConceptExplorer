@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState  } from './reducers/quizGameSlice';
+import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from './reducers/conceptExplorerSlice';
  
 import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 

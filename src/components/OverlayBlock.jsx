@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { Button, Typography } from '@mui/material';
 import './OverlayBlock.css';
  
-import { newGameMode } from '../reducers/quizGameSlice';
+import { newGameMode } from '../reducers/conceptExplorerSlice';
 
 const OverlayBlock = ({ title, text }) => {
     const [expanded, setExpanded] = useState(false);
