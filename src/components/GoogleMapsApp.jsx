@@ -21,8 +21,7 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
  
 
     const [mapLocked, setMapLocked] = useState(false);
-    const [zoomListenerHandle, setZoomListenerHandle] = useState();
-   
+
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const markerState = useSelector((state) => state.counter[0].markerState);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
@@ -85,14 +84,14 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
 
     useEffect(() => {
 
-        console.log('add listener')
-        const zoomChangeListener = map?.addListener('zoom_changed', zoomFunction);
+        const zoomChangeListener = map?.addListener('zoom_changed', () => {
+            handleZoomChangedFunction(map.getZoom());  
+        });
         const zoomListenerRef = React.createRef();
         zoomListenerRef.current = zoomChangeListener;
 
         return () => {
             if (zoomListenerRef.current) {
-                console.log('remove listener');
                 google.maps.event.removeListener(zoomListenerRef.current);
             }
         };
@@ -275,24 +274,20 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
     }
 
 
-
-
-   
-
-
-
-
-
     const initMap = () => {
         // Initialize the map
 
-       // if (mapLocked) { 
+        
 
         const mapOptions = {
-            center: { lat: mapLocation.lat, lng: mapLocation.lng },  
+          //  center: { lat: mapLocation.lat, lng: mapLocation.lng },  
             disableDefaultUI: true,
             gestureHandling: "auto",
         };
+
+        if (mapLocation && mapLocation.lat && mapLocation.lng) {
+            mapOptions.center = { lat: mapLocation.lat, lng: mapLocation.lng };
+        }
 
         const mapElement = document.getElementById('map');
         const newMap = new window.google.maps.Map(mapElement, mapOptions);
@@ -301,38 +296,11 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
             //handleIdleFunction()       
         });
 
-       // newMap.addListener("zoom_changed", () => {
-            
-        //    const newZoomLevel = newMap.getZoom();
-        //    handleZoomChangedFunction(newZoomLevel)
-       // });
-
         setMap(newMap); // Save the map instance in the state     
     };
 
-    const zoomFunction = () => {
-        console.log(gameMode)
-        const newZoomLevel = map.getZoom();
-      //  console.log(newZoomLevel)
-
-        handleZoomChangedFunction(newZoomLevel)
-
-
-    }
+ 
     
-   // useEffect(() => {
-        // Attach the event listener when the component mounts
-     //   if (map) {
-      //      map.addListener(map, 'zoom_changed', handleZoomChangedFunction);
-
-            // Clean up the event listener when the component unmounts
-         //   return () => {
-         //       map.removeListener(map, 'zoom_changed', handleZoomChangedFunction);
-         //   };
-      //  }
-   // }, [map, gameMode]);
-  
-
     return (   
         
         <div className="GoogleMapsApp centerContent">

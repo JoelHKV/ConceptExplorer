@@ -50,6 +50,17 @@ const App = () => {
     const { concepts, conceptRank, globeConcepts, latLngData, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore', 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity');
     //console.log(loaded)
 
+    useEffect(() => {
+        if (loaded) {
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: 2 } }));
+
+            updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, 60)
+
+        }
+    }, [loaded])
+
+
+
   
 
     const controlButtons = (param) => {
@@ -57,114 +68,85 @@ const App = () => {
         
 
         if (param === 'home') {
-            setOptionChoiceHistory([]) // delete browsing history
-            setRoundCounter(0);
-            const firstChoice = optionChoiceHistory[0];
+         //   dispatch(deletePolylineState({ polylineName: 'ALL' }))
+        //    dispatch(deleteMarkerState({ markerName: 'ALL' }))
+            deleteHistory()
 
-            markerFunction(firstChoice[0], 10, firstChoice[10], firstChoice[11]) 
+            const firstChoice = optionChoiceHistory[0]; 
 
-            return
-
-            dispatch(newMapLocation({ attribute: 'lat', value: firstChoice[10] }));
-            dispatch(newMapLocation({ attribute: 'lng', value: firstChoice[11] }));
-
-         
-
-            dispatch(deletePolylineState({ polylineName: 'ALL' }))
-            dispatch(deleteMarkerState({ markerName: 'ALL' }))
-            
-
-           // dispatch(newGameMode('globe'))
-            
-
-           
+        
+            processMarkers(firstChoice[0], 0, firstChoice[10], firstChoice[11], 'nohist', false)
+        
 
 
-            //updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, diameter)
 
             
-
-
 
         }
 
-        if (param === 'back') {
-
-            
-            //const prevChoice = optionChoiceHistory[round - 1];
+        if (param === 'back') {               
             const prevChoice = optionChoiceHistory[roundCounter - 1];
-
-
-            
-
             const oppositeClickDirection = prevChoice[9] !== 0 ? ((prevChoice[9] + 4) > 8 ? (prevChoice[9] + 4 - 8) : (prevChoice[9] + 4)) : 0;
-            markerFunction(prevChoice[0], oppositeClickDirection, prevChoice[10], prevChoice[11]);
-
+            processMarkers(prevChoice[0], oppositeClickDirection, prevChoice[10], prevChoice[11], 'hist', true)
         }
   
 
         if (param === 'route') {
 
-
+            dispatch(newGameMode('route'))
             dispatch(deleteMarkerState({ markerName: 'ALL' }))
-
-            dispatch(deletePolylineState({ polylineName: 'Polyline0' }))
-
-            return
-     
-           // return
-            let minLat = Number.POSITIVE_INFINITY;
-            let maxLat = Number.NEGATIVE_INFINITY;
-            let minLng = Number.POSITIVE_INFINITY;
-            let maxLng = Number.NEGATIVE_INFINITY;
-
+            dispatch(deletePolylineState({ polylineName: 'ALL' }))
+               
+            const latArray = [];
+            const lngArray = [];
+            const valArray = [];
 
             for (let i = 0; i < optionChoiceHistory.length; i++) {
-
-                const thisStep = optionChoiceHistory[i];
-                const lat = thisStep[10];
-                const lng = thisStep[11];
-                minLat = Math.min(minLat, lat);
-                maxLat = Math.max(maxLat, lat);
-                minLng = Math.min(minLng, lng);
-                maxLng = Math.max(maxLng, lng);
-                const thisMarker = {
-                    lat: lat,  
-                    lng: lng,   
-                    title: thisStep[0].toUpperCase(),  
-                    param: null,
-                    opacity: 1,
-                    diameter: diameter/2,
-                    dataURL: drawCircleCanvas2ReturnDataURL(diameter/2, thisStep[0].toUpperCase(), ''),
-
-                }
                 
-                dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-
+                const thisStep = optionChoiceHistory[i];
+                latArray.push(thisStep[10])
+                lngArray.push(thisStep[11])
+                valArray.push(thisStep[0])                            
                 drawPolyline(thisStep[10], thisStep[11], thisStep[12], thisStep[13], i)
 
                  
             }
 
+
+            setTimeout(() => {
+                updateMarkers(valArray, valArray, latArray, lngArray, 1, diameter)
+            }, 100);
+ 
+
+
+
+
+
+            
+
+
+            const minLat2 = Math.min(...latArray);
+            const maxLat2 = Math.max(...latArray);
+            const minLng2 = Math.min(...lngArray);
+            const maxLng2 = Math.max(...lngArray);
+
+
             const thisMapLocation = {
-                lat: (minLat + maxLat) / 2, // Default latitude  
-                lng: (minLng + maxLng) / 2, // Default longitude  dall
-                delta: Math.max((minLng - maxLng), (minLat - maxLat)),
+                lat: (minLat2 + maxLat2) / 2, // Default latitude  
+                lng: (minLng2 + maxLng2) / 2, // Default longitude  dall
+                delta: Math.max((minLng2 - maxLng2), (minLat2 - maxLat2)),
             }
+
 
             dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
 
-        //    dispatch(newMapLocation({ attribute: 'lat', value: (minLat + maxLat) / 2 }));
-        //    dispatch(newMapLocation({ attribute: 'lng', value: (minLng + maxLng) / 2 }));
-        //    dispatch(newMapLocation({ attribute: 'delta', value: Math.max((maxLng - minLng), (maxLat - minLat)) /3  }));
-
+             
 
             
         }
         if (param === 'globe') {          
             dispatch(newGameMode('globe'))
-            setOptionChoiceHistory([]) // delete browsing history
-            setRoundCounter(0);
+            deleteHistory()
 
             dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: 2  } }));
 
@@ -182,37 +164,30 @@ const App = () => {
 
 
        
-        if (param === 'random') {
-          
+        if (param === 'random') {        
             const randInd = Math.floor(Math.random() * (globeConcepts.length + 0));
-             const markerName = 'Marker' + randInd;
             showBaseConcept(randInd)
-            //dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, delta: 5 } }));
-
-           // markerFunction(markerState[markerName].param, 0, markerState[markerName].lat, markerState[markerName].lng)
-
-            
-
-        }
-
-       
-
-
-          
+     
+        }             
     }
 
 
 
     const showBaseConcept = (nro) => {
         const markerName = 'Marker' + nro;
-
         setLastConcept(markerState[markerName].param)
-
-
-       // dispatch(newGameMode('zoomin'))
         dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, delta: 5 } }));
-      //  dispatch(newGameMode('zoomin'))
-       // updateMarkers(globeConcepts, globeConcepts, [], [], 1, 220)
+  
+    }
+
+
+
+    const deleteHistory = () => {
+        dispatch(deleteMarkerState({ markerName: 'ALL' }))
+        dispatch(deletePolylineState({ polylineName: 'ALL' }))
+        setOptionChoiceHistory([])
+        setRoundCounter(0);
+
     }
 
 
@@ -298,45 +273,42 @@ const App = () => {
 
 
    
-    const markerFunction = (thisConcept, location, lat, lng) => { 
+    const markerFunction = (thisConcept, location, lat, lng) => {
 
-        
-        console.log(roundCounter)
-  
-
-        if (gameMode === 'globe' && lastConcept !== thisConcept) { // we have chosen a concept to explore from the global view
-             //dispatch(newGameMode('browse'))
-           // setLastConcept(thisConcept)
-            showBaseConcept(location)
+        if (gameMode === 'globe' && lastConcept !== thisConcept) { // concept clicked in the global view
+            showBaseConcept(location) // centering and zooming in
             return
         }
-        if (gameMode === 'globe' && lastConcept === thisConcept) {
-             
-            dispatch(deleteMarkerState({ markerName: 'ALL' }))
-             
-                dispatch(newGameMode('browse'))
 
-             
+        if ((gameMode === 'globe' && lastConcept === thisConcept) || gameMode === 'route') { // the same concept re-clicked in the global view
+            deleteHistory()
+            dispatch(newGameMode('browse'))
+
+            setTimeout(() => {
+                processMarkers(thisConcept, 0, lat, lng, 'nohist', true) // we start exploring related concepts
+            }, 100);
+
             
-
-
-
-
-            location = 0;
-        }
-
-
-        if (location === 0 && optionChoiceHistory.length >0) {
-            dispatch(newGameMode('details'))
+            
             return
         }
 
-        if (location === 10) {
-            location = 0;
+
+        if (gameMode === 'browse' && location === 0) { // center concept in the browse mode clicked
+            dispatch(newGameMode('details')) // we explore details
+            return
         }
 
+        if (gameMode === 'browse' && location > 0) {// edge concept in the browse mode clicked
+            processMarkers(thisConcept, location, lat, lng, 'hist', true) // we make it the center concept
+            return
+        }
 
-        if (markerState['Marker0']) {
+    }
+
+    const processMarkers = (thisConcept, location, lat, lng, history, enablepolyline) => { 
+        
+        if (markerState['Marker0'] && enablepolyline) {
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + location].lat, markerState['Marker' + location].lng, 0)
 
         }
@@ -345,18 +317,17 @@ const App = () => {
         let clickDirection
         let pivotItems
         
-       // const lastArray = optionChoiceHistory[round - 1];
-       // const lastArray2 = optionChoiceHistory[round - 2];
         const lastArray = optionChoiceHistory[roundCounter - 1];
         const lastArray2 = optionChoiceHistory[roundCounter - 2];
 
 
         if (lastArray && lastArray2 && Math.abs(lastArray[9] - location) == 4) {
             // pressed back when enough history 
-            drawPolyline(lastArray2[12], lastArray2[13], lastArray2[10], lastArray2[11], 1)              
-            
+            if (enablepolyline) {
+                drawPolyline(lastArray2[12], lastArray2[13], lastArray2[10], lastArray2[11], 1)
+            }
             console.log('dada')
-           setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
+            setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
             pivotItems = [lastArray[0], lastArray2[0]]
             clickDirection = lastArray2[9]
           //  console.log(round + ' ' + clickDirection)
@@ -372,7 +343,7 @@ const App = () => {
                 setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
             }
             pivotItems = [thisConcept, lastConcept]
-            if (gameMode === 'globe') {
+            if (history === 'nohist') {
                 pivotItems = [thisConcept,'' ]
             }
             clickDirection = location;
@@ -390,7 +361,7 @@ const App = () => {
 
 
         setTimeout(() => {
-            handleMapVisuals(newOptions, pivotItems, lat, lng)
+            handleMapVisuals(newOptions, pivotItems, lat, lng, history)
 
         }, 50)
 
@@ -412,7 +383,7 @@ const App = () => {
     }
 
     
-    const handleMapVisuals = (newOptions, PivotItems, lat, lng) => {
+    const handleMapVisuals = (newOptions, PivotItems, lat, lng, history) => {
 
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng)
         const opacity = 0.1
@@ -423,7 +394,7 @@ const App = () => {
 
         }, 400)
 
-        if (gameMode === 'globe') {
+        if (history === 'nohist') {
             dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, delta: 2 } }));
         }
         else {
@@ -434,14 +405,9 @@ const App = () => {
     }
 
 
-
-
-
     const saveHistoryByIndex = (location, index) => {
         const oldOptionArray = new Array(14);
         for (let i = 0; i < 9; i++) {
-    //        oldOptionArray[i] = mapState.markers[i] ? mapState.markers[i].param : '';
-
             oldOptionArray[i] = markerState['Marker' + i] ? markerState['Marker' + i].param : ''; 
         }
 
@@ -470,7 +436,6 @@ const App = () => {
             lat: [fromlat * 0.7 + tolat * 0.3, fromlat * 0.3 + tolat * 0.7],
             lng: [fromlng * 0.7 + tolng * 0.3, fromlng * 0.3 + tolng * 0.7],
             color: '#333333',
-            render: true,
         }
 
         dispatch(newPolylineState({ polylineName: 'Polyline' + index, updatedData: thisPolyline }))
@@ -513,15 +478,7 @@ const App = () => {
 
     }
 
-
-
-    //const thisConcept = useSelector((state) => state.counter[0].concept); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
-
-
-    
-
-
-    
+   
 
     const clickInfo = () => { // show introscreen
         dispatch(newGameMode('intro'))

@@ -1,44 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { drawCircleCanvas2ReturnDataURL } from '../utilities/drawCircleCanvas2ReturnDataURL';
-
-const diameter=90
-
-const initMapLocation = {
-    lat: 27.7749, // Default latitude  
-    lng: -112.4194, // Default longitude  
-    // zoom: 7, // Default zoom level
-    delta: 2,
-}
-
-
-
-const initMarkerData = {
-    "Marker0": {
-        lat: 27.7749,
-        lng: -112.4194,
-        title: "MIND",
-        param: "mind",
-        timestamp: 23232,
-        diameter: diameter,
-        dataURL: drawCircleCanvas2ReturnDataURL(diameter, 'MIND', 2.9),
-    },
-
-}
-
-const initPolylineData = {
-   
-}
-
 
 
 const initialState = [
     {
-        round: 0,
-        gameMode: 'browse3',
-        concept: 'mind',
-        markerState: initMarkerData,
-        polylineState: initPolylineData,
-        mapLocation: initMapLocation, 
+        gameMode: 'globe',
+        markerState: {},
+        polylineState: {},
+        mapLocation: {},
     }
 ]
 
@@ -157,5 +125,5 @@ const quizGameReducer = createSlice({
 
 });
 
-export const { newGameMode, newConcept, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState, newRound } = quizGameReducer.actions;
+export const { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState  } = quizGameReducer.actions;
 export default quizGameReducer.reducer;
