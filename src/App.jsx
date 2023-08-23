@@ -61,123 +61,30 @@ const App = () => {
 
 
 
-  
-
-    const controlButtons = (param) => {
-        console.log(gameMode)
-        
-
-        if (param === 'home') {
-         //   dispatch(deletePolylineState({ polylineName: 'ALL' }))
-        //    dispatch(deleteMarkerState({ markerName: 'ALL' }))
-            deleteHistory()
-
-            const firstChoice = optionChoiceHistory[0]; 
-
-        
-            processMarkers(firstChoice[0], 0, firstChoice[10], firstChoice[11], 'nohist', false)
-        
-
-
-
-            
-
-        }
-
-        if (param === 'back') {               
-            const prevChoice = optionChoiceHistory[roundCounter - 1];
-            const oppositeClickDirection = prevChoice[9] !== 0 ? ((prevChoice[9] + 4) > 8 ? (prevChoice[9] + 4 - 8) : (prevChoice[9] + 4)) : 0;
-            processMarkers(prevChoice[0], oppositeClickDirection, prevChoice[10], prevChoice[11], 'hist', true)
-        }
-  
-
-        if (param === 'route') {
-
-            dispatch(newGameMode('route'))
-            dispatch(deleteMarkerState({ markerName: 'ALL' }))
-            dispatch(deletePolylineState({ polylineName: 'ALL' }))
-               
-            const latArray = [];
-            const lngArray = [];
-            const valArray = [];
-
-            for (let i = 0; i < optionChoiceHistory.length; i++) {
-                
-                const thisStep = optionChoiceHistory[i];
-                latArray.push(thisStep[10])
-                lngArray.push(thisStep[11])
-                valArray.push(thisStep[0])                            
-                drawPolyline(thisStep[10], thisStep[11], thisStep[12], thisStep[13], i)
-
-                 
-            }
-
-
-            setTimeout(() => {
-                updateMarkers(valArray, valArray, latArray, lngArray, 1, diameter)
-            }, 100);
- 
-
-
-
-
-
-            
-
-
-            const minLat2 = Math.min(...latArray);
-            const maxLat2 = Math.max(...latArray);
-            const minLng2 = Math.min(...lngArray);
-            const maxLng2 = Math.max(...lngArray);
-
-
-            const thisMapLocation = {
-                lat: (minLat2 + maxLat2) / 2, // Default latitude  
-                lng: (minLng2 + maxLng2) / 2, // Default longitude  dall
-                delta: Math.max((minLng2 - maxLng2), (minLat2 - maxLat2)),
-            }
-
-
-            dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
-
-             
-
-            
-        }
-        if (param === 'globe') {          
-            dispatch(newGameMode('globe'))
-            deleteHistory()
-
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: 2  } }));
-
-           
-           // dispatch(newMarkerState({ markerName: 'ALL', updatedData: { delete: true } }))
-            dispatch(deleteMarkerState({ markerName: 'ALL' }))
-           
-        
-
-            updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, 60)
-
-            
-
-        }
-
-
-       
-        if (param === 'random') {        
-            const randInd = Math.floor(Math.random() * (globeConcepts.length + 0));
-            showBaseConcept(randInd)
-     
-        }             
-    }
-
-
-
     const showBaseConcept = (nro) => {
         const markerName = 'Marker' + nro;
         setLastConcept(markerState[markerName].param)
         dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, delta: 5 } }));
   
+    }
+
+
+    const resizeAllMarkers = (zoomLevel) => {
+
+        if (gameMode !== 'globe') { return }
+
+        const diamArray = [20, 40, 60, 80, 120, 160, 200, 280, 360, 420, 520, 620];
+        const diameter = diamArray[zoomLevel];
+        
+        let i = 0;
+
+        while (markerState['Marker' + i]) {
+            const thisMarker = { ...markerState['Marker' + i] };
+            thisMarker.diameter = diameter;
+            thisMarker.dataURL = drawCircleCanvas2ReturnDataURL(diameter, thisMarker.title, '')
+            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+            i++
+        }
     }
 
 
@@ -190,23 +97,6 @@ const App = () => {
 
     }
 
-
-    const handleZoomChangedFunction = (zoomLevel) => {
-   
-        
-        if (gameMode === 'globe') {
-
-            const diamArray = [20, 40, 60, 80, 120, 160, 200, 280, 360, 420, 520, 620]
-            // const diameter = 30 + 20 * zoomLevel;
-            const diameter = diamArray[zoomLevel];
-
-            updateMarkers(globeConcepts, globeConcepts, [], [], 1, diameter)
-
-        }
-       
-    }
-
- 
     const makeNewOptions = (pivotItems, index) => {
 
         const thisConcept = pivotItems[0];
@@ -262,8 +152,6 @@ const App = () => {
                 dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitleUpperCase, formattedValue),
 
             }
-          //  dispatch(newMapState({ value: thisMarker, markerIndex: i }));
-
 
             dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
 
@@ -287,12 +175,9 @@ const App = () => {
             setTimeout(() => {
                 processMarkers(thisConcept, 0, lat, lng, 'nohist', true) // we start exploring related concepts
             }, 100);
-
-            
-            
+                    
             return
         }
-
 
         if (gameMode === 'browse' && location === 0) { // center concept in the browse mode clicked
             dispatch(newGameMode('details')) // we explore details
@@ -305,6 +190,13 @@ const App = () => {
         }
 
     }
+
+    const isBackClick = () => {
+
+
+    }
+
+
 
     const processMarkers = (thisConcept, location, lat, lng, history, enablepolyline) => { 
         
@@ -461,13 +353,7 @@ const App = () => {
         const latThis = latStart * (1 - position) + latEnd * position;
         const lngThis = lngStart * (1 - position) + lngEnd * position;
 
-     //   dispatch(newMapLocation({ attribute: 'lat', value: latThis }));
-     //   dispatch(newMapLocation({ attribute: 'lng', value: lngThis }));
-
         dispatch(newMapLocation({ dall: 'dall', value: { lat: latThis, lng: lngThis } }));
-
-
-
 
         if (position < 1) {
             setTimeout(() => {
@@ -478,16 +364,9 @@ const App = () => {
 
     }
 
-   
-
     const clickInfo = () => { // show introscreen
         dispatch(newGameMode('intro'))
     }
-
-   
-    
-     
-
    
     return (
         <Box className="appContainer">
@@ -499,8 +378,8 @@ const App = () => {
                     {loaded && (
                         <>
                         <GoogleMapsApp
-                            handleZoomChangedFunction={handleZoomChangedFunction}
-                            markerFunction={markerFunction}
+                                markerFunction={markerFunction}
+                                resizeAllMarkers={resizeAllMarkers}
                         />
                             { gameMode==='details' && (
                             <OverlayBlock
@@ -514,14 +393,21 @@ const App = () => {
                 <Grid item xs={12} className="third-row centerContent">
                    
                     <ModeButtonRow
-                        buttonFunction={controlButtons}
+                        
+                        showBaseConcept={showBaseConcept}
+                        globeConcepts={globeConcepts}
+                        updateMarkers={updateMarkers}
+                        deleteHistory={deleteHistory}
+                        latLngData={latLngData}
+                        optionChoiceHistory={optionChoiceHistory}
+                        processMarkers={processMarkers}
+                        roundCounter={roundCounter}
+                        drawPolyline={drawPolyline}
+                        diameter={diameter}
                         enabled={[roundCounter > 0, roundCounter > 0, roundCounter > 0, loaded, (gameMode === 'globe' || gameMode === 'zoomin')]}
                     />
                     
-                </Grid>
-
-                
-
+                </Grid>               
             </Grid>
         </Box >  
     );

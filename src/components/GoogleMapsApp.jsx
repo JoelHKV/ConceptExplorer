@@ -4,19 +4,18 @@ import { useSelector } from 'react-redux';
 import { Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
 import { createMarker, createPolyline } from '../utilities/googleMapHelper';
-
 import { googleMapLoader } from '../utilities/googleMapLoader';
 
 
 import './GoogleMapsApp.css';
 
 
-const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
+const GoogleMapsApp = ({ markerFunction, resizeAllMarkers  }) => {
  
     const oldMarkerHandleArray = useRef({});
     const oldPolylineHandleArray = useRef({});
  
-
+    
     const [mapLocked, setMapLocked] = useState(false);
 
     const gameMode = useSelector((state) => state.counter[0].gameMode);
@@ -147,7 +146,7 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
     useEffect(() => {
 
         const zoomChangeListener = map?.addListener('zoom_changed', () => {
-            handleZoomChangedFunction(map.getZoom());
+            resizeAllMarkers(map.getZoom());
         });
         const zoomListenerRef = React.createRef();
         zoomListenerRef.current = zoomChangeListener;
@@ -165,6 +164,8 @@ const GoogleMapsApp = ({ markerFunction, handleZoomChangedFunction }) => {
             //handleIdleFunction()
         });
     }, [map]);
+
+
 
     const handleMapLockChange = (event) => {
         setMapLocked(event.target.checked);
