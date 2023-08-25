@@ -19,16 +19,10 @@ import ModeButtonRow from './components/ModeButtonRow';
 import OverlayBlock from './components/OverlayBlock';
 
 
-//import axios from 'axios';
-
 import './App.css'; 
-
- 
 
 const diameter = 90;
  
-
-
 const App = () => {
  
     const [lastConcept, setLastConcept] = useState([])
@@ -47,8 +41,8 @@ const App = () => {
     
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
   
-    const { concepts, conceptRank, globeConcepts, latLngData, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore', 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?apikey=popularity');
-    //console.log(loaded)
+    const { concepts, globeConcepts, latLngData, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore');
+    //console.log(loaded) conceptRank
 
     useEffect(() => {
         if (loaded) {
@@ -97,40 +91,23 @@ const App = () => {
 
     }
 
-    const makeNewOptions = (pivotItems, clickDirection) => {
 
-        const thisConcept = pivotItems[0];
-        const lastConcept = pivotItems[1];
+    const makeNewOptions = (thisConcept, lastConcept, clickDirection) => {
+        setLastConcept(thisConcept)
+        const originalOrderedConcepts = concepts[thisConcept]['ordered_concepts'];
+        const clickingOrderedConcepts = originalOrderedConcepts.filter(concept => concept !== thisConcept && concept !== lastConcept);
 
-        const oppositeClickDirection = (clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4);
-
-
-
-        const allAssociatedConcepts = concepts[thisConcept]['concepts'];
-        const allrelatedConcepts = concepts[thisConcept]['related'];
-        const allConceptsLastRemoved = [...new Set([...allAssociatedConcepts, ...allrelatedConcepts])]
-            .filter(button => button !== lastConcept && button !== thisConcept);
-
-        const sortedConcepts = allConceptsLastRemoved
-            .map(button => ({
-                button,
-                importanceValue: 100 * conceptRank[button]['iskey'] + conceptRank[button]['count']
-            }))
-            .sort((a, b) => b.importanceValue - a.importanceValue)
-            .slice(0, lastConcept.length>0 ? 7 : 8)
-            .map(item => item.button);
-        if (clickDirection > 0) {
-            sortedConcepts.splice(oppositeClickDirection -1, 0, lastConcept);
-         }
-         sortedConcepts.unshift(thisConcept);
-        return sortedConcepts
-
-         
-    };
-
-    
+        clickingOrderedConcepts.unshift(thisConcept); // the clicked concept goes to the beginning (middle)
+        if (clickDirection > 0 && lastConcept.length>0) { // did not click center concept, have history
+            const oppositeClickDirection = (clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4);
+            clickingOrderedConcepts.splice(oppositeClickDirection, 0, lastConcept); // arrange the previous concept opposite to the clicking direction to create the illusion of navigation
+        }
+        clickingOrderedConcepts.slice(0, 8)
+        return clickingOrderedConcepts
+    }
+   
     const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
-
+         
         const updatedMarkers = newOptions.map((markerTitle, i) => {
              
             let formattedValue = ''
@@ -141,10 +118,8 @@ const App = () => {
 
             const markerTitleUpperCase = markerTitle.toUpperCase()
             const thisOpacity = keepBrightArray.includes(markerTitle) ? 1 : opacity
-            const fireMarker = conceptRank[markerTitle]['iskey'] ? markerTitle : null;
-            // markers representing key concepts get to fire, periferials do not
-             
-
+          
+            const fireMarker = concepts.hasOwnProperty(markerTitle) ? markerTitle : null; // markers fire action only if they are keys in the database
 
             const thisMarker = {
                 ...(lat[i] !== undefined ? { lat: lat[i] } : {}),  
@@ -194,9 +169,7 @@ const App = () => {
         }
 
     }
-
-   
-
+  
     const processMarkers = (thisConcept, clickDirection, lat, lng, history, enablepolyline) => { 
         
         if (markerState['Marker0'] && enablepolyline) {
@@ -204,22 +177,19 @@ const App = () => {
 
         }
         
-        
-         
-        let pivotItems
-        
         const lastChoice = optionChoiceHistory[roundCounter - 1];
         const last2ndChoice = optionChoiceHistory[roundCounter - 2];
         const clickBack = lastChoice ? Math.abs(lastChoice[9] - clickDirection) == 4 : false;
-
+   
         if (lastChoice && last2ndChoice && clickBack) { // click where we came from 
             if (enablepolyline) {
                 drawPolyline(last2ndChoice[12], last2ndChoice[13], last2ndChoice[10], last2ndChoice[11], 1)
             }
             setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
-            pivotItems = [lastChoice[0], last2ndChoice[0]]
-            clickDirection = last2ndChoice[9]
-
+            const newOptions = makeNewOptions(lastChoice[0], last2ndChoice[0], last2ndChoice[9])
+            setTimeout(() => {
+                handleMapVisuals(newOptions, [lastChoice[0], last2ndChoice[0]], lat, lng, history)
+            }, 50)
         }
         else {
 
@@ -227,26 +197,16 @@ const App = () => {
                 setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
             }
 
-            pivotItems = history === 'nohist' ? [thisConcept, ''] : [thisConcept, lastConcept];
-            
-
+            const lastConceptIfHistory = history === 'nohist' ? '' : lastConcept;
+            const newOptions = makeNewOptions(thisConcept, lastConceptIfHistory, clickDirection)
+            setTimeout(() => {
+                handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, history)
+            }, 50)
             saveHistoryByIndex(clickDirection, roundCounter)
-
             
         }
-        setLastConcept(pivotItems[0])
-       const newOptions = makeNewOptions(pivotItems, clickDirection)
-
-
-        setTimeout(() => {
-            handleMapVisuals(newOptions, pivotItems, lat, lng, history)
-
-        }, 50)
-
-        
-                      
+                           
     }
-
 
     const conceptFlowerCoordinates = (lat, lng) => {
         const latArray = [];
@@ -296,6 +256,7 @@ const App = () => {
             markerState['Marker' + location].lng
         ];
 
+
         oldOptionArray[9] = location;
         oldOptionArray.splice(10, 0, ...markerCoordinates);
 
@@ -316,7 +277,7 @@ const App = () => {
             color: '#333333',
         }
 
-        dispatch(newPolylineState({ polylineName: 'Polyline' + index, updatedData: thisPolyline }))
+       dispatch(newPolylineState({ polylineName: 'Polyline' + index, updatedData: thisPolyline }))
 
     }
 
@@ -324,8 +285,8 @@ const App = () => {
 
     const updateOpacity = (newOptions, excludeMarkers) => {
         const updatedMarkers = newOptions.map((markerTitle, i) => {
-            if (!excludeMarkers.includes(markerTitle)) {                          
-                const opacity = conceptRank[markerTitle]['iskey'] ? 1 : 0.6;
+            if (!excludeMarkers.includes(markerTitle)) {                                      
+                const opacity = concepts.hasOwnProperty(markerTitle) ? 1 : 0.6; // transparent markers for concepts that cannot be examined (not keys in the database)
                 dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: { opacity: opacity } }));
 
         }
@@ -370,7 +331,7 @@ const App = () => {
                             { gameMode==='details' && (
                             <OverlayBlock
                                     title={lastConcept}
-                                    text={concepts[lastConcept]['definition']}
+                                    text={lastConcept}
                                 />
                             )}
                         </>

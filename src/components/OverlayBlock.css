@@ -16,9 +16,9 @@
 
     .OverlayBlock Button {
         position: absolute;
-        left: 99%;
-        top: 1%;
-        transform: translateX(-100%);
+        left: 3%;
+        top: 5%;
+         
         width: clamp(30px, 3vmax, 50px);
         min-width: 0 !important;
         height: clamp(30px, 3vmax, 50px);
@@ -28,9 +28,22 @@
         font-size: clamp(15px, 3vmax, 30px) !important;
     }
 
-        .OverlayBlock Button:hover {
-            background-color: white !important;
-        }
+
+
+
+.wikilogo {
+    position: absolute;
+    left: 100%;
+    top: 0%;
+    width: 12%;
+   
+    padding: 10px;
+    transform: translateX(-100%);
+}
+
+.OverlayBlock Button:hover {
+    background-color: white !important;
+}
 
 .OverlayBlock_Title {
     text-transform: capitalize;
@@ -44,5 +57,5 @@
     font-size: 1rem !important;
     text-align: left;
     padding: 0.5rem;
- 
+    padding-top: 1.5rem;
 }    

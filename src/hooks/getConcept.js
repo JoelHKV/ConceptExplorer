@@ -3,15 +3,11 @@ import { useState, useEffect, useMemo } from 'react';
 
 
 
-export const getConcept = (thisURL, thisURL2) => {
+export const getConcept = (thisURL) => {
     const [concepts, setConcepts] = useState([]);
     const [globeConcepts, setGlobeConcepts] = useState([]);
 
-
-    const [conceptRank, setConceptRank] = useState()
-
-    const [load1, setLoad1] = useState(false);
-    const [load2, setLoad2] = useState(false);  
+    const [load1, setLoad1] = useState(false);  
     const [error, setError] = useState(null);
 
     //let latLngData2;
@@ -38,20 +34,7 @@ export const getConcept = (thisURL, thisURL2) => {
             .finally(() => {
                 
             });
-        axios
-            .get(thisURL2)
-            .then(response => {
-                setConceptRank(response.data)
-                setLoad2(true)
  
-            })
-            .catch(error => {
-                setError('2nd error: ' + error);
-            })
-            .finally(() => {
-                
-            });
-
 
     }
 
@@ -76,9 +59,9 @@ export const getConcept = (thisURL, thisURL2) => {
 
 
 
-    const loaded = load1 && load2;
+    const loaded = load1;
 
-    return { concepts, conceptRank, globeConcepts, latLngData, loaded, error }
+    return { concepts, globeConcepts, latLngData, loaded, error }
 
 
 };
