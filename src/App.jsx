@@ -30,6 +30,7 @@ const App = () => {
    
 
     const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
+    const [optionChoiceHistory2, setOptionChoiceHistory2] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
   
     const dispatch = useDispatch();
@@ -102,8 +103,7 @@ const App = () => {
             const oppositeClickDirection = (clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4);
             clickingOrderedConcepts.splice(oppositeClickDirection, 0, lastConcept); // arrange the previous concept opposite to the clicking direction to create the illusion of navigation
         }
-        clickingOrderedConcepts.slice(0, 8)
-        return clickingOrderedConcepts
+        return clickingOrderedConcepts.slice(0, 9)
     }
    
     const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
@@ -131,10 +131,8 @@ const App = () => {
                 dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitleUpperCase, formattedValue),
 
             }
-
             dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-
-
+           
         })
     }
 
@@ -179,9 +177,25 @@ const App = () => {
         
         const lastChoice = optionChoiceHistory[roundCounter - 1];
         const last2ndChoice = optionChoiceHistory[roundCounter - 2];
+
+    
+
+
+
+
+
+
         const clickBack = lastChoice ? Math.abs(lastChoice[9] - clickDirection) == 4 : false;
    
-        if (lastChoice && last2ndChoice && clickBack) { // click where we came from 
+        if (lastChoice && last2ndChoice && clickBack) { // click where we came from
+
+
+            console.log(optionChoiceHistory2[roundCounter - 1].clickDirection, lastChoice[9])
+            console.log(optionChoiceHistory2[roundCounter - 1].conceptNameByDirection[0], lastChoice[0])
+
+
+
+
             if (enablepolyline) {
                 drawPolyline(last2ndChoice[12], last2ndChoice[13], last2ndChoice[10], last2ndChoice[11], 1)
             }
@@ -203,7 +217,7 @@ const App = () => {
                 handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, history)
             }, 50)
             saveHistoryByIndex(clickDirection, roundCounter)
-            
+            saveHistoryByIndex2(clickDirection, roundCounter)
         }
                            
     }
@@ -238,9 +252,34 @@ const App = () => {
         else {
             dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng } }));
         }
-        
 
     }
+
+    const saveHistoryByIndex2 = (clickDirection, index) => {
+       
+        const thisOptionData = {
+            conceptNameByDirection: {},
+            clickDirection: clickDirection,
+            centerLat: markerState['Marker0'].lat,
+            centerLng: markerState['Marker0'].lng,
+            clickLat: markerState['Marker' + clickDirection].lat,
+            clickLng: markerState['Marker' + clickDirection].lng,
+        };
+
+        for (let i = 0; i < 9; i++) {
+            thisOptionData.conceptNameByDirection[i] = markerState['Marker' + i] ? markerState['Marker' + i].param : '';
+             
+        }
+
+    
+        const newHistory = [...optionChoiceHistory2.slice(0, index)];
+
+        // Add the new history entry at the specified index
+        newHistory[index] = thisOptionData;
+
+        setOptionChoiceHistory2(newHistory);
+    };
+
 
 
     const saveHistoryByIndex = (location, index) => {
@@ -260,8 +299,6 @@ const App = () => {
 
         oldOptionArray[9] = location;
         oldOptionArray.splice(10, 0, ...markerCoordinates);
-        console.log('hist', location, index, oldOptionArray)
-        // Create a new history array up to the specified index
         const newHistory = [...optionChoiceHistory.slice(0, index)];
 
         // Add the new history entry at the specified index
