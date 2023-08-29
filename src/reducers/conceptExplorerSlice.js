@@ -1,9 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 
+const markerDiameterPerZoom = [50, 50, 60, 70, 80, 90, 100, 120, 140, 180, 260, 360, 460, 460, 460, 460, 460];
+
 const initialState = [
     {
         gameMode: 'globe',
+        browseZoomLevel: 7,
+        singleConceptZoomLevel: 6,
+        globalConceptZoomLevel: 2,
+        markerDiameterPerZoom: markerDiameterPerZoom,
         markerState: {},
         polylineState: {},
         mapLocation: {},

@@ -9,7 +9,7 @@ import { getConceptDetails } from '../hooks/getConceptDetails';
 
 import { newGameMode } from '../reducers/conceptExplorerSlice';
 
-const OverlayBlock = ({ title, text }) => {
+const OverlayBlock = ({ title, lat, lng }) => {
     const [expanded, setExpanded] = useState(false);
     const [showText, setShowText] = useState(false);
     const dispatch = useDispatch();
@@ -19,8 +19,12 @@ const OverlayBlock = ({ title, text }) => {
 
     const { conceptDetails, loaded, error } = getConceptDetails(title);
 
- 
 
+    const latitudeText = lat >= 0 ? 'N' : 'S';
+    const longitudeText = lng >= 0 ? 'E' : 'W';
+    const wholeText = `${Math.abs(lat).toFixed(2)} ${latitudeText}, ${Math.abs(lng).toFixed(2)} ${longitudeText}`;
+
+    console.log(wholeText) 
     useEffect(() => {
         // Set the component as expanded after it has mounted
         setExpanded(true);
@@ -56,9 +60,13 @@ const OverlayBlock = ({ title, text }) => {
         <div className={`OverlayBlock ${expanded ? 'expanded' : ''}`} onClick={clickInfo}>
             <Typography className='OverlayBlock_Title' variant="h4">
                 {title}
+               
             </Typography>
-
-            {showText && (
+            <Typography className='OverlayBlock_Title' variant="h6">
+               
+                {wholeText}
+            </Typography>
+            {showText && loaded && (
                 <>
             <Typography className='OverlayBlock_Text' variant="h6">
                         {conceptDetails['definition']}
@@ -69,7 +77,7 @@ const OverlayBlock = ({ title, text }) => {
                 X
             </Button> 
             <Typography className='OverlayBlock_Text' variant="h6">
-                        {conceptDetails['model'] + ' on ' + conceptDetails['date'].slice(5, -12) }
+                        {conceptDetails['model'] + ' on ' + conceptDetails['date'].slice(5, -12)}
             </Typography>
 
                 </>

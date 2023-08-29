@@ -29,15 +29,15 @@ export function drawCircleCanvas2ReturnDataURL(diameter, text, score) {
 
     drawCirlce(ctx, centerX, centerY, maxRadius, "black") 
     drawCirlce(ctx, centerX, centerY, 0.9 * maxRadius, "white")
-    drawCirlce(ctx, centerX, centerY, 0.5 * maxRadius, "black")
-    drawCirlce(ctx, centerX, centerY, 0.4 * maxRadius, "#aaaaaa")
+    drawCirlce(ctx, centerX, centerY, 0.45 * maxRadius, "black")
+    drawCirlce(ctx, centerX, centerY, 0.35 * maxRadius, "#aaaaaa")
 
      
-
+    const fontSize = diameter/5;
 
      
-    const textRadius = 0.9 * maxRadius - 12;
-    ctx.font = "bold 16px Arial";
+    const textRadius = 0.65 * maxRadius - 0;
+    ctx.font = "bold " + fontSize + "px Arial";
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -55,20 +55,16 @@ export function drawCircleCanvas2ReturnDataURL(diameter, text, score) {
     }
 
 
-    ctx.font = " bold 20px Arial";
+    //ctx.font = " bold 20px Arial";
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     // Calculate the position for the text
     const textX = centerX;
-    const textY = centerY+1;
+    const textY = centerY + 1;
+    //const intScore = Math.round(score)
     ctx.fillText(score, textX, textY);
 
-
-
-  //  const textX = centerX;
-   // const textY = centerY-5;
-  //  ctx.fillText(text, textX, textY);
 
 
     const dataURI = canvas.toDataURL();

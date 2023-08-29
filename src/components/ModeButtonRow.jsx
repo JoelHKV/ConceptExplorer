@@ -6,53 +6,32 @@ import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPoly
 import { Button } from '@mui/material';
 import './ModeButtonRow.css';
 
-const buttonData = [
-    {
-        name: 'home',
-        className: 'fly-control',
-        param: 'home',
-    },
-    {
-        name: 'back',
-        className: 'fly-control',
-        param: 'back',
-    },
-    {
-        name: 'route',
-        className: 'fly-control',
-        param: 'route',
-    },
-    {
-        name: 'globe',
-        className: 'fly-control',
-        param: 'globe',
-    },
-    {
-        name: 'random',
-        className: 'fly-control',
-        param: 'random',
-    },
-  
 
-];
-
-const ModeButtonRow = ({ diameter, drawPolyline, roundCounter, optionChoiceHistory, processMarkers, updateMarkers, deleteHistory, latLngData, showBaseConcept, globeConcepts, enabled }) => {
+const ModeButtonRow = ({ showGlobeView, showOneConceptView, drawPolyline, roundCounter, optionChoiceHistory, processMarkers, updateMarkers, deleteHistory }) => {
 
     const dispatch = useDispatch();
 
+   
+    const markerState = useSelector((state) => state.counter[0].markerState);
+    const gameMode = useSelector((state) => state.counter[0].gameMode); 
+  //  const singleConceptZoomLevel = useSelector((state) => state.counter[0].singleConceptZoomLevel);
+  //  const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
+    const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
+
 
     const controlButtons = (param) => {
-
+        // processMarkers(thisConcept, 0, lat, lng, 'nohist', true)
         if (param === 'home') {
             deleteHistory()
-            const firstChoice = optionChoiceHistory[0];
-            processMarkers(firstChoice[0], 0, firstChoice[10], firstChoice[11], 'nohist', false)
+            const goToChoice = optionChoiceHistory[0];
+            processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, 'nohist', false)
         }
 
         if (param === 'back') {
-            const prevChoice = optionChoiceHistory[roundCounter - 1];
-            const oppositeClickDirection = prevChoice[9] !== 0 ? ((prevChoice[9] + 4) > 8 ? (prevChoice[9] + 4 - 8) : (prevChoice[9] + 4)) : 0;
-            processMarkers(prevChoice[0], oppositeClickDirection, prevChoice[10], prevChoice[11], 'hist', true)
+            const goToChoice = optionChoiceHistory[roundCounter - 1];
+            const clickDirection = goToChoice.clickDirection
+            const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
+            processMarkers(goToChoice.conceptName, oppositeClickDirection, goToChoice.centerLat, goToChoice.centerLng, 'hist', true)
         }
 
         if (param === 'route') {
@@ -67,60 +46,104 @@ const ModeButtonRow = ({ diameter, drawPolyline, roundCounter, optionChoiceHisto
 
             for (let i = 0; i < optionChoiceHistory.length; i++) {
 
-                const thisStep = optionChoiceHistory[i];
-                latArray.push(thisStep[10])
-                lngArray.push(thisStep[11])
-                valArray.push(thisStep[0])
-                drawPolyline(thisStep[10], thisStep[11], thisStep[12], thisStep[13], i)
-
+                const thisChoice = optionChoiceHistory[i];
+                latArray.push(thisChoice.centerLat)
+                lngArray.push(thisChoice.centerLng)
+                valArray.push(thisChoice.conceptName)
+                drawPolyline(thisChoice.centerLat, thisChoice.centerLng, thisChoice.clickLat, thisChoice.clickLng, i)
 
             }
 
-
-            setTimeout(() => {
-                updateMarkers(valArray, valArray, latArray, lngArray, 1, diameter)
-            }, 100);
-
+            const zoomLevel = 4
+                      
             const minLat2 = Math.min(...latArray);
             const maxLat2 = Math.max(...latArray);
             const minLng2 = Math.min(...lngArray);
             const maxLng2 = Math.max(...lngArray);
 
+            const latLngSpace = Math.max((maxLng2 - minLng2), (maxLat2 - minLat2))
+
             const thisMapLocation = {
                 lat: (minLat2 + maxLat2) / 2, // Default latitude  
                 lng: (minLng2 + maxLng2) / 2, // Default longitude  dall
-                delta: Math.max((minLng2 - maxLng2), (minLat2 - maxLat2)),
+                delta: latLngSpace,
             }
 
             dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
 
+            setTimeout(() => {
+                updateMarkers(valArray, valArray, latArray, lngArray, 1, markerDiameterPerZoom[zoomLevel])
+            }, 100);
+
+
         }
-
-
 
 
         if (param === 'globe') {
-            dispatch(newGameMode('globe'))
-            deleteHistory()
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: 2 } }));
-            updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, 60)
+            showGlobeView()
         }
 
 
-
         if (param === 'random') {
-            const randInd = Math.floor(Math.random() * (globeConcepts.length + 0));
-            showBaseConcept(randInd)
-
+            showOneConceptView(-1)
         } 
 
 
     }
+    let buttonData = []
+    console.log(gameMode)
+    if (gameMode === 'globe') {
+        buttonData = [
+            {
+                name: 'random',
+                className: 'browse-control',
+                enabled: true,
+                param: 'random',
+            },
+            {
+                name: 'globe',
+                className: 'browse-control',
+                enabled: true,
+                param: 'globe',
+            },
 
 
 
+        ];
+
+    } else {
+        buttonData = [
+            {
+                name: 'home',
+                className: 'browse-control',
+                enabled: roundCounter > 0 && gameMode !== 'details',
+                param: 'home',
+            },
+            {
+                name: 'back',
+                className: 'browse-control',
+                enabled: roundCounter > 0 && gameMode !== 'route' && gameMode !== 'details',
+                param: 'back',
+            },
+            {
+                name: 'route',
+                className: 'browse-control',
+                enabled: roundCounter > 0 && gameMode !== 'details',
+                param: 'route',
+            },
+            {
+                name: 'globe',
+                className: 'browse-control',
+                enabled: gameMode !== 'details',
+                param: 'globe',
+            },
+        ];
+    }
+
+
+     
     const buttons = buttonData.map((button, index) => (
-        <div key={index} className={`${button.className} ${enabled[index] ? '' : 'mode-button-disabled'}`}>
+        <div key={index} className={`${button.className} ${button.enabled ? '' : 'mode-button-disabled'}`}>
             <Button variant="contained" onClick={() => controlButtons(button.param)}>
                 {button.name}
             </Button>

@@ -21,7 +21,7 @@ import OverlayBlock from './components/OverlayBlock';
 
 import './App.css'; 
 
-const diameter = 90;
+//const diameter = 90;
  
 const App = () => {
  
@@ -29,8 +29,8 @@ const App = () => {
 
    
 
+    
     const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
-    const [optionChoiceHistory2, setOptionChoiceHistory2] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
   
     const dispatch = useDispatch();
@@ -39,6 +39,16 @@ const App = () => {
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
+
+
+    const browseZoomLevel = useSelector((state) => state.counter[0].browseZoomLevel);
+    const singleConceptZoomLevel = useSelector((state) => state.counter[0].singleConceptZoomLevel);
+
+    const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
+
+    const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
+
+
     
     const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
   
@@ -47,29 +57,35 @@ const App = () => {
 
     useEffect(() => {
         if (loaded) {
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: 2 } }));
-
-            updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, 60)
-
+            showGlobeView()
         }
     }, [loaded])
 
 
+    const showGlobeView = () => {
+        deleteHistory()
+        
+        setTimeout(() => {
+        dispatch(newGameMode('globe'))
+        dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: globalConceptZoomLevel } }));
+        updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, markerDiameterPerZoom[globalConceptZoomLevel])
+        }, 100);
+    }
 
-    const showBaseConcept = (nro) => {
-        const markerName = 'Marker' + nro;
-        setLastConcept(markerState[markerName].param)
-        dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, delta: 5 } }));
-  
+    const showOneConceptView = (markerNro) => {
+        const markerName = markerNro !== -1 ? 'Marker' + markerNro : 'Marker' + Math.floor(Math.random() * (globeConcepts.length + 0));
+        dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: singleConceptZoomLevel } }));
+
     }
 
 
+
+
+
     const resizeAllMarkers = (zoomLevel) => {
-
         if (gameMode !== 'globe') { return }
-
-        const diamArray = [20, 40, 60, 80, 120, 160, 200, 280, 360, 420, 520, 620];
-        const diameter = diamArray[zoomLevel];
+       
+        const diameter = markerDiameterPerZoom[zoomLevel];
         
         let i = 0;
 
@@ -94,7 +110,7 @@ const App = () => {
 
 
     const makeNewOptions = (thisConcept, lastConcept, clickDirection) => {
-        setLastConcept(thisConcept)
+      //  setLastConcept(thisConcept)
         const originalOrderedConcepts = concepts[thisConcept]['ordered_concepts'];
         const clickingOrderedConcepts = originalOrderedConcepts.filter(concept => concept !== thisConcept && concept !== lastConcept);
 
@@ -112,7 +128,7 @@ const App = () => {
              
             let formattedValue = ''
             if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
-                formattedValue = concepts[markerTitle]['abstract'].toFixed(1);
+                formattedValue = concepts[markerTitle]['abstract'].toFixed(0);
 
             }
 
@@ -124,7 +140,7 @@ const App = () => {
             const thisMarker = {
                 ...(lat[i] !== undefined ? { lat: lat[i] } : {}),  
                 ...(lng[i] !== undefined ? { lng: lng[i] } : {}),
-                title: markerTitleUpperCase, // Title of the first marker
+                title: markerTitleUpperCase,  
                 param: fireMarker,
                 opacity: thisOpacity,
                 diameter: diameter,
@@ -137,11 +153,20 @@ const App = () => {
     }
 
 
+
+
    
     const markerFunction = (thisConcept, clickDirection, lat, lng) => {
 
+        setLastConcept(thisConcept)
+
         if (gameMode === 'globe' && lastConcept !== thisConcept) { // concept clicked in the global view
-            showBaseConcept(clickDirection) // centering and zooming in
+           // showBaseConcept(clickDirection) // centering and zooming in
+            showOneConceptView(clickDirection)
+
+
+
+
             return
         }
 
@@ -178,68 +203,54 @@ const App = () => {
         const lastChoice = optionChoiceHistory[roundCounter - 1];
         const last2ndChoice = optionChoiceHistory[roundCounter - 2];
 
-    
-
-
-
-
-
-
-        const clickBack = lastChoice ? Math.abs(lastChoice[9] - clickDirection) == 4 : false;
+        const clickBack = lastChoice ? Math.abs(lastChoice.clickDirection - clickDirection) == 4 : false;
    
         if (lastChoice && last2ndChoice && clickBack) { // click where we came from
-
-
-            console.log(optionChoiceHistory2[roundCounter - 1].clickDirection, lastChoice[9])
-            console.log(optionChoiceHistory2[roundCounter - 1].conceptNameByDirection[0], lastChoice[0])
-
-
-
-
-            if (enablepolyline) {
-                drawPolyline(last2ndChoice[12], last2ndChoice[13], last2ndChoice[10], last2ndChoice[11], 1)
+   
+            if (enablepolyline) {        
+                drawPolyline(last2ndChoice.clickLat, last2ndChoice.clickLng, last2ndChoice.centerLat, last2ndChoice.centerLng, 1)          
             }
             setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
-            const newOptions = makeNewOptions(lastChoice[0], last2ndChoice[0], last2ndChoice[9])
+            const newOptions = makeNewOptions(lastChoice.conceptName, last2ndChoice.conceptName, last2ndChoice.clickDirection)
             setTimeout(() => {
-                handleMapVisuals(newOptions, [lastChoice[0], last2ndChoice[0]], lat, lng, history)
+                handleMapVisuals(newOptions, [lastChoice.conceptName, last2ndChoice.conceptName], lat, lng, history)
             }, 50)
         }
         else {
 
+           
             if (clickDirection > 0) {  // click non-center marker and thereby move on
                 setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
             }
-
+         
             const lastConceptIfHistory = history === 'nohist' ? '' : lastConcept;
             const newOptions = makeNewOptions(thisConcept, lastConceptIfHistory, clickDirection)
             setTimeout(() => {
                 handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, history)
             }, 50)
             saveHistoryByIndex(clickDirection, roundCounter)
-            saveHistoryByIndex2(clickDirection, roundCounter)
         }
                            
     }
 
     const conceptFlowerCoordinates = (lat, lng) => {
+        const mercatorFactor = 1 / Math.cos((lat * Math.PI) / 180);
         const latArray = [];
         const lngArray = [];
         const angleIncrement = (2 * Math.PI) / 8;
         for (let i = 0; i < 9; i++) {
             const radius = i === 0 ? 0 : 2;
-            latArray[i] = lat + radius * Math.cos(i * angleIncrement);
+            latArray[i] = lat + radius / mercatorFactor * Math.cos(i * angleIncrement);
             lngArray[i] = lng + radius * Math.sin(i * angleIncrement);
         }
         return [latArray, lngArray]; 
     }
-
-    
+   
     const handleMapVisuals = (newOptions, PivotItems, lat, lng, history) => {
 
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng)
         const opacity = 0.1
-        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
+        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, markerDiameterPerZoom[browseZoomLevel])
 
         setTimeout(() => {
             updateOpacity(newOptions, PivotItems)
@@ -247,7 +258,7 @@ const App = () => {
         }, 400)
 
         if (history === 'nohist') {
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, delta: 2 } }));
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: browseZoomLevel } }));
         }
         else {
             dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng } }));
@@ -255,10 +266,10 @@ const App = () => {
 
     }
 
-    const saveHistoryByIndex2 = (clickDirection, index) => {
+    const saveHistoryByIndex = (clickDirection, index) => {
        
         const thisOptionData = {
-            conceptNameByDirection: {},
+            conceptName: markerState['Marker0'].param,
             clickDirection: clickDirection,
             centerLat: markerState['Marker0'].lat,
             centerLng: markerState['Marker0'].lng,
@@ -266,47 +277,13 @@ const App = () => {
             clickLng: markerState['Marker' + clickDirection].lng,
         };
 
-        for (let i = 0; i < 9; i++) {
-            thisOptionData.conceptNameByDirection[i] = markerState['Marker' + i] ? markerState['Marker' + i].param : '';
-             
-        }
-
-    
-        const newHistory = [...optionChoiceHistory2.slice(0, index)];
-
-        // Add the new history entry at the specified index
-        newHistory[index] = thisOptionData;
-
-        setOptionChoiceHistory2(newHistory);
-    };
-
-
-
-    const saveHistoryByIndex = (location, index) => {
-        
-        const oldOptionArray = new Array(14);
-        for (let i = 0; i < 9; i++) {
-            oldOptionArray[i] = markerState['Marker' + i] ? markerState['Marker' + i].param : ''; 
-        }
-
-        const markerCoordinates = [
-            markerState['Marker0'].lat,
-            markerState['Marker0'].lng,
-            markerState['Marker' + location].lat,
-            markerState['Marker' + location].lng
-        ];
-
-
-        oldOptionArray[9] = location;
-        oldOptionArray.splice(10, 0, ...markerCoordinates);
         const newHistory = [...optionChoiceHistory.slice(0, index)];
 
-        // Add the new history entry at the specified index
-        newHistory[index] = oldOptionArray;
+        newHistory[index] = thisOptionData;
 
         setOptionChoiceHistory(newHistory);
     };
- 
+
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
         const thisPolyline = {
@@ -350,14 +327,16 @@ const App = () => {
     }
 
     const clickInfo = () => { // show introscreen
-        dispatch(newGameMode('intro'))
+        console.log('infoinfo')
     }
    
     return (
         <Box className="appContainer">
             <Grid container className="gridContainer">
                 <Grid item xs={12} className="first-row centerContent" >
-                    <HeaderBlock />
+                    <HeaderBlock
+                        clickInfo={clickInfo }
+                    />
                 </Grid>
                 <Grid item xs={12} className="second-row centerContent">
                     {loaded && (
@@ -369,29 +348,27 @@ const App = () => {
                             { gameMode==='details' && (
                             <OverlayBlock
                                     title={lastConcept}
-                                    text={lastConcept}
+                                    lat={markerState['Marker0'].lat}
+                                    lng={markerState['Marker0'].lng}
                                 />
                             )}
                         </>
                     )}
                 </Grid> 
                 <Grid item xs={12} className="third-row centerContent">
-                   
+                    {loaded  && (
                     <ModeButtonRow
-                        
-                        showBaseConcept={showBaseConcept}
-                        globeConcepts={globeConcepts}
+                        showGlobeView={showGlobeView}
+                        showOneConceptView={showOneConceptView}
                         updateMarkers={updateMarkers}
                         deleteHistory={deleteHistory}
-                        latLngData={latLngData}
                         optionChoiceHistory={optionChoiceHistory}
                         processMarkers={processMarkers}
                         roundCounter={roundCounter}
                         drawPolyline={drawPolyline}
-                        diameter={diameter}
-                        enabled={[roundCounter > 0, roundCounter > 0, roundCounter > 0, loaded, (gameMode === 'globe' || gameMode === 'zoomin')]}
+                        
                     />
-                    
+                    )}
                 </Grid>               
             </Grid>
         </Box >  
