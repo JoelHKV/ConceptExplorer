@@ -1,26 +1,18 @@
-# Gallery Galore
-[Gallery Galore is deployed to GitHub](https://JoelHKV.github.io/GalleryGalore/)
+# Concept Explorer
+[Concept Explorer is deployed to GitHub](https://joelhkv.github.io/ConceptExplorer/)
 
 ## General Information
-Gallery Galore is an exploratory app for examining the possibilities of AI for learning. In particular, it is a collection of AI-generated paintings that help users associate famous painters with their distinct painting styles.
+Concept Explorer is an application designed for navigating the conceptual world, much like how Google Maps serves as a tool for navigation in the physical realm. Just as physical locations have distances between them, abstract concepts in the conceptual realm also possess a certain degree of separation. This allows users to navigate from one concept to a related concept, facilitating a deeper understanding of the interconnected nature of the conceptual world. Additionally, users have the option to access concise summaries of concepts or explore further details on Wikipedia.
+
+<img src="https://github.com/JoelHKV/ConceptExplorer/tree/main/public/Fig1_Concept.jpg" width="700" height="500">
+
 
 
 ## Instructions and Features
-Gallery Galore contains integrated instructions, so instead of reading on, consider simply click the link.
-
-In the practice mode, users can browse through random paintings by clicking on the current painting. Alternatively, they can change the title with the bottom slider and the painter with the right slider. 
-
+Concept Explorer
     
-
-<img src="https://storage.googleapis.com/joeltestfiles/GG_Fig1.jpg" width="600" height="800">
-
-
  
-In the quiz mode, users will be presented with a painting, and their task is to guess the painter's name. They indicate their answer by clicking one of the four buttons, each displaying a painter's name. After the answer has been given, the border of the painting flashes green for the correct answer and red for the wrong answer.
-
-
-
-<img src="https://storage.googleapis.com/joeltestfiles/GG_Fig2.jpg" width="600" height="800">
+ 
 
 ## Setup
 The app contains of the following code files:
@@ -28,20 +20,22 @@ The app contains of the following code files:
 - src/main.jsx
 - src/App.jsx
 - src/App.css
-- src/reducers/quizGameSlice.jsx (Redux to handle the game logic)
-- src/components/CustomButtonGroup.jsx (a custom button array component utilizing MUI component library)
-- src/components/IntroBlock.jsx (component containing integrated instructions)
-- src/utilities/numberCruching.js (array suffling etc)
-- src/assets/favicon_gg.png
+- src/reducers/conceptExplorerSlice.jsx (Redux to handle the game logic)
+- src/components/ 
+- src/components/ 
+- src/utilities/ 
+- src/assets/ 
 
 ## Technologies Used
 Gallery Galore is written in JavaScript (React + Redux), HTML, and CSS. 
 
 ## Testing
 
-## Painting Data
-The 10 most famous painters are first selected using ChatGPT. Then, ChatGPT is asked to generate the 20 most prototypical titles across those painters. Finally, a Python script is used to instruct Dall-E to draw the paintings. The painting images are currently saved in Google Cloud Storage and accessed directly.
+## Data
 
+The data for Concept Explorer is created in the Concept Generation -project.
+
+ 
 ## Room for improvement
 - Perform unit tests and clicking tests with Selenium.
 
