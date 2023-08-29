@@ -244,6 +244,7 @@ const App = () => {
 
 
     const saveHistoryByIndex = (location, index) => {
+        
         const oldOptionArray = new Array(14);
         for (let i = 0; i < 9; i++) {
             oldOptionArray[i] = markerState['Marker' + i] ? markerState['Marker' + i].param : ''; 
@@ -259,7 +260,7 @@ const App = () => {
 
         oldOptionArray[9] = location;
         oldOptionArray.splice(10, 0, ...markerCoordinates);
-
+        console.log('hist', location, index, oldOptionArray)
         // Create a new history array up to the specified index
         const newHistory = [...optionChoiceHistory.slice(0, index)];
 

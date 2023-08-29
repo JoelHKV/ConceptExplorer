@@ -20,12 +20,9 @@ export const getConcept = (thisURL) => {
         axios
             .get(thisURL)
             .then(response => {
-                setConcepts(response.data)
-                const tempGlobalConcepts = Object.keys(response.data).slice(0, 20);
-                
-
-                setGlobeConcepts(tempGlobalConcepts)
-                setLoad1(true)
+                setConcepts(response.data)             
+                getConceptEntryPoints(response.data)
+                setLoad1(true)   
 
             })
             .catch(error => {
@@ -43,6 +40,21 @@ export const getConcept = (thisURL) => {
     useEffect(() => {
         fetchData()
     }, [])
+
+
+
+    const getConceptEntryPoints = (data) => {
+        const uniqueBranches = new Set();
+        const keykey = Object.keys(data);
+        keykey.forEach(entry => {
+                uniqueBranches.add(data[entry]['branch']);
+        });
+        const globeEntries = [...uniqueBranches]
+
+
+        setGlobeConcepts(globeEntries)     
+}
+
 
     const latLngData = useMemo(() => {
         const newLat = [];
