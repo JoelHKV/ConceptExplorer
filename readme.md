@@ -4,7 +4,7 @@
 ## General Information
 Concept Explorer is an application designed for navigating the conceptual world, much like how Google Maps serves as a tool for navigation in the physical realm. Just as physical locations have distances between them, abstract concepts in the conceptual realm also possess a certain degree of separation. This allows users to navigate from one concept to a related concept, facilitating a deeper understanding of the interconnected nature of the conceptual world. Additionally, users have the option to access concise summaries of concepts or explore further details on Wikipedia.
 
-<img src="https://github.com/JoelHKV/ConceptExplorer/tree/main/public/Fig1_Concept.jpg" width="700" height="500">
+<img src="https://raw.githubusercontent.com/JoelHKV/ConceptExplorer/main/public/Fig1_Concept.jpg" width="700" height="500">
 
 
 
