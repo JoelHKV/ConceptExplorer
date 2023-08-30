@@ -31,7 +31,7 @@ const App = () => {
  
     const [lastConcept, setLastConcept] = useState([])
 
-    const [showInstructions, setShowInstructions] = useState(true)
+    const [showInstructions, setShowInstructions] = useState(false)
  
 
     
