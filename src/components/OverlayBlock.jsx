@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { Button, Typography } from '@mui/material';
 import './OverlayBlock.css';
 
+import { drawCircleCanvas2ReturnDataURL } from '../utilities/drawCircleCanvas2ReturnDataURL';
 
 import { getConceptDetails } from '../hooks/getConceptDetails';
 
@@ -14,19 +15,13 @@ const OverlayBlock = ({ title, lat, lng }) => {
     const [showText, setShowText] = useState(false);
     const dispatch = useDispatch();
 
-  //  import wikipediaLogo from 'https://ms.wikipedia.org/static/images/icons/wikipedia.png'; // Replace with the actual path to the logo
-
-
     const { conceptDetails, loaded, error } = getConceptDetails(title);
-
 
     const latitudeText = lat >= 0 ? 'N' : 'S';
     const longitudeText = lng >= 0 ? 'E' : 'W';
     const wholeText = `${Math.abs(lat).toFixed(2)} ${latitudeText}, ${Math.abs(lng).toFixed(2)} ${longitudeText}`;
 
-    console.log(wholeText) 
     useEffect(() => {
-        // Set the component as expanded after it has mounted
         setExpanded(true);
         setTimeout(() => {
             setShowText(true)
@@ -50,6 +45,10 @@ const OverlayBlock = ({ title, lat, lng }) => {
         
     }
 
+    const xbuttonImage = drawCircleCanvas2ReturnDataURL(120, '', 'X')
+
+
+
     const openWikipediaInNewTab = () => {
         window.open('https://en.wikipedia.org/wiki/' + title, '_blank');
         return
@@ -62,30 +61,29 @@ const OverlayBlock = ({ title, lat, lng }) => {
                 {title}
                
             </Typography>
-            <Typography className='OverlayBlock_Title' variant="h6">
-               
-                {wholeText}
-            </Typography>
             {showText && loaded && (
                 <>
+            <Typography className='OverlayBlock_Title' variant="h6">             
+                {wholeText}
+            </Typography>
+            
+               
             <Typography className='OverlayBlock_Text' variant="h6">
                         {conceptDetails['definition']}
             </Typography>
                   
             
-            <Button variant="contained" className='xButton'>
-                X
-            </Button> 
-            <Typography className='OverlayBlock_Text' variant="h6">
+      
+            <Typography className='OverlayBlock_Foot' variant="h6">
                         {conceptDetails['model'] + ' on ' + conceptDetails['date'].slice(5, -12)}
             </Typography>
 
                 </>
             )} 
+            <img className='xbutton' src={xbuttonImage} alt="Close" />
             <a href="https://en.wikipedia.org/wiki/Main_Page" target="_blank" rel="noopener noreferrer">
-
              <img className='wikilogo' src='https://ms.wikipedia.org/static/images/icons/wikipedia.png' alt="Wikipedia" onClick={openWikipediaInNewTab} />
-        </a>
+            </a>
 
         </div>
     );

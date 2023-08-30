@@ -17,6 +17,10 @@ import HeaderBlock from './components/HeaderBlock';
 import GoogleMapsApp from './components/GoogleMapsApp';
 import ModeButtonRow from './components/ModeButtonRow';
 import OverlayBlock from './components/OverlayBlock';
+import InstructionBlock from './components/InstructionBlock';
+
+
+
 
 
 import './App.css'; 
@@ -27,7 +31,8 @@ const App = () => {
  
     const [lastConcept, setLastConcept] = useState([])
 
-   
+    const [showInstructions, setShowInstructions] = useState(true)
+ 
 
     
     const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
@@ -310,29 +315,21 @@ const App = () => {
 
     }
 
-    const travel = (latStart, latEnd, lngStart, lngEnd, position) => {
-         
-        const latThis = latStart * (1 - position) + latEnd * position;
-        const lngThis = lngStart * (1 - position) + lngEnd * position;
-
-        dispatch(newMapLocation({ dall: 'dall', value: { lat: latThis, lng: lngThis } }));
-
-        if (position < 1) {
-            setTimeout(() => {
-                travel(latStart, latEnd, lngStart, lngEnd, position+0.5)
-
-            }, 200)
-        }
-
-    }
-
+ 
     const clickInfo = () => { // show introscreen
-        console.log('infoinfo')
+         
+        setShowInstructions(true)
+
+        
     }
    
     return (
         <Box className="appContainer">
             <Grid container className="gridContainer">
+
+
+
+
                 <Grid item xs={12} className="first-row centerContent" >
                     <HeaderBlock
                         clickInfo={clickInfo }
@@ -345,13 +342,7 @@ const App = () => {
                                 markerFunction={markerFunction}
                                 resizeAllMarkers={resizeAllMarkers}
                         />
-                            { gameMode==='details' && (
-                            <OverlayBlock
-                                    title={lastConcept}
-                                    lat={markerState['Marker0'].lat}
-                                    lng={markerState['Marker0'].lng}
-                                />
-                            )}
+                          
                         </>
                     )}
                 </Grid> 
@@ -371,6 +362,28 @@ const App = () => {
                     )}
                 </Grid>               
             </Grid>
+
+
+            {gameMode === 'details' && (
+                 
+                <OverlayBlock
+                    title={lastConcept}
+                    lat={markerState['Marker0'].lat}
+                    lng={markerState['Marker0'].lng}
+                    />
+                 
+            )}
+            {showInstructions && (
+                <InstructionBlock
+                    setShowInstructions={setShowInstructions}
+                />
+            )}
+
+            
+
+
+
+
         </Box >  
     );
 };
