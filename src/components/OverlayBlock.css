@@ -2,8 +2,7 @@
     position: absolute;
     width: 0;
     height: 0;
-    top: 38vh;
-    max-width: 660px;
+    top: 38vh;  
     text-align: center;
     background-color: white;
     border-radius: 100px;
@@ -11,7 +10,7 @@
 }
 
     .OverlayBlock.expanded {
-        width: clamp(200px, 100%, 660px);
+        width: clamp(200px, 100%, var(--app-max-width));
         height: 100%;
         height: 82vh;
         top: 0vh;

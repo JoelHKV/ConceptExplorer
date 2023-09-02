@@ -1,17 +1,18 @@
 .InstructionBlock {
     position: absolute;
-    width: clamp(200px, 100%, 660px);
-    height: 0vh;
+    width: clamp(200px, 100%, var(--app-max-width));
+    height: 9vh;
     top: 0vh;
     text-align: center;
     background-color: white;
     border-radius: 10px;
     transition: height 0.5s;
+    border: solid black 2px;
 }
 
     .InstructionBlock.expanded {
-        width: clamp(200px, 100%, 660px);
-        height: 82vh;
+        width: clamp(200px, 100%, var(--app-max-width));
+        height: 91%;
         border-radius: 10px;
         border: solid black 2px;
     }
@@ -31,20 +32,21 @@
 
 
 
- 
+
 
 .xbutton {
     position: absolute;
-    left: 0%;
+    left: 100%;
+    transform: translateX(-100%);
     top: 0%;
-    width: 11%;
+    width: 8%;
     padding: 10px;
-     
 }
 .navbutton {
-    margin-top: 4%; 
+    margin-top: 4%;
     margin-left: 15%;
     margin-right: 15%;
+    width: 10%;
 }
 
 .navbuttondis {

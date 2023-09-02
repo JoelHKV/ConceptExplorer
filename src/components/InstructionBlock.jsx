@@ -4,9 +4,9 @@ import { useDispatch } from 'react-redux';
 import { Button, Typography } from '@mui/material';
 import './InstructionBlock.css';
 
-import { drawCircleCanvas2ReturnDataURL } from '../utilities/drawCircleCanvas2ReturnDataURL';
+import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
 
-const InstructionBlock = ({ setShowInstructions }) => {
+const InstructionBlock = ( ) => {
     const [expanded, setExpanded] = useState(false);
     const [showText, setShowText] = useState(false);
     const [introCounter, setIntroCounter] = useState(0);
@@ -21,39 +21,43 @@ const InstructionBlock = ({ setShowInstructions }) => {
         "While exploring the concepts you can also:\n1) Click 'Home' to return to exploring the initial starting concept\n2) Click 'Back' to retrace the steps you have taken\n3) Click 'Route' to view the concepts you have recently explored"        
     ];
   
-    useEffect(() => {
+
+
+    const clickInfo = (event) => { // show introscreen
+
+        if (event.target.closest('.navbutton') || event.target.closest('.xbutton')) {
+            // Prevent the event from propagating further
+            return;
+        }
+        maxMin()
+      
+    }
+
+    const buttonLogo = expanded ? 'X' : '?';
+
+
+    const xbuttonImage = drawCanvasSizeReturnDataURL(80, '', buttonLogo, [0.9, 0.7, 0.6], 30)
+    const prevbuttonImage = drawCanvasSizeReturnDataURL(80, '', 'PREV', [0.9, 0.7, 0.6], 80 / 6)
+    const nextbuttonImage = drawCanvasSizeReturnDataURL(80, '', 'NEXT', [0.9, 0.7, 0.6], 80 / 6)
+
+    const takeStep = (increment) => {
+        setIntroCounter(prevCounter => prevCounter + increment);
+        return
+    };
+
+    const maxMin = () => {
+
+        if (expanded) {
+            setShowText(false)
+            setExpanded(false)
+            setIntroCounter(0)
+            return
+        }
+
         setExpanded(true);
         setTimeout(() => {
             setShowText(true)
         }, 500);
-    }, []);
-
-    const clickInfo = (event) => { // show introscreen
-
-        if (event.target.closest('.navbutton')) {
-            // Prevent the event from propagating further
-            return;
-        }
-
-
-       // setShowInstructions(false)
-
-        setShowText(false)
-        setExpanded(false)
-
-        setTimeout(() => {
-            setShowInstructions(false)
-        }, 400);
-
-        
-    }
-
-    const xbuttonImage = drawCircleCanvas2ReturnDataURL(120, '', 'X')
-    const prevbuttonImage = drawCircleCanvas2ReturnDataURL(80, 'PREV', '')
-    const nextbuttonImage = drawCircleCanvas2ReturnDataURL(80, 'NEXT', '')
-
-    const takeStep = (increment) => {
-        setIntroCounter(prevCounter => prevCounter + increment);
         return
     };
 
@@ -73,10 +77,10 @@ const InstructionBlock = ({ setShowInstructions }) => {
 
                     <img className={`navbutton ${prevButtonDisabled}`} src={prevbuttonImage} onClick={() => prevButtonDisabled === '' ? takeStep(-1) : ''} alt="Previous" />
                     <img className={`navbutton ${nextButtonDisabled}`} src={nextbuttonImage} onClick={() => nextButtonDisabled === '' ? takeStep(1) : ''} alt="Next" />
-
+                    
                 </>                              
             )}          
-            <img className='xbutton' src={xbuttonImage} alt="Close" />            
+            <img className='xbutton' src={xbuttonImage} onClick={() => maxMin()} alt="Close" />    
         </div>
     );
 };

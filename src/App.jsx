@@ -16,6 +16,11 @@ import { getConcept } from './hooks/getConcept';
 import HeaderBlock from './components/HeaderBlock';
 import GoogleMapsApp from './components/GoogleMapsApp';
 import ModeButtonRow from './components/ModeButtonRow';
+import BottomButtons from './components/BottomButtons';
+
+
+
+
 import OverlayBlock from './components/OverlayBlock';
 import InstructionBlock from './components/InstructionBlock';
 
@@ -325,16 +330,18 @@ const App = () => {
    
     return (
         <Box className="appContainer">
+
+             
+                
+            
+
+
+
             <Grid container className="gridContainer">
 
 
 
 
-                <Grid item xs={12} className="first-row centerContent" >
-                    <HeaderBlock
-                        clickInfo={clickInfo }
-                    />
-                </Grid>
                 <Grid item xs={12} className="second-row centerContent">
                     {loaded && (
                         <>
@@ -348,7 +355,7 @@ const App = () => {
                 </Grid> 
                 <Grid item xs={12} className="third-row centerContent">
                     {loaded  && (
-                    <ModeButtonRow
+                        <BottomButtons
                         showGlobeView={showGlobeView}
                         showOneConceptView={showOneConceptView}
                         updateMarkers={updateMarkers}
@@ -360,7 +367,11 @@ const App = () => {
                         
                     />
                     )}
-                </Grid>               
+                </Grid>  
+
+                <InstructionBlock />
+
+
             </Grid>
 
 
@@ -373,13 +384,9 @@ const App = () => {
                     />
                  
             )}
-            {showInstructions && (
-                <InstructionBlock
-                    setShowInstructions={setShowInstructions}
-                />
-            )}
 
-            
+
+           
 
 
 

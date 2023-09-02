@@ -1,8 +1,10 @@
 :root {
-    --background-color: #eee;
+    --background-color: #ddd;
     --button-text-color: #000000;
     --button-background-color: #77ee00;
     --button-background-color-hover: #55aa00;
+    --app-max-width: 750px;
+    --app-header-height: 15vh;
 }
 
 .appContainer {
@@ -10,28 +12,31 @@
     justify-content: center;
     user-select: none;
     width: 100%;
+    background-color: #f11;
 }
 
 .gridContainer {
     user-select: none;
-    max-width: 660px;
+    max-width: var(--app-max-width);
     background-color: var(--background-color);
-    grid-row-gap: 1vh;
+    grid-row-gap: 0vh;
     border-radius: 10px;
 }
 
 .centerContent {
+
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .second-row {
+    padding-top: 15%;
     position: relative;
     height: 60vh;
 }
 .third-row {
-    height: 14vh;
+    height: 10vh;
 }
 
 .fourth-row {
