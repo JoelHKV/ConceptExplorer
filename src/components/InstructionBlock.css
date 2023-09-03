@@ -1,7 +1,7 @@
 .InstructionBlock {
     position: absolute;
     width: clamp(200px, 100%, var(--app-max-width));
-    height: 9vh;
+    height: 10%;
     top: 0vh;
     text-align: center;
     background-color: white;
@@ -12,24 +12,10 @@
 
     .InstructionBlock.expanded {
         width: clamp(200px, 100%, var(--app-max-width));
-        height: 91%;
+        height: 81vh;
         border-radius: 10px;
         border: solid black 2px;
     }
-
-    .InstructionBlock Button {
-        position: absolute;
-        left: 3%;
-        top: 5%;
-        width: clamp(30px, 3vmax, 50px);
-        min-width: 0 !important;
-        height: clamp(30px, 3vmax, 50px);
-        background-color: white;
-        color: var(--button-text-color) !important;
-        border: 0.1rem solid black !important;
-        font-size: clamp(15px, 3vmax, 30px) !important;
-    }
-
 
 
 
@@ -42,16 +28,23 @@
     width: 8%;
     padding: 10px;
 }
-.navbutton {
-    margin-top: 4%;
-    margin-left: 15%;
-    margin-right: 15%;
-    width: 10%;
+.prevbutton, .nextbutton {
+    position: absolute;
+    top: 86%;
+    width: 11%;
+    transform: translateX(-50%);
+}
+.prevbutton {
+    left: 23%;
+}
+.nextbutton {
+    left: 77%;
+ 
 }
 
-.navbuttondis {
-    opacity: 0.3;
-}
+    .navbuttondis {
+        opacity: 0.3;
+    }
     .OverlayBlock Button:hover {
     background-color: white !important;
 }

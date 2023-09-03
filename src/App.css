@@ -1,10 +1,10 @@
 :root {
-    --background-color: #ddd;
+    --background-color: #2dd;
     --button-text-color: #000000;
     --button-background-color: #77ee00;
     --button-background-color-hover: #55aa00;
     --app-max-width: 750px;
-    --app-header-height: 15vh;
+ 
 }
 
 .appContainer {
@@ -12,7 +12,6 @@
     justify-content: center;
     user-select: none;
     width: 100%;
-    background-color: #f11;
 }
 
 .gridContainer {
@@ -20,7 +19,7 @@
     max-width: var(--app-max-width);
     background-color: var(--background-color);
     grid-row-gap: 0vh;
-    border-radius: 10px;
+ 
 }
 
 .centerContent {
@@ -31,18 +30,11 @@
 }
 
 .second-row {
-    padding-top: 15%;
+    padding-top: 0%;
     position: relative;
-    height: 60vh;
+    height: 80vh;
 }
-.third-row {
-    height: 10vh;
-}
-
-.fourth-row {
-    height: 44vh;
-    border: solid black 2px;
-}
+ 
 
 .unselectable {
     user-select: none;

@@ -1,11 +1,11 @@
 .BottomButtons {
-    position: relative;
-    width: 80%;
-    height: 100%;
+    position: absolute;
+    width: clamp(200px, 100%, var(--app-max-width));
+    top: 85%;
+    height: 15%;
     background-color: white;
     border-radius: 10px;
     border: 2px solid black;
-    
 }
 
 

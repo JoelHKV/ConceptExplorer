@@ -37,11 +37,11 @@
 
 .wikilogo {
     position: absolute;
-    left: 100%;
+    left: 0%;
     top: 0%;
-    width: 12%;
+    width: 10%;
     padding: 10px;
-    transform: translateX(-100%);
+ 
 }
 
 .xbutton {

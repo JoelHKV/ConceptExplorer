@@ -25,7 +25,7 @@ const InstructionBlock = ( ) => {
 
     const clickInfo = (event) => { // show introscreen
 
-        if (event.target.closest('.navbutton') || event.target.closest('.xbutton')) {
+        if (event.target.closest('.prevbutton') || event.target.closest('.nextbutton') || event.target.closest('.xbutton')) {
             // Prevent the event from propagating further
             return;
         }
@@ -75,8 +75,8 @@ const InstructionBlock = ( ) => {
                         {instructionsText[introCounter]}
                     </Typography>  
 
-                    <img className={`navbutton ${prevButtonDisabled}`} src={prevbuttonImage} onClick={() => prevButtonDisabled === '' ? takeStep(-1) : ''} alt="Previous" />
-                    <img className={`navbutton ${nextButtonDisabled}`} src={nextbuttonImage} onClick={() => nextButtonDisabled === '' ? takeStep(1) : ''} alt="Next" />
+                    <img className={`prevbutton ${prevButtonDisabled}`} src={prevbuttonImage} onClick={() => prevButtonDisabled === '' ? takeStep(-1) : ''} alt="Previous" />
+                    <img className={`nextbutton ${nextButtonDisabled}`} src={nextbuttonImage} onClick={() => nextButtonDisabled === '' ? takeStep(1) : ''} alt="Next" />
                     
                 </>                              
             )}          

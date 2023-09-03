@@ -4,7 +4,8 @@ import { useDispatch } from 'react-redux';
 import { Button, Typography } from '@mui/material';
 import './OverlayBlock.css';
 
-import { drawCircleCanvas2ReturnDataURL } from '../utilities/drawCircleCanvas2ReturnDataURL';
+ 
+import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
 
 import { getConceptDetails } from '../hooks/getConceptDetails';
 
@@ -45,8 +46,8 @@ const OverlayBlock = ({ title, lat, lng }) => {
         
     }
 
-    const xbuttonImage = drawCircleCanvas2ReturnDataURL(120, '', 'X')
-
+     
+    const xbuttonImage = drawCanvasSizeReturnDataURL(80, '', 'X', [0.9, 0.7, 0.6], 30)
 
 
     const openWikipediaInNewTab = () => {

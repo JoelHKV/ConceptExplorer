@@ -19,19 +19,13 @@ import ModeButtonRow from './components/ModeButtonRow';
 import BottomButtons from './components/BottomButtons';
 
 
-
-
 import OverlayBlock from './components/OverlayBlock';
 import InstructionBlock from './components/InstructionBlock';
 
 
-
-
-
 import './App.css'; 
 
-//const diameter = 90;
- 
+
 const App = () => {
  
     const [lastConcept, setLastConcept] = useState([])
@@ -329,33 +323,31 @@ const App = () => {
     }
    
     return (
-        <Box className="appContainer">
+        <Box className="appContainer centerContent">
 
              
-                
-            
-
-
-
-            <Grid container className="gridContainer">
+       
+           
 
 
 
 
+
+
+            <Grid container className="gridContainer centerContent">
                 <Grid item xs={12} className="second-row centerContent">
-                    {loaded && (
-                        <>
+                {loaded && (
+                    <>
                         <GoogleMapsApp
-                                markerFunction={markerFunction}
-                                resizeAllMarkers={resizeAllMarkers}
+                            markerFunction={markerFunction}
+                            resizeAllMarkers={resizeAllMarkers}
                         />
-                          
-                        </>
-                    )}
-                </Grid> 
-                <Grid item xs={12} className="third-row centerContent">
-                    {loaded  && (
-                        <BottomButtons
+
+                    </>
+                )}
+                
+                {loaded && (
+                    <BottomButtons
                         showGlobeView={showGlobeView}
                         showOneConceptView={showOneConceptView}
                         updateMarkers={updateMarkers}
@@ -364,15 +356,22 @@ const App = () => {
                         processMarkers={processMarkers}
                         roundCounter={roundCounter}
                         drawPolyline={drawPolyline}
-                        
+
                     />
-                    )}
-                </Grid>  
-
-                <InstructionBlock />
+                )}
+                </Grid>
 
 
+                
             </Grid>
+
+            
+
+
+            <InstructionBlock />
+
+
+
 
 
             {gameMode === 'details' && (
