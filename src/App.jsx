@@ -275,7 +275,7 @@ const App = () => {
  
     return (
         <Box className="appContainer">                      
-            <Grid container className="gridContainer">              
+            <Grid container className="gridContainer" >              
                 {loaded && (
                     <>
                         <GoogleMapsApp

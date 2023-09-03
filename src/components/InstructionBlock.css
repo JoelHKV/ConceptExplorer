@@ -2,7 +2,7 @@
     position: absolute;
     width: clamp(200px, 100%, var(--app-max-width));
     height: 10%;
-    top: 0vh;
+  
     text-align: center;
     background-color: white;
     border-radius: 10px;
@@ -12,7 +12,7 @@
 
     .InstructionBlock.expanded {
         width: clamp(200px, 100%, var(--app-max-width));
-        height: 81vh;
+        height: var(--app-height);
         border-radius: 10px;
         border: solid black 2px;
     }

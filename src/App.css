@@ -4,6 +4,7 @@
     --button-background-color: #77ee00;
     --button-background-color-hover: #55aa00;
     --app-max-width: 750px;
+    --app-height: 95vh;
  
 }
 
@@ -12,6 +13,8 @@
     justify-content: center;
     user-select: none;
     width: 100%;
+    height: var(--app-height);
+    
 }
 
 .gridContainer {
@@ -20,7 +23,8 @@
     background-color: var(--background-color);
     grid-row-gap: 0vh;
     position: relative;
-    height: 80vh;
+    height: 100%;
+  
 }
 
 
