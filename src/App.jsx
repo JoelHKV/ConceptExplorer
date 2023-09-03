@@ -1,24 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from './reducers/conceptExplorerSlice';
  
-import { Grid, Box, Switch, Typography, Slider, Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
+import { Grid, Box } from '@mui/material'; // use MUI component library
 
 import { drawCircleCanvas2ReturnDataURL } from './utilities/drawCircleCanvas2ReturnDataURL';
 
 import { getConcept } from './hooks/getConcept';
  
 
-//import IntroBlock from './components/IntroBlock'; // instructions are here
-
-import HeaderBlock from './components/HeaderBlock';
 import GoogleMapsApp from './components/GoogleMapsApp';
-import ModeButtonRow from './components/ModeButtonRow';
 import BottomButtons from './components/BottomButtons';
-
-
 import OverlayBlock from './components/OverlayBlock';
 import InstructionBlock from './components/InstructionBlock';
 
@@ -29,11 +23,7 @@ import './App.css';
 const App = () => {
  
     const [lastConcept, setLastConcept] = useState([])
-
-    const [showInstructions, setShowInstructions] = useState(false)
- 
-
-    
+  
     const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
   
@@ -81,10 +71,6 @@ const App = () => {
         dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: singleConceptZoomLevel } }));
 
     }
-
-
-
-
 
     const resizeAllMarkers = (zoomLevel) => {
         if (gameMode !== 'globe') { return }
@@ -157,9 +143,6 @@ const App = () => {
     }
 
 
-
-
-   
     const markerFunction = (thisConcept, clickDirection, lat, lng) => {
 
         setLastConcept(thisConcept)
@@ -167,9 +150,6 @@ const App = () => {
         if (gameMode === 'globe' && lastConcept !== thisConcept) { // concept clicked in the global view
            // showBaseConcept(clickDirection) // centering and zooming in
             showOneConceptView(clickDirection)
-
-
-
 
             return
         }
@@ -315,25 +295,9 @@ const App = () => {
     }
 
  
-    const clickInfo = () => { // show introscreen
-         
-        setShowInstructions(true)
-
-        
-    }
    
     return (
-        <Box className="appContainer centerContent">
-
-             
-       
-           
-
-
-
-
-
-
+        <Box className="appContainer centerContent">                      
             <Grid container className="gridContainer centerContent">
                 <Grid item xs={12} className="second-row centerContent">
                 {loaded && (
@@ -341,55 +305,25 @@ const App = () => {
                         <GoogleMapsApp
                             markerFunction={markerFunction}
                             resizeAllMarkers={resizeAllMarkers}
+                        />             
+                        <BottomButtons
+                            showGlobeView={showGlobeView}
+                            showOneConceptView={showOneConceptView}
+                            updateMarkers={updateMarkers}
+                            deleteHistory={deleteHistory}
+                            optionChoiceHistory={optionChoiceHistory}
+                            processMarkers={processMarkers}
+                            roundCounter={roundCounter}
+                            drawPolyline={drawPolyline}
                         />
 
-                    </>
+                     </>
                 )}
-                
-                {loaded && (
-                    <BottomButtons
-                        showGlobeView={showGlobeView}
-                        showOneConceptView={showOneConceptView}
-                        updateMarkers={updateMarkers}
-                        deleteHistory={deleteHistory}
-                        optionChoiceHistory={optionChoiceHistory}
-                        processMarkers={processMarkers}
-                        roundCounter={roundCounter}
-                        drawPolyline={drawPolyline}
-
-                    />
-                )}
-                </Grid>
-
-
-                
+                </Grid>              
             </Grid>
-
-            
-
-
-            <InstructionBlock />
-
-
-
-
-
-            {gameMode === 'details' && (
-                 
-                <OverlayBlock
-                    title={lastConcept}
-                    lat={markerState['Marker0'].lat}
-                    lng={markerState['Marker0'].lng}
-                    />
-                 
-            )}
-
-
            
-
-
-
-
+            <InstructionBlock />
+            {gameMode === 'details' && (<OverlayBlock/>)}       
         </Box >  
     );
 };

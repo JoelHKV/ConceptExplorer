@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Button, Typography } from '@mui/material';
 import './OverlayBlock.css';
 
@@ -11,10 +11,17 @@ import { getConceptDetails } from '../hooks/getConceptDetails';
 
 import { newGameMode } from '../reducers/conceptExplorerSlice';
 
-const OverlayBlock = ({ title, lat, lng }) => {
+const OverlayBlock = ( ) => {
     const [expanded, setExpanded] = useState(false);
     const [showText, setShowText] = useState(false);
     const dispatch = useDispatch();
+
+
+    const markerState = useSelector((state) => state.counter[0].markerState);
+
+    const title = markerState['Marker0'].param
+    const lat = markerState['Marker0'].lat
+    const lng = markerState['Marker0'].lng
 
     const { conceptDetails, loaded, error } = getConceptDetails(title);
 
