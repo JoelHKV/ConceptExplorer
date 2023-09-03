@@ -18,6 +18,17 @@
     }
 
 
+.InstructionBlock_Title {
+    text-transform: capitalize;
+    white-space: nowrap; /* Prevents text from wrapping to the next line */
+    overflow: hidden; /* Hides any overflowed content */
+    text-overflow: ellipsis;
+     
+    transform: translateY(-50%);
+    font-size: clamp(28px, 4vw, 44px) !important;
+}
+
+
 
 
 .xbutton {
@@ -26,11 +37,12 @@
     transform: translateX(-100%);
     top: 0%;
     width: 8%;
-    padding: 10px;
+    padding: 1%;
 }
 .prevbutton, .nextbutton {
     position: absolute;
-    top: 86%;
+    bottom: 3%;
+   
     width: 11%;
     transform: translateX(-50%);
 }
@@ -45,18 +57,9 @@
     .navbuttondis {
         opacity: 0.3;
     }
-    .OverlayBlock Button:hover {
-    background-color: white !important;
-}
 
-.InstructionBlock_Title {
-    text-transform: capitalize;
-    white-space: nowrap; /* Prevents text from wrapping to the next line */
-    overflow: hidden; /* Hides any overflowed content */
-    text-overflow: ellipsis;
-    padding-top: 0.5rem;
-    padding-bottom: 1.5rem;
-}
+
+
 
 .InstructionBlock_Text {
     font-size: 1rem !important;

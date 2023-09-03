@@ -65,15 +65,17 @@ const InstructionBlock = ( ) => {
     const nextButtonDisabled = introCounter < instructionsText.length - 1 ? '' : 'navbuttondis';
 
     return (
+         
         <div className={`InstructionBlock ${expanded ? 'expanded' : ''}`} onClick={clickInfo}>
             <Typography className='InstructionBlock_Title' variant="h4">
                 Concept Explorer              
             </Typography>
+ 
             {showText &&  (
                 <>                                    
                     <Typography className='InstructionBlock_Text' variant="h6" style={{ whiteSpace: 'pre-line' }}>
                         {instructionsText[introCounter]}
-                    </Typography>  
+                    </Typography> 
 
                     <img className={`prevbutton ${prevButtonDisabled}`} src={prevbuttonImage} onClick={() => prevButtonDisabled === '' ? takeStep(-1) : ''} alt="Previous" />
                     <img className={`nextbutton ${nextButtonDisabled}`} src={nextbuttonImage} onClick={() => nextButtonDisabled === '' ? takeStep(1) : ''} alt="Next" />
@@ -81,7 +83,8 @@ const InstructionBlock = ( ) => {
                 </>                              
             )}          
             <img className='xbutton' src={xbuttonImage} onClick={() => maxMin()} alt="Close" />    
-        </div>
+            </div>
+         
     );
 };
 
