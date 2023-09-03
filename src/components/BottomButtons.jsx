@@ -111,7 +111,7 @@ const BottomButtons = ({ showGlobeView, showOneConceptView, drawPolyline, roundC
    
 
     return (
-        <div className="BottomButtons centerContent">
+        <div className="BottomButtons">
             {gameMode !== 'glodbe' && (
                 <> 
                     <img className={`home-button ${homeButtonEnabled ? '' : 'mode-button-disabled'}`} src={homeButtonImage} onClick={() => homeButtonEnabled ? controlButtons('home') : ''} alt="HOME" />

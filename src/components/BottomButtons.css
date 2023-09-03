@@ -6,6 +6,8 @@
     background-color: white;
     border-radius: 10px;
     border: 2px solid black;
+    display: flex;
+    align-items: center;
 }
 
 
@@ -14,6 +16,7 @@
     position: absolute;
     transform: translateX(-50%);
     cursor: pointer;
+
 }
 .home-button {
     left: 10%;

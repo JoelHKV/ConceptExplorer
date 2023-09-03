@@ -6,7 +6,9 @@ import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPoly
  
 import { Grid, Box } from '@mui/material'; // use MUI component library
 
-import { drawCircleCanvas2ReturnDataURL } from './utilities/drawCircleCanvas2ReturnDataURL';
+
+import { drawCanvasSizeReturnDataURL } from './utilities/drawCanvasSizeReturnDataURL';
+
 
 import { getConcept } from './hooks/getConcept';
  
@@ -15,6 +17,10 @@ import GoogleMapsApp from './components/GoogleMapsApp';
 import BottomButtons from './components/BottomButtons';
 import OverlayBlock from './components/OverlayBlock';
 import InstructionBlock from './components/InstructionBlock';
+
+
+import { conceptFlowerCoordinates } from './utilities/conceptFlowerCoordinates';
+import { saveHistory } from './utilities/saveHistory';
 
 
 import './App.css'; 
@@ -82,7 +88,8 @@ const App = () => {
         while (markerState['Marker' + i]) {
             const thisMarker = { ...markerState['Marker' + i] };
             thisMarker.diameter = diameter;
-            thisMarker.dataURL = drawCircleCanvas2ReturnDataURL(diameter, thisMarker.title, '')
+            thisMarker.dataURL = drawCanvasSizeReturnDataURL(diameter, thisMarker.title, '', [0.9, 0.45, 0.35], diameter/5)
+
             dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
             i++
         }
@@ -134,7 +141,8 @@ const App = () => {
                 param: fireMarker,
                 opacity: thisOpacity,
                 diameter: diameter,
-                dataURL: drawCircleCanvas2ReturnDataURL(diameter, markerTitleUpperCase, formattedValue),
+                dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
+          
 
             }
             dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
@@ -212,24 +220,13 @@ const App = () => {
             setTimeout(() => {
                 handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, history)
             }, 50)
-            saveHistoryByIndex(clickDirection, roundCounter)
+            const newHistory = saveHistory(optionChoiceHistory, markerState, clickDirection, roundCounter)
+            setOptionChoiceHistory(newHistory);
         }
                            
     }
 
-    const conceptFlowerCoordinates = (lat, lng) => {
-        const mercatorFactor = 1 / Math.cos((lat * Math.PI) / 180);
-        const latArray = [];
-        const lngArray = [];
-        const angleIncrement = (2 * Math.PI) / 8;
-        for (let i = 0; i < 9; i++) {
-            const radius = i === 0 ? 0 : 2;
-            latArray[i] = lat + radius / mercatorFactor * Math.cos(i * angleIncrement);
-            lngArray[i] = lng + radius * Math.sin(i * angleIncrement);
-        }
-        return [latArray, lngArray]; 
-    }
-   
+ 
     const handleMapVisuals = (newOptions, PivotItems, lat, lng, history) => {
 
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng)
@@ -249,25 +246,6 @@ const App = () => {
         }
 
     }
-
-    const saveHistoryByIndex = (clickDirection, index) => {
-       
-        const thisOptionData = {
-            conceptName: markerState['Marker0'].param,
-            clickDirection: clickDirection,
-            centerLat: markerState['Marker0'].lat,
-            centerLng: markerState['Marker0'].lng,
-            clickLat: markerState['Marker' + clickDirection].lat,
-            clickLng: markerState['Marker' + clickDirection].lng,
-        };
-
-        const newHistory = [...optionChoiceHistory.slice(0, index)];
-
-        newHistory[index] = thisOptionData;
-
-        setOptionChoiceHistory(newHistory);
-    };
-
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
         const thisPolyline = {
@@ -295,11 +273,9 @@ const App = () => {
     }
 
  
-   
     return (
-        <Box className="appContainer centerContent">                      
-            <Grid container className="gridContainer centerContent">
-                <Grid item xs={12} className="second-row centerContent">
+        <Box className="appContainer">                      
+            <Grid container className="gridContainer">              
                 {loaded && (
                     <>
                         <GoogleMapsApp
@@ -316,10 +292,8 @@ const App = () => {
                             roundCounter={roundCounter}
                             drawPolyline={drawPolyline}
                         />
-
-                     </>
-                )}
-                </Grid>              
+                    </>
+                )}                             
             </Grid>
            
             <InstructionBlock />

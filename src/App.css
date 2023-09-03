@@ -19,22 +19,10 @@
     max-width: var(--app-max-width);
     background-color: var(--background-color);
     grid-row-gap: 0vh;
- 
-}
-
-.centerContent {
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.second-row {
-    padding-top: 0%;
     position: relative;
     height: 80vh;
 }
- 
+
 
 .unselectable {
     user-select: none;
