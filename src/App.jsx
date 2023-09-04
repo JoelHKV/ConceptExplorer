@@ -35,6 +35,9 @@ const App = () => {
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
 
 
+    const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
+
+ 
     const browseZoomLevel = useSelector((state) => state.counter[0].browseZoomLevel);
     const singleConceptZoomLevel = useSelector((state) => state.counter[0].singleConceptZoomLevel);
 
@@ -72,23 +75,23 @@ const App = () => {
         }
         setLastConcept(thisConcept)
 
-        const haveHistory = gameMode === 'browse' ? 'hist' : 'nohist'; // we have history if we have been in the browsing mode alread
-
-        if (gameMode === 'globe' || gameMode === 'route') { // we start browsing from a new concept
+        const prevRoundExists = gameMode === 'browse'
+   
+        if (!prevRoundExists) { // we start browsing from a new concept
+            console.log('re browse')
             setRoundCounter(0);            
             dispatch(newGameMode('browse'))
             clickDirection = 0; // click direction makes no difference for the first concept
         }
 
-        processMarkers(thisConcept, clickDirection, lat, lng, haveHistory, true)
+        processMarkers(thisConcept, clickDirection, lat, lng, prevRoundExists, prevRoundExists)
 
     }
   
-    const processMarkers = (thisConcept, clickDirection, lat, lng, history, enablepolyline) => { 
+    const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
         
-        if (markerState['Marker0'] && enablepolyline) {
+        if (markerState['Marker0'] && enablepolyline) {       
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + clickDirection].lat, markerState['Marker' + clickDirection].lng, 0)
-
         }
         
         const lastChoice = clickHistory[roundCounter - 1];
@@ -104,7 +107,7 @@ const App = () => {
             setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
             const newOptions = makeNewOptions(lastChoice.conceptName, last2ndChoice.conceptName, last2ndChoice.clickDirection)
             setTimeout(() => {
-                handleMapVisuals(newOptions, [lastChoice.conceptName, last2ndChoice.conceptName], lat, lng, history)
+                handleMapVisuals(newOptions, [lastChoice.conceptName, last2ndChoice.conceptName], lat, lng, prevRoundExists)
             }, 50)
         }
         else {
@@ -114,10 +117,10 @@ const App = () => {
                 setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
             }
          
-            const lastConceptIfHistory = history === 'nohist' ? '' : lastConcept;
+            const lastConceptIfHistory = prevRoundExists ? lastConcept : '';
             const newOptions = makeNewOptions(thisConcept, lastConceptIfHistory, clickDirection)
             setTimeout(() => {
-                handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, history)
+                handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, prevRoundExists)
             }, 50)
             const newHistory = saveHistory(clickHistory, markerState, clickDirection, roundCounter)
             setClickHistory(newHistory);
@@ -139,22 +142,27 @@ const App = () => {
     }
 
 
-    const handleMapVisuals = (newOptions, PivotItems, lat, lng, history) => {
+    const handleMapVisuals = (newOptions, PivotItems, lat, lng, prevRoundExists) => {
 
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng)
         const opacity = 0.1
-        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, markerDiameterPerZoom[browseZoomLevel])
+        // googleMapDimensions.width 
+       // const diameter = markerDiameterPerZoom[browseZoomLevel]
+        const diameter = googleMapDimensions.width / 6;
+        console.log(diameter, googleMapDimensions.width)
+        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
 
         setTimeout(() => {
             updateOpacity(newOptions, PivotItems)
 
         }, 400)
 
-        if (history === 'nohist') {
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: browseZoomLevel } }));
+        if (prevRoundExists) {
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng } }));
+            
         }
         else {
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng } }));
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: browseZoomLevel } }));
         }
 
     }
@@ -195,6 +203,9 @@ const App = () => {
 
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
+
+       // console.log('poly', fromlat, fromlng, tolat, tolng, index)
+
         const thisPolyline = {
             lat: [fromlat * 0.7 + tolat * 0.3, fromlat * 0.3 + tolat * 0.7],
             lng: [fromlng * 0.7 + tolng * 0.3, fromlng * 0.3 + tolng * 0.7],

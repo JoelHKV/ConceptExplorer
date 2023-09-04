@@ -41,14 +41,14 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
             setRoundCounter(0)
             clearGoogleMap()
             const goToChoice = clickHistory[0];
-            processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, 'nohist', false)
+            processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, false, false)
         }
 
         if (param === 'back') {
             const goToChoice = clickHistory[roundCounter - 1];
             const clickDirection = goToChoice.clickDirection
             const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
-            processMarkers(goToChoice.conceptName, oppositeClickDirection, goToChoice.centerLat, goToChoice.centerLng, 'hist', true)
+            processMarkers(goToChoice.conceptName, oppositeClickDirection, goToChoice.centerLat, goToChoice.centerLng, true, true)
         }
 
         if (param === 'route') {

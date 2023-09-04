@@ -5,7 +5,7 @@ import { Checkbox, FormControlLabel } from '@mui/material'; // use MUI component
 
 import { createMarker, createPolyline } from '../utilities/googleMapHelper';
 import { googleMapLoader } from '../utilities/googleMapLoader';
-
+import { measureGoogleMapDimensions } from '../hooks/measureGoogleMapDimensions';
 
 import './GoogleMapsApp.css';
 
@@ -23,7 +23,9 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
 
-    const map  = googleMapLoader(mapLocation);
+    const map = googleMapLoader(mapLocation);
+
+    const { elementRef } = measureGoogleMapDimensions(); //measurements dispatched as a redux state
 
     useEffect(() => {
         if (map) {          
@@ -179,7 +181,7 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
         
         <div className="GoogleMapsApp">
                          
-        <div id="map" ></div>
+            <div id="map" ref={elementRef} ></div>
             <FormControlLabel className="move-or-not-box"
                 control={<Checkbox checked={mapLocked}
                 onChange={handleMapLockChange} />}
