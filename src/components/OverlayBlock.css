@@ -6,78 +6,63 @@
     text-align: center;
     background-color: white;
     border-radius: 100px;
-    transition: width 0.5s, height 0.5s, top 0.5s;
+    transition: width 0.5s, height 0.5s, top 0.5s, border-radius 0.5s;
 }
 
     .OverlayBlock.expanded {
-        width: clamp(200px, 100%, var(--app-max-width));
-        height: 100%;
-        height: var(--app-height);
-        top: 1vh;
-        border-radius: 10px;
-        border: solid black 2px;
+        width: clamp(200px, 100%, calc(var(--app-max-width) + 10px));
+        height: calc(var(--app-height) + 1.5vh);
+        top: 0.5vh;
+        border-radius: 30px;
+        border: solid black 3px;
+        transition: width 0.5s, height 0.5s, top 0.5s, border-radius 0.5s;
     }
-
-    .OverlayBlock Button {
-        position: absolute;
-        left: 3%;
-        top: 5%;
-         
-        width: clamp(30px, 3vmax, 50px);
-        min-width: 0 !important;
-        height: clamp(30px, 3vmax, 50px);
-        background-color: white;
-        color: var(--button-text-color) !important;
-        border: 0.1rem solid black !important;
-        font-size: clamp(15px, 3vmax, 30px) !important;
-    }
-
-
-
 
 .wikilogo {
     position: absolute;
     left: 0%;
     top: 0%;
-    width: 10%;
+    height: calc(var(--title-height) * 0.7);
+    width: auto;
     padding: 10px;
- 
 }
 
 .xbutton {
     position: absolute;
-    left: 0%;
-    top: 0%;
-    width: 11%;
-    padding: 10px;
-     
+    left: 99%;
+    top: 1%;
+    height: calc(var(--title-height) * 0.7);
+    width: auto;
+    transform: translateX(-100%);
 }
 
 
-
-.OverlayBlock Button:hover {
-    background-color: white !important;
-}
-
-.OverlayBlock_Title {
+.OverlayBlockTitle, .OverlayBlockSubTitle {
     text-transform: capitalize;
     white-space: nowrap; /* Prevents text from wrapping to the next line */
     overflow: hidden; /* Hides any overflowed content */
     text-overflow: ellipsis;
-    padding-top: 0.5rem;
+    padding-top: 1rem;
+  
+}
+.OverlayBlockTitle {
+    font-size: clamp(35px, 4vw, 44px) !important;
+}
+.OverlayBlockSubTitle {
+    font-size: clamp(20px, 3vw, 25px) !important;
 }
 
-.OverlayBlock_Text {
-    font-size: 1rem !important;
+
+.OverlayBlockText {
+    font-size: clamp(18px, 2.5vw, 22px) !important;
     text-align: left;
-    padding: 0.5rem;
-    
+    padding: 1rem;
 }
 
-.OverlayBlock_Foot {
+.OverlayBlockFoot {
     position: absolute;
     top: 92%;
-    font-size: 1rem !important;
+    font-size: clamp(18px, 2.5vw, 22px) !important;
     text-align: left;
     padding: 0.5rem;
 }  

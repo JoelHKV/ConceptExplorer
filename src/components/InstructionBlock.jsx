@@ -9,6 +9,7 @@ import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDa
 const InstructionBlock = ( ) => {
     const [expanded, setExpanded] = useState(false);
     const [showText, setShowText] = useState(false);
+ 
     const [introCounter, setIntroCounter] = useState(0);
 
     const dispatch = useDispatch();
@@ -46,7 +47,7 @@ const InstructionBlock = ( ) => {
     };
 
     const maxMin = () => {
-
+   
         if (expanded) {
             setShowText(false)
             setExpanded(false)
@@ -65,26 +66,32 @@ const InstructionBlock = ( ) => {
     const nextButtonDisabled = introCounter < instructionsText.length - 1 ? '' : 'navbuttondis';
 
     return (
-         
-        <div className={`InstructionBlock ${expanded ? 'expanded' : ''}`} onClick={clickInfo}>
-            <Typography className='InstructionBlock_Title' variant="h4">
+        <div className='InstructionBlock' onClick={clickInfo}> 
+            <div className='InstructionBlockTitle'>
+                <Typography className='InstructionBlockTitleText' variant="h4">
                 Concept Explorer              
-            </Typography>
- 
-            {showText &&  (
-                <>                                    
-                    <Typography className='InstructionBlock_Text' variant="h6" style={{ whiteSpace: 'pre-line' }}>
-                        {instructionsText[introCounter]}
-                    </Typography> 
-
-                    <img className={`prevbutton ${prevButtonDisabled}`} src={prevbuttonImage} onClick={() => prevButtonDisabled === '' ? takeStep(-1) : ''} alt="Previous" />
-                    <img className={`nextbutton ${nextButtonDisabled}`} src={nextbuttonImage} onClick={() => nextButtonDisabled === '' ? takeStep(1) : ''} alt="Next" />
-                    
-                </>                              
-            )}          
-            <img className='xbutton' src={xbuttonImage} onClick={() => maxMin()} alt="Close" />    
+                </Typography>
+                <img className='ExpandButton' src={xbuttonImage} onClick={() => maxMin()} alt="Close" /> 
             </div>
-         
+            
+            <div className={`InstructionBlockText ${expanded ? 'expanded' : ''}`} onClick={clickInfo}>
+                {showText &&  (
+                    <>        
+                        <Typography className='InstructionBlockHeader' variant="h4">
+                            INSTRUCTIONS {introCounter + 1} / {instructionsText.length}
+                        </Typography>
+                        <Typography className='InstructionBlock_Text' variant="h6" style={{ whiteSpace: 'pre-line' }}>
+                            {instructionsText[introCounter]}
+                        </Typography> 
+
+                        <img className={`prevbutton ${prevButtonDisabled}`} src={prevbuttonImage} onClick={() => prevButtonDisabled === '' ? takeStep(-1) : ''} alt="Previous" />
+                        <img className={`nextbutton ${nextButtonDisabled}`} src={nextbuttonImage} onClick={() => nextButtonDisabled === '' ? takeStep(1) : ''} alt="Next" />                  
+
+                    </>                              
+                )}          
+                </div>
+            
+        </div>
     );
 };
 

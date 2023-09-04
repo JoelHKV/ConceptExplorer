@@ -1,12 +1,14 @@
 :root {
-    --background-color: #2dd;
+    --background-color: #fff;
     --button-text-color: #000000;
     --button-background-color: #77ee00;
     --button-background-color-hover: #55aa00;
     --app-max-width: 750px;
     --app-height: 85vh;
- 
+    --title-height: clamp(40px, 10vh, 100px);
+    --bottom-height: clamp(50px, 15vh, 120px);
 }
+
 
 .appContainer {
     display: flex;
@@ -14,7 +16,6 @@
     user-select: none;
     width: 100%;
     height: var(--app-height);
-    
 }
 
 .gridContainer {
@@ -27,10 +28,7 @@
   
 }
 
-
-.unselectable {
-    user-select: none;
-}
+ 
 
 html {
     font-size: 20px; /* Set the root font size */

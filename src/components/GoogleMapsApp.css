@@ -7,16 +7,18 @@
 
 #map {
     position: absolute;
-    width:100%;
-    height: 100%;
-    border: solid black 2px;
+    border-radius: 30px 30px 30px 30px;
+    top: calc(var(--title-height) + 2vh);
+    width: 100%;
+    height: calc(var(--app-height) - var(--title-height) - var(--bottom-height) - 3vh);
+    border: solid black 3px;
 }
 
 .move-or-not-box {
     position: absolute;
     border: 0px solid black;
-    left: 1%;
-    bottom: 0%;
+    left: 3%;
+    top: calc(var(--title-height) + 3vh );
     font-size: 16px !important;
     font-weight: bold !important;
 }

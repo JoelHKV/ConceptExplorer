@@ -1,49 +1,87 @@
 .InstructionBlock {
     position: absolute;
     width: clamp(200px, 100%, var(--app-max-width));
-    height: 10%;
-  
+    height: var(--title-height);
     text-align: center;
     background-color: white;
     border-radius: 10px;
-    transition: height 0.5s;
-    border: solid black 2px;
 }
 
-    .InstructionBlock.expanded {
-        width: clamp(200px, 100%, var(--app-max-width));
-        height: var(--app-height);
-        border-radius: 10px;
-        border: solid black 2px;
-    }
 
 
-.InstructionBlock_Title {
+.InstructionBlockTitle {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: clamp(200px, 100%, var(--app-max-width));
+    height: 100%;
+    text-align: center;
+    background-color: white;
+    border-radius: 30px 30px 0 0;
+    border-radius: 30px 30px 30px 30px;
+    transition: height 0.5s;
+    border: solid black 3px;
+}
+
+
+.InstructionBlockTitleText {
     text-transform: capitalize;
     white-space: nowrap; /* Prevents text from wrapping to the next line */
     overflow: hidden; /* Hides any overflowed content */
     text-overflow: ellipsis;
-     
-    transform: translateY(-50%);
-    font-size: clamp(28px, 4vw, 44px) !important;
+    font-size: clamp(35px, 4vw, 44px) !important;
+}
+
+.ExpandButton {
+    position: absolute;  
+    left: 98%; /* Example spacing */
+    transform: translateX( -100%);
+    height: 70%;
+    width: auto;
 }
 
 
 
 
-.xbutton {
+
+.InstructionBlockText {
     position: absolute;
-    left: 100%;
-    transform: translateX(-100%);
-    top: 0%;
-    width: 8%;
-    padding: 1%;
+    width: clamp(200px, 100%, var(--app-max-width));
+    height: 0;
+    text-align: center;
+    background-color: white;
+    margin-top: 1vh;
+    border: solid white 0px;
+    border-radius: 30px 30px 30px 30px;
+    transition: height 0.5s ease-in-out, border 0.4s steps(1, end)
 }
+
+    .InstructionBlockText.expanded {
+        height: calc(var(--app-height) - var(--title-height) - 0vh);
+        border: solid black 3px;
+        transition: height 0.5s ease-in-out, border 0.5s steps(1, start)
+    }
+
+
+
+.InstructionBlockHeader {
+    margin-top: 3vh !important;
+    font-size: clamp(25px, 2vw, 35px) !important;
+}
+
+
+
+
+
+
 .prevbutton, .nextbutton {
     position: absolute;
     bottom: 3%;
-   
-    width: 11%;
+    height: calc(var(--title-height) * 0.9);
+    width: auto;
     transform: translateX(-50%);
 }
 .prevbutton {

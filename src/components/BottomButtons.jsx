@@ -94,7 +94,7 @@ const BottomButtons = ({ showGlobeView, showOneConceptView, drawPolyline, roundC
     }
     
 
-    const homeButtonImage = drawCanvasSizeReturnDataURL(80, 'HOME', '', [0.9, 0.20, 0.00], 80 / 6)
+    const homeButtonImage = drawCanvasSizeReturnDataURL(80, '', 'HOME', [0.9, 0.7, 0.6], 80 / 6)
     const backButtonImage = drawCanvasSizeReturnDataURL(80, '', 'BACK', [0.9, 0.7, 0.6], 80 / 6)
     const routeButtonImage = drawCanvasSizeReturnDataURL(80, '', 'ROUTE', [0.9, 0.7, 0.6], 80 / 6)
     const randomButtonImage = drawCanvasSizeReturnDataURL(80, '', 'RANDOM', [0.9, 0.7, 0.6], 80 / 6)

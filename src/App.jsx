@@ -258,8 +258,6 @@ const App = () => {
 
     }
 
-
-
     const updateOpacity = (newOptions, excludeMarkers) => {
         const updatedMarkers = newOptions.map((markerTitle, i) => {
             if (!excludeMarkers.includes(markerTitle)) {                                      
@@ -268,7 +266,6 @@ const App = () => {
 
         }
         })
-
 
     }
 

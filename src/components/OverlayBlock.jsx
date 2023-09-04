@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import './OverlayBlock.css';
 
- 
 import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
 
 import { getConceptDetails } from '../hooks/getConceptDetails';
@@ -27,7 +26,7 @@ const OverlayBlock = ( ) => {
 
     const latitudeText = lat >= 0 ? 'N' : 'S';
     const longitudeText = lng >= 0 ? 'E' : 'W';
-    const wholeText = `${Math.abs(lat).toFixed(2)} ${latitudeText}, ${Math.abs(lng).toFixed(2)} ${longitudeText}`;
+    const latLngWholeText = `${Math.abs(lat).toFixed(2)} ${latitudeText}, ${Math.abs(lng).toFixed(2)} ${longitudeText}`;
 
     useEffect(() => {
         setExpanded(true);
@@ -65,27 +64,22 @@ const OverlayBlock = ( ) => {
 
     return (
         <div className={`OverlayBlock ${expanded ? 'expanded' : ''}`} onClick={clickInfo}>
-            <Typography className='OverlayBlock_Title' variant="h4">
-                {title}
-               
+            <Typography className='OverlayBlockTitle' variant="h4">
+                {title}             
             </Typography>
             {showText && loaded && (
                 <>
-            <Typography className='OverlayBlock_Title' variant="h6">             
-                {wholeText}
-            </Typography>
-            
-               
-            <Typography className='OverlayBlock_Text' variant="h6">
+                    <Typography className='OverlayBlockSubTitle' variant="h6">             
+                        {latLngWholeText}
+                    </Typography>
+                          
+                    <Typography className='OverlayBlockText' variant="h6">
                         {conceptDetails['definition']}
-            </Typography>
-                  
-            
-      
-            <Typography className='OverlayBlock_Foot' variant="h6">
+                    </Typography>
+                                 
+                    <Typography className='OverlayBlockFoot' variant="h6">
                         {conceptDetails['model'] + ' on ' + conceptDetails['date'].slice(5, -12)}
-            </Typography>
-
+                    </Typography>
                 </>
             )} 
             <img className='xbutton' src={xbuttonImage} alt="Close" />
