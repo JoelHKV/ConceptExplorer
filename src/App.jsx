@@ -234,7 +234,7 @@ const App = () => {
  
     return (        
         
-            <Box className="appContainer" style={{ zIndex: 1 }}>                    
+            <Box className="appContainer">                    
                 {loaded &&   (
                     <>
                         <GoogleMapsApp  

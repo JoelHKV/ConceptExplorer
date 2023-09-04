@@ -19,6 +19,10 @@
     width: clamp(200px, 100%, var(--app-max-width));
     height: var(--app-height);
     user-select: none;
+    border: solid black 15px;
+    border-radius: 30px;
+    padding: 15px;
+    background-color: var(--background-color);
 }
 
 
