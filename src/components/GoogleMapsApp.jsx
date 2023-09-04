@@ -10,7 +10,7 @@ import { googleMapLoader } from '../utilities/googleMapLoader';
 import './GoogleMapsApp.css';
 
 
-const GoogleMapsApp = ({ markerFunction, resizeAllMarkers  }) => {
+const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
  
     const oldMarkerHandleArray = useRef({});
     const oldPolylineHandleArray = useRef({});
@@ -80,7 +80,7 @@ const GoogleMapsApp = ({ markerFunction, resizeAllMarkers  }) => {
                     const newMarkerHandle = createMarker(map, markerData)
                     newMarkerHandle.addListener("click", () => {          
                         if (markerData.param === null) { return }
-                        markerFunction(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
+                        processMarkerClick(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
                     });
 
                     oldMarkerHandleArray[markerName] = {}

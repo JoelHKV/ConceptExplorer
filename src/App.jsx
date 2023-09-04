@@ -25,12 +25,11 @@ const App = () => {
  
     const [lastConcept, setLastConcept] = useState([])
   
-    const [optionChoiceHistory, setOptionChoiceHistory] = useState([])
+    const [clickHistory, setClickHistory] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
   
     const dispatch = useDispatch();
 
-   // const mapState = useSelector((state) => state.counter[0].mapState);
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
@@ -63,88 +62,25 @@ const App = () => {
             i++
         }
     }
-
-    const deleteHistory = () => {
-       // dispatch(deleteMarkerState({ markerName: 'ALL' }))
-       // dispatch(deletePolylineState({ polylineName: 'ALL' }))
-      //  setOptionChoiceHistory([])
-        setRoundCounter(0);
-
-    }
-
-
-    const makeNewOptions = (thisConcept, lastConcept, clickDirection) => {
-      //  setLastConcept(thisConcept)
-        const originalOrderedConcepts = concepts[thisConcept]['ordered_concepts'];
-        const clickingOrderedConcepts = originalOrderedConcepts.filter(concept => concept !== thisConcept && concept !== lastConcept);
-
-        clickingOrderedConcepts.unshift(thisConcept); // the clicked concept goes to the beginning (middle)
-        if (clickDirection > 0 && lastConcept.length>0) { // did not click center concept, have history
-            const oppositeClickDirection = (clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4);
-            clickingOrderedConcepts.splice(oppositeClickDirection, 0, lastConcept); // arrange the previous concept opposite to the clicking direction to create the illusion of navigation
-        }
-        return clickingOrderedConcepts.slice(0, 9)
-    }
    
-    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
-         
-        const updatedMarkers = newOptions.map((markerTitle, i) => {
-             
-            let formattedValue = ''
-            if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
-                formattedValue = concepts[markerTitle]['abstract'].toFixed(0);
 
-            }
+    const processMarkerClick = (thisConcept, clickDirection, lat, lng) => {
 
-            const markerTitleUpperCase = markerTitle.toUpperCase()
-            const thisOpacity = keepBrightArray.includes(markerTitle) ? 1 : opacity
-          
-            const fireMarker = concepts.hasOwnProperty(markerTitle) ? markerTitle : null; // markers fire action only if they are keys in the database
-
-            const thisMarker = {
-                ...(lat[i] !== undefined ? { lat: lat[i] } : {}),  
-                ...(lng[i] !== undefined ? { lng: lng[i] } : {}),
-                title: markerTitleUpperCase,  
-                param: fireMarker,
-                opacity: thisOpacity,
-                diameter: diameter,
-                dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
-          
-
-            }
-            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-           
-        })
-    }
-
-
-    const markerFunction = (thisConcept, clickDirection, lat, lng) => {
-
+        if (gameMode === 'browse' && clickDirection === 0) { // we click the center marker while browsing
+            dispatch(newGameMode('details')) // open the popup for details
+            return
+        }
         setLastConcept(thisConcept)
 
- 
+        const haveHistory = gameMode === 'browse' ? 'hist' : 'nohist'; // we have history if we have been in the browsing mode alread
 
-        if ( gameMode === 'globe' || gameMode === 'route') { // concept clicked in the global view or route view
-            setRoundCounter(0);
-             
+        if (gameMode === 'globe' || gameMode === 'route') { // we start browsing from a new concept
+            setRoundCounter(0);            
             dispatch(newGameMode('browse'))
-
-            setTimeout(() => {
-                processMarkers(thisConcept, 0, lat, lng, 'nohist', true) // we start exploring related concepts
-            }, 100);
-                    
-            return
+            clickDirection = 0; // click direction makes no difference for the first concept
         }
 
-        if (gameMode === 'browse' && clickDirection === 0) { // center concept in the browse mode clicked
-            dispatch(newGameMode('details')) // we explore details
-            return
-        }
-
-        if (gameMode === 'browse' && clickDirection > 0) {// edge concept in the browse mode clicked
-            processMarkers(thisConcept, clickDirection, lat, lng, 'hist', true) // we make it the center concept
-            return
-        }
+        processMarkers(thisConcept, clickDirection, lat, lng, haveHistory, true)
 
     }
   
@@ -155,8 +91,8 @@ const App = () => {
 
         }
         
-        const lastChoice = optionChoiceHistory[roundCounter - 1];
-        const last2ndChoice = optionChoiceHistory[roundCounter - 2];
+        const lastChoice = clickHistory[roundCounter - 1];
+        const last2ndChoice = clickHistory[roundCounter - 2];
 
         const clickBack = lastChoice ? Math.abs(lastChoice.clickDirection - clickDirection) == 4 : false;
    
@@ -183,13 +119,26 @@ const App = () => {
             setTimeout(() => {
                 handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, history)
             }, 50)
-            const newHistory = saveHistory(optionChoiceHistory, markerState, clickDirection, roundCounter)
-            setOptionChoiceHistory(newHistory);
+            const newHistory = saveHistory(clickHistory, markerState, clickDirection, roundCounter)
+            setClickHistory(newHistory);
         }
                            
     }
 
- 
+    const makeNewOptions = (thisConcept, lastConcept, clickDirection) => {
+        //  setLastConcept(thisConcept)
+        const originalOrderedConcepts = concepts[thisConcept]['ordered_concepts'];
+        const clickingOrderedConcepts = originalOrderedConcepts.filter(concept => concept !== thisConcept && concept !== lastConcept);
+
+        clickingOrderedConcepts.unshift(thisConcept); // the clicked concept goes to the beginning (middle)
+        if (clickDirection > 0 && lastConcept.length > 0) { // did not click center concept, have history
+            const oppositeClickDirection = (clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4);
+            clickingOrderedConcepts.splice(oppositeClickDirection, 0, lastConcept); // arrange the previous concept opposite to the clicking direction to create the illusion of navigation
+        }
+        return clickingOrderedConcepts.slice(0, 9)
+    }
+
+
     const handleMapVisuals = (newOptions, PivotItems, lat, lng, history) => {
 
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng)
@@ -209,6 +158,41 @@ const App = () => {
         }
 
     }
+
+
+
+    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
+
+        const updatedMarkers = newOptions.map((markerTitle, i) => {
+
+            let formattedValue = ''
+            if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
+                formattedValue = concepts[markerTitle]['abstract'].toFixed(0);
+
+            }
+
+            const markerTitleUpperCase = markerTitle.toUpperCase()
+            const thisOpacity = keepBrightArray.includes(markerTitle) ? 1 : opacity
+
+            const fireMarker = concepts.hasOwnProperty(markerTitle) ? markerTitle : null; // markers fire action only if they are keys in the database
+
+            const thisMarker = {
+                ...(lat[i] !== undefined ? { lat: lat[i] } : {}),
+                ...(lng[i] !== undefined ? { lng: lng[i] } : {}),
+                title: markerTitleUpperCase,
+                param: fireMarker,
+                opacity: thisOpacity,
+                diameter: diameter,
+                dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
+
+
+            }
+            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+
+        })
+    }
+
+
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
         const thisPolyline = {
@@ -232,35 +216,28 @@ const App = () => {
 
     }
 
- 
-    return (        
-        
-            <Box className="appContainer">                    
-                {loaded &&   (
-                    <>
-                        <GoogleMapsApp  
-                            markerFunction={markerFunction}
-                            resizeAllMarkers={resizeAllMarkers}
-                        />
+    return (               
+        <Box className="appContainer">                    
+            {loaded &&   (
+                <>
+                    <GoogleMapsApp  
+                        processMarkerClick={processMarkerClick}
+                        resizeAllMarkers={resizeAllMarkers}
+                    />
                     <BottomButtons
                         roundCounter={roundCounter}
                         setRoundCounter={setRoundCounter}
+                        clickHistory={clickHistory}
                         loaded={loaded}
-                        globalData={globalData}
-                            
-                            updateMarkers={updateMarkers}
-                            
-                            optionChoiceHistory={optionChoiceHistory}
-                            processMarkers={processMarkers}
-                            
-                           
-                        />
-                    </>
-                )} 
-                <InstructionBlock />
-                {gameMode === 'details' && (<OverlayBlock />)}                   
-            </Box >  
-            
+                        globalData={globalData}   
+                        processMarkers={processMarkers}
+                        updateMarkers={updateMarkers}                                                                                                                               
+                    />
+                </>
+            )} 
+            <InstructionBlock />
+            {gameMode === 'details' && (<OverlayBlock />)}                   
+        </Box >            
     );
 };
 

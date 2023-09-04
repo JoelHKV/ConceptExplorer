@@ -10,7 +10,7 @@ import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDa
 import { processRoute } from '../utilities/processRoute';
 
 
-const BottomButtons = ({ loaded, globalData, roundCounter, optionChoiceHistory, processMarkers, updateMarkers, setRoundCounter }) => {
+const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
 
     const dispatch = useDispatch();
 
@@ -40,12 +40,12 @@ const BottomButtons = ({ loaded, globalData, roundCounter, optionChoiceHistory, 
         if (param === 'home') {
             setRoundCounter(0)
             clearGoogleMap()
-            const goToChoice = optionChoiceHistory[0];
+            const goToChoice = clickHistory[0];
             processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, 'nohist', false)
         }
 
         if (param === 'back') {
-            const goToChoice = optionChoiceHistory[roundCounter - 1];
+            const goToChoice = clickHistory[roundCounter - 1];
             const clickDirection = goToChoice.clickDirection
             const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
             processMarkers(goToChoice.conceptName, oppositeClickDirection, goToChoice.centerLat, goToChoice.centerLng, 'hist', true)
@@ -55,10 +55,7 @@ const BottomButtons = ({ loaded, globalData, roundCounter, optionChoiceHistory, 
 
             dispatch(newGameMode('route'))
             clearGoogleMap()
-            //dispatch(deleteMarkerState({ markerName: 'ALL' }))
-          //  dispatch(deletePolylineState({ polylineName: 'ALL' }))
-
-            const { thisMapLocation, thisRoute } = processRoute(optionChoiceHistory);
+            const { thisMapLocation, thisRoute } = processRoute(clickHistory);
             const zoomLevel = 4
             dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
 
