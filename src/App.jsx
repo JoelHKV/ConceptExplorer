@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from './reducers/conceptExplorerSlice';
  
-import { Grid, Box } from '@mui/material'; // use MUI component library
+import { Box } from '@mui/material'; // use MUI component library
 
 import { drawCanvasSizeReturnDataURL } from './utilities/drawCanvasSizeReturnDataURL';
 
@@ -67,7 +67,7 @@ const App = () => {
     const deleteHistory = () => {
        // dispatch(deleteMarkerState({ markerName: 'ALL' }))
        // dispatch(deletePolylineState({ polylineName: 'ALL' }))
-        setOptionChoiceHistory([])
+      //  setOptionChoiceHistory([])
         setRoundCounter(0);
 
     }
@@ -125,7 +125,8 @@ const App = () => {
  
 
         if ( gameMode === 'globe' || gameMode === 'route') { // concept clicked in the global view or route view
-            deleteHistory()
+            setRoundCounter(0);
+             
             dispatch(newGameMode('browse'))
 
             setTimeout(() => {
@@ -241,22 +242,25 @@ const App = () => {
                             markerFunction={markerFunction}
                             resizeAllMarkers={resizeAllMarkers}
                         />
-                        <BottomButtons
-                            globalData={globalData}
-                            loaded={loaded}
+                    <BottomButtons
+                        roundCounter={roundCounter}
+                        setRoundCounter={setRoundCounter}
+                        loaded={loaded}
+                        globalData={globalData}
+                            
                             updateMarkers={updateMarkers}
-                            deleteHistory={deleteHistory}
+                            
                             optionChoiceHistory={optionChoiceHistory}
                             processMarkers={processMarkers}
-                            roundCounter={roundCounter}
-                            drawPolyline={drawPolyline}
+                            
+                           
                         />
                     </>
                 )} 
                 <InstructionBlock />
                 {gameMode === 'details' && (<OverlayBlock />)}                   
             </Box >  
-               
+            
     );
 };
 

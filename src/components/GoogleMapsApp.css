@@ -9,12 +9,11 @@
 
 #map {
     position: absolute;
-  
     border-radius: 30px;
-    
     width: 100%;
     height: calc(var(--app-height) - var(--title-height) - var(--bottom-height) - 4vh);
-    border: solid black 3px;
+    border: solid black var(--inner-border);
+    transform: translateX(calc(var(--inner-border) * -1));
 }
 
 .move-or-not-box {

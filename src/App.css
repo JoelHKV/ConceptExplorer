@@ -1,5 +1,5 @@
 :root {
-    --background-color: none;
+    --background-color: #bbb;
     --button-text-color: #000000;
     --button-background-color: #77ee00;
     --button-background-color-hover: #55aa00;
@@ -8,6 +8,7 @@
     --title-height: clamp(40px, 10vh, 100px);
     --bottom-height: clamp(50px, 13vh, 130px);
     --button-size: 7vh;
+    --inner-border: 3px;
 }
 
 
@@ -15,14 +16,16 @@
 .appContainer {
     position: absolute;
     left: 50%;
+    top: 3%;
     transform: translateX(-50%);
-    width: clamp(200px, 100%, var(--app-max-width));
+    width: clamp(200px, 100%, var(--app-max-width) + 0px);
     height: var(--app-height);
     user-select: none;
-    border: solid black 15px;
-    border-radius: 30px;
-    padding: 15px;
-    background-color: var(--background-color);
+    border: solid white clamp(15px, 3vmin, 30px);
+    outline: solid var(--background-color) clamp(15px, 3vmin, 30px);
+    border-radius: 50px;
+    padding: 0px;
+    
 }
 
 

@@ -12,10 +12,11 @@
 }
 
     .OverlayBlock.expanded {
-        width: 101%;
+        width: 100%;
         height: calc(var(--app-height) + 1.5vh);
         border-radius: 30px;
-        border: solid black 3px;
+        border: solid black var(--inner-border);
+         
         transition: width 0.5s ease-in-out, height 0.5s ease-in-out, border-radius 0.5s;
     }
 

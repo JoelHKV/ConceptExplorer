@@ -10,7 +10,7 @@ import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDa
 import { processRoute } from '../utilities/processRoute';
 
 
-const BottomButtons = ({ loaded, globalData, drawPolyline, roundCounter, optionChoiceHistory, processMarkers, updateMarkers, deleteHistory }) => {
+const BottomButtons = ({ loaded, globalData, roundCounter, optionChoiceHistory, processMarkers, updateMarkers, setRoundCounter }) => {
 
     const dispatch = useDispatch();
 
@@ -38,7 +38,7 @@ const BottomButtons = ({ loaded, globalData, drawPolyline, roundCounter, optionC
     const controlButtons = (param) => {
  
         if (param === 'home') {
-              deleteHistory()
+            setRoundCounter(0)
             clearGoogleMap()
             const goToChoice = optionChoiceHistory[0];
             processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, 'nohist', false)
