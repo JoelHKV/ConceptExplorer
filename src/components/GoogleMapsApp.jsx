@@ -177,7 +177,7 @@ const GoogleMapsApp = ({ markerFunction, resizeAllMarkers  }) => {
  
     return (   
         
-        <div className="GoogleMapsApp centerContent">
+        <div className="GoogleMapsApp">
                          
         <div id="map" ></div>
             <FormControlLabel className="move-or-not-box"

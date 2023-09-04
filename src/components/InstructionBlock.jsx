@@ -25,7 +25,7 @@ const InstructionBlock = ( ) => {
 
 
     const clickInfo = (event) => { // show introscreen
-
+        console.log('dada')
         if (event.target.closest('.prevbutton') || event.target.closest('.nextbutton') || event.target.closest('.xbutton')) {
             // Prevent the event from propagating further
             return;
@@ -66,8 +66,8 @@ const InstructionBlock = ( ) => {
     const nextButtonDisabled = introCounter < instructionsText.length - 1 ? '' : 'navbuttondis';
 
     return (
-        <div className='InstructionBlock' onClick={clickInfo}> 
-            <div className='InstructionBlockTitle'>
+        <div className='InstructionBlock' > 
+            <div className='InstructionBlockTitle' onClick={clickInfo}>
                 <Typography className='InstructionBlockTitleText' variant="h4">
                 Concept Explorer              
                 </Typography>

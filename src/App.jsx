@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
-
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from './reducers/conceptExplorerSlice';
  
 import { Grid, Box } from '@mui/material'; // use MUI component library
 
-
 import { drawCanvasSizeReturnDataURL } from './utilities/drawCanvasSizeReturnDataURL';
 
-
-import { getConcept } from './hooks/getConcept';
- 
+import { fetchAllConcepts } from './hooks/fetchAllConcepts';
 
 import GoogleMapsApp from './components/GoogleMapsApp';
 import BottomButtons from './components/BottomButtons';
 import OverlayBlock from './components/OverlayBlock';
 import InstructionBlock from './components/InstructionBlock';
-
 
 import { conceptFlowerCoordinates } from './utilities/conceptFlowerCoordinates';
 import { saveHistory } from './utilities/saveHistory';
@@ -47,36 +42,10 @@ const App = () => {
     const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
 
     const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
-
-
-    
-    const gameMode = useSelector((state) => state.counter[0].gameMode); // 'intro' vs 'practice' vs 'quiz' vs 'finish'
+   
+    const gameMode = useSelector((state) => state.counter[0].gameMode); //  
   
-    const { concepts, globeConcepts, latLngData, loaded, error } = getConcept('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore');
-    //console.log(loaded) conceptRank
-
-    useEffect(() => {
-        if (loaded) {
-            showGlobeView()
-        }
-    }, [loaded])
-
-
-    const showGlobeView = () => {
-        deleteHistory()
-        
-        setTimeout(() => {
-        dispatch(newGameMode('globe'))
-        dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: globalConceptZoomLevel } }));
-        updateMarkers(globeConcepts, globeConcepts, latLngData.lat, latLngData.lng, 1, markerDiameterPerZoom[globalConceptZoomLevel])
-        }, 100);
-    }
-
-    const showOneConceptView = (markerNro) => {
-        const markerName = markerNro !== -1 ? 'Marker' + markerNro : 'Marker' + Math.floor(Math.random() * (globeConcepts.length + 0));
-        dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: singleConceptZoomLevel } }));
-
-    }
+    const { concepts, globalData, loaded, error } = fetchAllConcepts('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore');
 
     const resizeAllMarkers = (zoomLevel) => {
         if (gameMode !== 'globe') { return }
@@ -95,11 +64,9 @@ const App = () => {
         }
     }
 
-
-
     const deleteHistory = () => {
-        dispatch(deleteMarkerState({ markerName: 'ALL' }))
-        dispatch(deletePolylineState({ polylineName: 'ALL' }))
+       // dispatch(deleteMarkerState({ markerName: 'ALL' }))
+       // dispatch(deletePolylineState({ polylineName: 'ALL' }))
         setOptionChoiceHistory([])
         setRoundCounter(0);
 
@@ -155,14 +122,9 @@ const App = () => {
 
         setLastConcept(thisConcept)
 
-        if (gameMode === 'globe' && lastConcept !== thisConcept) { // concept clicked in the global view
-           // showBaseConcept(clickDirection) // centering and zooming in
-            showOneConceptView(clickDirection)
+ 
 
-            return
-        }
-
-        if ((gameMode === 'globe' && lastConcept === thisConcept) || gameMode === 'route') { // the same concept re-clicked in the global view
+        if ( gameMode === 'globe' || gameMode === 'route') { // concept clicked in the global view or route view
             deleteHistory()
             dispatch(newGameMode('browse'))
 
@@ -270,18 +232,18 @@ const App = () => {
     }
 
  
-    return (
-        <Box className="appContainer">                      
-            <Grid container className="gridContainer" >              
-                {loaded && (
+    return (        
+        
+            <Box className="appContainer" style={{ zIndex: 1 }}>                    
+                {loaded &&   (
                     <>
-                        <GoogleMapsApp
+                        <GoogleMapsApp  
                             markerFunction={markerFunction}
                             resizeAllMarkers={resizeAllMarkers}
-                        />             
+                        />
                         <BottomButtons
-                            showGlobeView={showGlobeView}
-                            showOneConceptView={showOneConceptView}
+                            globalData={globalData}
+                            loaded={loaded}
                             updateMarkers={updateMarkers}
                             deleteHistory={deleteHistory}
                             optionChoiceHistory={optionChoiceHistory}
@@ -290,12 +252,11 @@ const App = () => {
                             drawPolyline={drawPolyline}
                         />
                     </>
-                )}                             
-            </Grid>
-           
-            <InstructionBlock />
-            {gameMode === 'details' && (<OverlayBlock/>)}       
-        </Box >  
+                )} 
+                <InstructionBlock />
+                {gameMode === 'details' && (<OverlayBlock />)}                   
+            </Box >  
+               
     );
 };
 

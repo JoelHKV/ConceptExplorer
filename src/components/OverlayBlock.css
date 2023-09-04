@@ -2,27 +2,28 @@
     position: absolute;
     width: 0;
     height: 0;
-    top: calc(var(--app-height) / 2);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
     background-color: white;
     border-radius: 100px;
-    transition: width 0.5s, height 0.5s, top 0.5s, border-radius 0.5s;
+    transition: width 0.5s ease-in-out, height 0.5s ease-in-out, border-radius 0.5s;
 }
 
     .OverlayBlock.expanded {
-        width: clamp(200px, 100%, calc(var(--app-max-width) + 10px));
+        width: 101%;
         height: calc(var(--app-height) + 1.5vh);
-        top: 0.5vh;
         border-radius: 30px;
         border: solid black 3px;
-        transition: width 0.5s, height 0.5s, top 0.5s, border-radius 0.5s;
+        transition: width 0.5s ease-in-out, height 0.5s ease-in-out, border-radius 0.5s;
     }
 
 .wikilogo {
     position: absolute;
     left: 0%;
     top: 0%;
-    height: calc(var(--title-height) * 0.7);
+    height: calc(var(--button-size) * 1);
     width: auto;
     padding: 10px;
 }
@@ -31,7 +32,7 @@
     position: absolute;
     left: 99%;
     top: 1%;
-    height: calc(var(--title-height) * 0.7);
+    height: calc(var(--button-size) * 1);
     width: auto;
     transform: translateX(-100%);
 }

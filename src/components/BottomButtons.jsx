@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from '../reducers/conceptExplorerSlice';
@@ -7,24 +7,39 @@ import { Button } from '@mui/material';
 import './BottomButtons.css';
 
 import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
+import { processRoute } from '../utilities/processRoute';
 
 
-const BottomButtons = ({ showGlobeView, showOneConceptView, drawPolyline, roundCounter, optionChoiceHistory, processMarkers, updateMarkers, deleteHistory }) => {
+const BottomButtons = ({ loaded, globalData, drawPolyline, roundCounter, optionChoiceHistory, processMarkers, updateMarkers, deleteHistory }) => {
 
     const dispatch = useDispatch();
 
    
     const markerState = useSelector((state) => state.counter[0].markerState);
     const gameMode = useSelector((state) => state.counter[0].gameMode); 
-  //  const singleConceptZoomLevel = useSelector((state) => state.counter[0].singleConceptZoomLevel);
-  //  const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
+    const singleConceptZoomLevel = useSelector((state) => state.counter[0].singleConceptZoomLevel);
+    const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
     const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
+
+    useEffect(() => {
+        if (loaded) {
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: globalConceptZoomLevel } }));
+            showGlobeView()
+        }
+    }, [loaded])
+
+
+    const clearGoogleMap = () => {
+        dispatch(deleteMarkerState({ markerName: 'ALL' }))
+        dispatch(deletePolylineState({ polylineName: 'ALL' }))
+    }
 
 
     const controlButtons = (param) => {
-        // processMarkers(thisConcept, 0, lat, lng, 'nohist', true)
+ 
         if (param === 'home') {
-            deleteHistory()
+              deleteHistory()
+            clearGoogleMap()
             const goToChoice = optionChoiceHistory[0];
             processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, 'nohist', false)
         }
@@ -39,60 +54,56 @@ const BottomButtons = ({ showGlobeView, showOneConceptView, drawPolyline, roundC
         if (param === 'route') {
 
             dispatch(newGameMode('route'))
-            dispatch(deleteMarkerState({ markerName: 'ALL' }))
-            dispatch(deletePolylineState({ polylineName: 'ALL' }))
+            clearGoogleMap()
+            //dispatch(deleteMarkerState({ markerName: 'ALL' }))
+          //  dispatch(deletePolylineState({ polylineName: 'ALL' }))
 
-            const latArray = [];
-            const lngArray = [];
-            const valArray = [];
-
-            for (let i = 0; i < optionChoiceHistory.length; i++) {
-
-                const thisChoice = optionChoiceHistory[i];
-                latArray.push(thisChoice.centerLat)
-                lngArray.push(thisChoice.centerLng)
-                valArray.push(thisChoice.conceptName)
-                drawPolyline(thisChoice.centerLat, thisChoice.centerLng, thisChoice.clickLat, thisChoice.clickLng, i)
-
-            }
-
+            const { thisMapLocation, thisRoute } = processRoute(optionChoiceHistory);
             const zoomLevel = 4
-                      
-            const minLat2 = Math.min(...latArray);
-            const maxLat2 = Math.max(...latArray);
-            const minLng2 = Math.min(...lngArray);
-            const maxLng2 = Math.max(...lngArray);
-
-            const latLngSpace = Math.max((maxLng2 - minLng2), (maxLat2 - minLat2))
-
-            const thisMapLocation = {
-                lat: (minLat2 + maxLat2) / 2, // Default latitude  
-                lng: (minLng2 + maxLng2) / 2, // Default longitude  dall
-                delta: latLngSpace,
-            }
-
             dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
 
             setTimeout(() => {
-                updateMarkers(valArray, valArray, latArray, lngArray, 1, markerDiameterPerZoom[zoomLevel])
+                updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, markerDiameterPerZoom[zoomLevel])
             }, 100);
 
 
         }
 
+        if (param === 'random') {
+            if (gameMode === 'globe') {
+                showRandomGlobalConcept()
+            }
+            else {
+                showGlobeView()
 
+                setTimeout(() => {
+                    showRandomGlobalConcept()
+                }, 500)              
+            }
+             
+        } 
         if (param === 'globe') {
             showGlobeView()
         }
 
-
-        if (param === 'random') {
-            showOneConceptView(-1)
-        } 
-
-
     }
+
     
+    const showGlobeView = () => {
+        //deleteHistory()
+        clearGoogleMap()
+        setTimeout(() => {
+            dispatch(newGameMode('globe'))
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: globalConceptZoomLevel } }));
+            updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, markerDiameterPerZoom[globalConceptZoomLevel])
+         }, 100);
+    }
+
+    const showRandomGlobalConcept = () => {   
+        const markerName = 'Marker' + Math.floor(Math.random() * (globalData.branch.length + 0));
+        dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: singleConceptZoomLevel } }));
+    }
+
 
     const homeButtonImage = drawCanvasSizeReturnDataURL(80, '', 'HOME', [0.9, 0.7, 0.6], 80 / 6)
     const backButtonImage = drawCanvasSizeReturnDataURL(80, '', 'BACK', [0.9, 0.7, 0.6], 80 / 6)
@@ -104,11 +115,10 @@ const BottomButtons = ({ showGlobeView, showOneConceptView, drawPolyline, roundC
     const homeButtonEnabled = roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe';
     const backButtonEnabled = roundCounter > 0 && gameMode !== 'route' && gameMode !== 'details' && gameMode !== 'globe';
     const routeButtonEnabled = roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe';
-    const randomButtonEnabled = gameMode !== 'details' && gameMode === 'globe';
+    const randomButtonEnabled = gameMode !== 'details';
     const globeButtonEnabled = gameMode !== 'details';
 
-     
-   
+  
 
     return (
         <div className="BottomButtons">

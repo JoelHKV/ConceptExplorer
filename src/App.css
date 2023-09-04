@@ -1,34 +1,27 @@
 :root {
-    --background-color: #fff;
+    --background-color: none;
     --button-text-color: #000000;
     --button-background-color: #77ee00;
     --button-background-color-hover: #55aa00;
     --app-max-width: 750px;
     --app-height: 85vh;
     --title-height: clamp(40px, 10vh, 100px);
-    --bottom-height: clamp(50px, 15vh, 120px);
+    --bottom-height: clamp(50px, 13vh, 130px);
+    --button-size: 7vh;
 }
+
 
 
 .appContainer {
-    display: flex;
-    justify-content: center;
-    user-select: none;
-    width: 100%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(200px, 100%, var(--app-max-width));
     height: var(--app-height);
-}
-
-.gridContainer {
     user-select: none;
-    max-width: var(--app-max-width);
-    background-color: var(--background-color);
-    grid-row-gap: 0vh;
-    position: relative;
-    height: 100%;
-  
 }
 
- 
+
 
 html {
     font-size: 20px; /* Set the root font size */
