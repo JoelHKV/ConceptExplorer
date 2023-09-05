@@ -39,20 +39,28 @@ const App = () => {
 
  
     const browseZoomLevel = useSelector((state) => state.counter[0].browseZoomLevel);
-    const singleConceptZoomLevel = useSelector((state) => state.counter[0].singleConceptZoomLevel);
-
+  
     const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
 
     const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
+
+  
+ 
    
     const gameMode = useSelector((state) => state.counter[0].gameMode); //  
   
     const { concepts, globalData, loaded, error } = fetchAllConcepts('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore');
 
     const resizeAllMarkers = (zoomLevel) => {
-        if (gameMode !== 'globe') { return }
+
+        return
+         if (gameMode !== 'globe') { return }
        
-        const diameter = markerDiameterPerZoom[zoomLevel];
+         
+
+        const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
+        const diameter = minDimen * markerDiameterPerZoom[zoomLevel]
+
         
         let i = 0;
 
@@ -144,12 +152,10 @@ const App = () => {
 
     const handleMapVisuals = (newOptions, PivotItems, lat, lng, prevRoundExists) => {
 
-        const flowerCoordinates = conceptFlowerCoordinates(lat, lng)
+        const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
+        const diameter = minDimen * markerDiameterPerZoom[browseZoomLevel] 
+        const flowerCoordinates = conceptFlowerCoordinates(lat, lng, minDimen/250)
         const opacity = 0.1
-        // googleMapDimensions.width 
-       // const diameter = markerDiameterPerZoom[browseZoomLevel]
-        const diameter = googleMapDimensions.width / 6;
-        console.log(diameter, googleMapDimensions.width)
         updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
 
         setTimeout(() => {

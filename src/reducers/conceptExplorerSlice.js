@@ -1,14 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-
-const markerDiameterPerZoom = [50, 50, 60, 70, 80, 90, 100, 120, 140, 180, 260, 360, 460, 460, 460, 460, 460];
-
+ 
+const markerDiameterPerZoom = [0.1, 0.1, 0.11, 0.12, 0.13, 0.15, 0.17, 0.19, 0.22, 0.26, 0.31, 0.37, 0.45, 0.45, 0.45, 0.45, 0.45];
 const initialState = [
     {
         gameMode: 'globe',
         googleMapDimensions: { width: 756, height: 534 },
+        googleMapPresentLocation: { lat: 0, lng: 0, zoom: 2 },
         browseZoomLevel: 7,
-        singleConceptZoomLevel: 6,
         globalConceptZoomLevel: 2,
         markerDiameterPerZoom: markerDiameterPerZoom,
         markerState: {},
@@ -41,6 +40,25 @@ const conceptExplorerReducer = createSlice({
                 ...state.slice(1) // Copy the rest of the state array
             ];
         },
+
+        readMapLocation: (state, action) => {
+            const { lat, lng, zoom } = action.payload;
+            return [
+                {
+                    ...state[0],
+                    googleMapPresentLocation: {
+                        lat: lat !== undefined ? lat : state[0].googleMapPresentLocation.lat,
+                        lng: lng !== undefined ? lng : state[0].googleMapPresentLocation.lng,
+                        zoom: zoom !== undefined ? zoom : state[0].googleMapPresentLocation.zoom,
+
+                    }
+                },
+                ...state.slice(1) 
+            ];
+
+        },
+
+
 
         newMapLocation: (state, action) => {
             const { attribute, dall, value } = action.payload;
@@ -140,5 +158,5 @@ const conceptExplorerReducer = createSlice({
 
 });
 
-export const { newGameMode, newMapDimensions, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
+export const { newGameMode, newMapDimensions, newMapLocation, readMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
 export default conceptExplorerReducer.reducer;

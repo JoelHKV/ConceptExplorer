@@ -17,9 +17,17 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
    
     const markerState = useSelector((state) => state.counter[0].markerState);
     const gameMode = useSelector((state) => state.counter[0].gameMode); 
-    const singleConceptZoomLevel = useSelector((state) => state.counter[0].singleConceptZoomLevel);
+   
+    const browseZoomLevel = useSelector((state) => state.counter[0].browseZoomLevel);
     const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
     const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
+    const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
+    const mapLocation = useSelector((state) => state.counter[0].mapLocation);
+
+    const googleMapPresentLocation = useSelector((state) => state.counter[0].googleMapPresentLocation);
+
+
+
 
     useEffect(() => {
         if (loaded) {
@@ -68,37 +76,122 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
 
         if (param === 'random') {
             if (gameMode === 'globe') {
-                showRandomGlobalConcept()
+                ///showRandomGlobalConcept()
+
+
+                
+
+                const markerName = 'Marker' + Math.floor(Math.random() * (globalData.branch.length + 0));
+            flyFromTo(googleMapPresentLocation, { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: browseZoomLevel }, 1400)
             }
             else {
-                showGlobeView()
+             //   showGlobeView()
 
+                clearGoogleMap()
+                
                 setTimeout(() => {
+                      updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, 120)
+                 
+                }, 100)   
+                setTimeout(() => {
+                    
                     showRandomGlobalConcept()
-                }, 500)              
+                }, 200)    
             }
              
         } 
         if (param === 'globe') {
+
+            if (gameMode === 'globe') {
+               // console.log(googleMapPresentLocation)
+                flyFromTo(googleMapPresentLocation, { lat: 0, lng: 0, zoom: 2 }, 400)
+                return
+            }
+
+            
             showGlobeView()
         }
 
     }
 
-    
+
+    const flyFromTo = (origin, destination, duration) => {
+
+
+        var startTime = Date.now();
+
+        function animatePanning() {
+            var elapsed = Date.now() - startTime;
+            var fraction = elapsed / duration;
+
+            if (fraction < 1) {
+
+                var squareRootFraction = Math.sqrt(fraction);
+                var cubeRootFraction = Math.cbrt(fraction);
+                var squaredFraction = Math.pow(fraction, 2);
+                var cubedFraction = Math.pow(fraction, 3);
+                var lat = origin.lat + squareRootFraction * (destination.lat - origin.lat);
+                var lng = origin.lng + squareRootFraction * (destination.lng - origin.lng);
+                var zoom = Math.round(origin.zoom + cubeRootFraction * (destination.zoom - origin.zoom));
+                var zoom = Math.round(origin.zoom + fraction * (destination.zoom - origin.zoom));
+                console.log(lat, lng, zoom)
+              //  var newCenter = new google.maps.LatLng(lat, lng);
+               // map.panTo(newCenter);
+                dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: zoom } }));
+                requestAnimationFrame(animatePanning);
+            } else {
+                  dispatch(newMapLocation({ dall: 'dall', value: { lat: destination.lat, lng: destination.lng, zoom: destination.zoom } }));
+            }
+        }
+
+        animatePanning();
+
+
+     //   const distances = [0.7, 1];
+   //     
+      //  const flySteps = distances.map((distancePercent, i) => {
+
+     //       const tempLat = (1 - distancePercent) * origin.lat + distancePercent * destination.lat;
+       //     const tempLng = (1 - distancePercent) * origin.lng + distancePercent * destination.lng;
+        //    const tempZoom = (1 - distancePercent) * origin.zoom + distancePercent * destination.zoom;
+        //    console.log(tempLat, tempLng, tempZoom)
+         //   setTimeout(() => {
+         //   dispatch(newMapLocation({ dall: 'dall', value: { lat: tempLat, lng: tempLng, zoom: 2 } }));
+         //   }, 300 * i);
+       // }) 
+
+
+    }
     const showGlobeView = () => {
         //deleteHistory()
         clearGoogleMap()
+
+        const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
+        const diameter = minDimen * markerDiameterPerZoom[globalConceptZoomLevel]
+
+
         setTimeout(() => {
             dispatch(newGameMode('globe'))
             dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: globalConceptZoomLevel } }));
-            updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, markerDiameterPerZoom[globalConceptZoomLevel])
+            updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, diameter)
          }, 100);
     }
 
     const showRandomGlobalConcept = () => {   
         const markerName = 'Marker' + Math.floor(Math.random() * (globalData.branch.length + 0));
-        dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: singleConceptZoomLevel } }));
+       // dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: browseZoomLevel } }));
+        const distancePercent = 0.9;
+        const intermLat = (1 - distancePercent) * mapLocation.lat + distancePercent *markerState[markerName].lat
+        const intermLng = (1 - distancePercent) * mapLocation.lng + distancePercent * markerState[markerName].lng
+        console.log(intermLat, intermLng)
+        dispatch(newMapLocation({ dall: 'dall', value: { lat: intermLat, lng: intermLng, zoom: 4 } }));
+        setTimeout(() => {
+
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: 7 } }));
+
+        }, 700) 
+
+
     }
 
 

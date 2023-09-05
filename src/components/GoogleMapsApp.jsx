@@ -1,21 +1,26 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
 import { createMarker, createPolyline } from '../utilities/googleMapHelper';
 import { googleMapLoader } from '../utilities/googleMapLoader';
 import { measureGoogleMapDimensions } from '../hooks/measureGoogleMapDimensions';
 
+
+import { readMapLocation } from '../reducers/conceptExplorerSlice';
+
+
+
 import './GoogleMapsApp.css';
 
-
+ 
 const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
  
     const oldMarkerHandleArray = useRef({});
     const oldPolylineHandleArray = useRef({});
  
-    
+    const dispatch = useDispatch();
     const [mapLocked, setMapLocked] = useState(false);
 
     const gameMode = useSelector((state) => state.counter[0].gameMode);
@@ -23,17 +28,21 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
 
+    const googleMapPresentLocation = useSelector((state) => state.counter[0].googleMapPresentLocation);
+
+
+
     const map = googleMapLoader(mapLocation);
 
     const { elementRef } = measureGoogleMapDimensions(); //measurements dispatched as a redux state
 
     useEffect(() => {
         if (map) {          
-            //map.setCenter({ lat: mapState.lat, lng: mapState.lng });       
-            map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng });
-        
+             map.setCenter({ lat: mapLocation.lat, lng: mapLocation.lng});
+           // map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng });
+           
             if (mapLocation.zoom) { // use zoom if zoom data is given
-                map.setZoom(mapLocation.zoom);
+                 map.setZoom(mapLocation.zoom);
             }
             if (mapLocation.delta) { // use bounds if delta data is given
                 const bounds = new window.google.maps.LatLngBounds();
@@ -148,7 +157,9 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
     useEffect(() => {
 
         const zoomChangeListener = map?.addListener('zoom_changed', () => {
-            resizeAllMarkers(map.getZoom());
+            const zoomLevel = map.getZoom()
+            dispatch(readMapLocation({ zoom: zoomLevel }))
+            resizeAllMarkers(zoomLevel);
         });
         const zoomListenerRef = React.createRef();
         zoomListenerRef.current = zoomChangeListener;
@@ -165,6 +176,12 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
         const idleListener = map?.addListener("idle", () => {          
             //handleIdleFunction()
         });
+        const centerListener = map?.addListener('center_changed', () => {
+            const newCenter = map.getCenter();
+            dispatch(readMapLocation({ lat: newCenter.lat(), lng: newCenter.lng() }))   
+        });
+
+
     }, [map]);
 
 
