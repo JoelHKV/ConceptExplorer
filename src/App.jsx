@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+ 
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from './reducers/conceptExplorerSlice';
  
@@ -14,6 +14,8 @@ import BottomButtons from './components/BottomButtons';
 import OverlayBlock from './components/OverlayBlock';
 import InstructionBlock from './components/InstructionBlock';
 
+import MyFavicon from './components/MyFavicon';
+
 import { conceptFlowerCoordinates } from './utilities/conceptFlowerCoordinates';
 import { saveHistory } from './utilities/saveHistory';
 
@@ -22,7 +24,10 @@ import './App.css';
 
 
 const App = () => {
- 
+
+    const faviconDataURL = drawCanvasSizeReturnDataURL(100, ' ', 'C', [0.9, 0.45, 0.35], 20)
+
+
     const [lastConcept, setLastConcept] = useState([])
   
     const [clickHistory, setClickHistory] = useState([])
@@ -234,7 +239,8 @@ const App = () => {
     }
 
     return (               
-        <Box className="appContainer">                    
+        <Box className="appContainer"> 
+            <MyFavicon dataURL={faviconDataURL} />
             {loaded &&   (
                 <>
                     <GoogleMapsApp  

@@ -9,6 +9,10 @@ import './BottomButtons.css';
 import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
 import { processRoute } from '../utilities/processRoute';
 
+import { googleMapFlight, linearEasing, firstTwoThirdEasing, lastTwoThirdEasing, hopInAirEasing  } from '../utilities/googleMapFlight';
+
+ 
+
 
 const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
 
@@ -81,8 +85,17 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
 
                 
 
-                const markerName = 'Marker' + Math.floor(Math.random() * (globalData.branch.length + 0));
-            flyFromTo(googleMapPresentLocation, { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: browseZoomLevel }, 1400)
+                const markerName = 'Marker' + Math.floor(Math.random() * (globalData.branch.length));
+              //  googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation, { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: browseZoomLevel }, 1400, firstTwoThirdEasing, lastTwoThirdEasing)
+
+
+                googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation,
+                    { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: browseZoomLevel },
+                    1400, firstTwoThirdEasing, lastTwoThirdEasing)
+
+             
+                
+
             }
             else {
              //   showGlobeView()
@@ -104,7 +117,8 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
 
             if (gameMode === 'globe') {
                // console.log(googleMapPresentLocation)
-                flyFromTo(googleMapPresentLocation, { lat: 0, lng: 0, zoom: 2 }, 400)
+                googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation, { lat: 0, lng: 0, zoom: 2 }, 1400, lastTwoThirdEasing, firstTwoThirdEasing)
+
                 return
             }
 
@@ -113,55 +127,8 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
         }
 
     }
-
-
-    const flyFromTo = (origin, destination, duration) => {
-
-
-        var startTime = Date.now();
-
-        function animatePanning() {
-            var elapsed = Date.now() - startTime;
-            var fraction = elapsed / duration;
-
-            if (fraction < 1) {
-
-                var squareRootFraction = Math.sqrt(fraction);
-                var cubeRootFraction = Math.cbrt(fraction);
-                var squaredFraction = Math.pow(fraction, 2);
-                var cubedFraction = Math.pow(fraction, 3);
-                var lat = origin.lat + squareRootFraction * (destination.lat - origin.lat);
-                var lng = origin.lng + squareRootFraction * (destination.lng - origin.lng);
-                var zoom = Math.round(origin.zoom + cubeRootFraction * (destination.zoom - origin.zoom));
-                var zoom = Math.round(origin.zoom + fraction * (destination.zoom - origin.zoom));
-                console.log(lat, lng, zoom)
-              //  var newCenter = new google.maps.LatLng(lat, lng);
-               // map.panTo(newCenter);
-                dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: zoom } }));
-                requestAnimationFrame(animatePanning);
-            } else {
-                  dispatch(newMapLocation({ dall: 'dall', value: { lat: destination.lat, lng: destination.lng, zoom: destination.zoom } }));
-            }
-        }
-
-        animatePanning();
-
-
-     //   const distances = [0.7, 1];
-   //     
-      //  const flySteps = distances.map((distancePercent, i) => {
-
-     //       const tempLat = (1 - distancePercent) * origin.lat + distancePercent * destination.lat;
-       //     const tempLng = (1 - distancePercent) * origin.lng + distancePercent * destination.lng;
-        //    const tempZoom = (1 - distancePercent) * origin.zoom + distancePercent * destination.zoom;
-        //    console.log(tempLat, tempLng, tempZoom)
-         //   setTimeout(() => {
-         //   dispatch(newMapLocation({ dall: 'dall', value: { lat: tempLat, lng: tempLng, zoom: 2 } }));
-         //   }, 300 * i);
-       // }) 
-
-
-    }
+ 
+     
     const showGlobeView = () => {
         //deleteHistory()
         clearGoogleMap()
