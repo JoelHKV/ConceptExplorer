@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from '../reducers/conceptExplorerSlice';
@@ -9,12 +9,12 @@ import './BottomButtons.css';
 import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
 import { processRoute } from '../utilities/processRoute';
 
-import { googleMapFlight, linearEasing, firstTwoThirdEasing, lastTwoThirdEasing, hopInAirEasing  } from '../utilities/googleMapFlight';
+import { googleMapFlight, linearEasing, firstTwoThirdEasing, lastTwoThirdEasing, squareRootEasing  } from '../utilities/googleMapFlight';
 
  
 
 
-const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
+const BottomButtons = ({ map, isFlying, setIsFlying, getCurrentLocation, processMarkerClick, loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
 
     const dispatch = useDispatch();
 
@@ -28,19 +28,50 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
     const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
 
-    const googleMapPresentLocation = useSelector((state) => state.counter[0].googleMapPresentLocation);
+    const zoomGlobal = useSelector((state) => state.counter[0].zoomGlobal);
 
+
+  
 
 
 
     useEffect(() => {
         if (loaded) {
             dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: globalConceptZoomLevel } }));
-            showGlobeView()
+            setGlobeView()
         }
     }, [loaded])
 
+    useEffect(() => {
+        if (loaded) {
+            if (zoomGlobal) {
+                setGlobeView()
+            }
+            if (!zoomGlobal && !isFlying) {
+                console.log('only when manual')
+               // const diameter = 220
+                const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
+                const diameter = minDimen * markerDiameterPerZoom[browseZoomLevel] 
+                changeMarkerSize(diameter)
+            }        
+        }
+    }, [zoomGlobal])
 
+
+
+    const changeMarkerSize = (diameter) => {
+        let i = 0;
+
+        while (markerState['Marker' + i]) {
+            const thisMarker = { ...markerState['Marker' + i] };
+            thisMarker.diameter = diameter;
+            thisMarker.dataURL = drawCanvasSizeReturnDataURL(diameter, thisMarker.title, '', [0.9, 0.45, 0.35], diameter / 5)
+
+            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+            i++
+        }
+
+    }
     const clearGoogleMap = () => {
         dispatch(deleteMarkerState({ markerName: 'ALL' }))
         dispatch(deletePolylineState({ polylineName: 'ALL' }))
@@ -79,88 +110,42 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
         }
 
         if (param === 'random') {
-            if (gameMode === 'globe') {
-                ///showRandomGlobalConcept()
 
-
-                
-
-                const markerName = 'Marker' + Math.floor(Math.random() * (globalData.branch.length));
-              //  googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation, { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: browseZoomLevel }, 1400, firstTwoThirdEasing, lastTwoThirdEasing)
-
-
-                googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation,
-                    { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: browseZoomLevel },
-                    1400, firstTwoThirdEasing, lastTwoThirdEasing)
-
-             
-                
-
+            if (gameMode !== 'globe') {
+                setGlobeView()
             }
-            else {
-             //   showGlobeView()
-
-                clearGoogleMap()
-                
-                setTimeout(() => {
-                      updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, 120)
-                 
-                }, 100)   
-                setTimeout(() => {
-                    
-                    showRandomGlobalConcept()
-                }, 200)    
-            }
-             
+                                  
+            const conceptNumber = Math.floor(Math.random() * (globalData.branch.length));            
+            const newConcept = true;           
+            processMarkerClick(globalData.branch[conceptNumber], conceptNumber, globalData.lat[conceptNumber], globalData.lng[conceptNumber], newConcept);
+            return
+                                 
         } 
         if (param === 'globe') {
-
-            if (gameMode === 'globe') {
-               // console.log(googleMapPresentLocation)
-                googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation, { lat: 0, lng: 0, zoom: 2 }, 1400, lastTwoThirdEasing, firstTwoThirdEasing)
-
-                return
+            if (gameMode !== 'globe') {
+                setGlobeView()
             }
 
-            
-            showGlobeView()
+            const googleMapPresentLocation = getCurrentLocation()       
+            googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation,
+                { lat: 0, lng: 0, zoom: 2 },
+                1400, lastTwoThirdEasing, firstTwoThirdEasing, false, setIsFlying)
+                     
         }
-
     }
- 
-     
-    const showGlobeView = () => {
-        //deleteHistory()
+    
+    const setGlobeView = () => {
         clearGoogleMap()
-
+        dispatch(newGameMode('globe'))
         const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
         const diameter = minDimen * markerDiameterPerZoom[globalConceptZoomLevel]
 
-
-        setTimeout(() => {
-            dispatch(newGameMode('globe'))
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: globalConceptZoomLevel } }));
+        setTimeout(() => {          
             updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, diameter)
-         }, 100);
+        }, 100);
+      
+       
     }
-
-    const showRandomGlobalConcept = () => {   
-        const markerName = 'Marker' + Math.floor(Math.random() * (globalData.branch.length + 0));
-       // dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: browseZoomLevel } }));
-        const distancePercent = 0.9;
-        const intermLat = (1 - distancePercent) * mapLocation.lat + distancePercent *markerState[markerName].lat
-        const intermLng = (1 - distancePercent) * mapLocation.lng + distancePercent * markerState[markerName].lng
-        console.log(intermLat, intermLng)
-        dispatch(newMapLocation({ dall: 'dall', value: { lat: intermLat, lng: intermLng, zoom: 4 } }));
-        setTimeout(() => {
-
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: markerState[markerName].lat, lng: markerState[markerName].lng, zoom: 7 } }));
-
-        }, 700) 
-
-
-    }
-
 
     const homeButtonImage = drawCanvasSizeReturnDataURL(80, '', 'HOME', [0.9, 0.7, 0.6], 80 / 6)
     const backButtonImage = drawCanvasSizeReturnDataURL(80, '', 'BACK', [0.9, 0.7, 0.6], 80 / 6)
@@ -168,14 +153,11 @@ const BottomButtons = ({ loaded, globalData, roundCounter, clickHistory, process
     const randomButtonImage = drawCanvasSizeReturnDataURL(80, '', 'RANDOM', [0.9, 0.7, 0.6], 80 / 6)
     const globeButtonImage = drawCanvasSizeReturnDataURL(80, '', 'GLOBE', [0.9, 0.7, 0.6], 80 / 6)
 
-
     const homeButtonEnabled = roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe';
     const backButtonEnabled = roundCounter > 0 && gameMode !== 'route' && gameMode !== 'details' && gameMode !== 'globe';
     const routeButtonEnabled = roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe';
-    const randomButtonEnabled = gameMode !== 'details';
-    const globeButtonEnabled = gameMode !== 'details';
-
-  
+    const randomButtonEnabled = gameMode !== 'details' && !isFlying;
+    const globeButtonEnabled = gameMode !== 'details' && !isFlying;
 
     return (
         <div className="BottomButtons">

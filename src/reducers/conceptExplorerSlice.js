@@ -5,8 +5,10 @@ const markerDiameterPerZoom = [0.1, 0.1, 0.11, 0.12, 0.13, 0.15, 0.17, 0.19, 0.2
 const initialState = [
     {
         gameMode: 'globe',
+        zoomGlobal: true,
         googleMapDimensions: { width: 756, height: 534 },
-        googleMapPresentLocation: { lat: 0, lng: 0, zoom: 2 },
+  //      googleMapPresentLocation: { lat: 0, lng: 0, zoom: 2 },
+  //      googleMapObject: null,
         browseZoomLevel: 7,
         globalConceptZoomLevel: 2,
         markerDiameterPerZoom: markerDiameterPerZoom,
@@ -40,26 +42,19 @@ const conceptExplorerReducer = createSlice({
                 ...state.slice(1) // Copy the rest of the state array
             ];
         },
-
-        readMapLocation: (state, action) => {
-            const { lat, lng, zoom } = action.payload;
+        newZoomGlobal: (state, action) => {
             return [
                 {
                     ...state[0],
-                    googleMapPresentLocation: {
-                        lat: lat !== undefined ? lat : state[0].googleMapPresentLocation.lat,
-                        lng: lng !== undefined ? lng : state[0].googleMapPresentLocation.lng,
-                        zoom: zoom !== undefined ? zoom : state[0].googleMapPresentLocation.zoom,
-
-                    }
+                    zoomGlobal: action.payload
                 },
-                ...state.slice(1) 
+                ...state.slice(1) // Copy the rest of the state array
             ];
-
         },
 
 
 
+  
         newMapLocation: (state, action) => {
             const { attribute, dall, value } = action.payload;
             const newState = [...state];
@@ -158,5 +153,5 @@ const conceptExplorerReducer = createSlice({
 
 });
 
-export const { newGameMode, newMapDimensions, newMapLocation, readMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
+export const { newGameMode, newMapDimensions, newMapLocation, newZoomGlobal,    newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
 export default conceptExplorerReducer.reducer;

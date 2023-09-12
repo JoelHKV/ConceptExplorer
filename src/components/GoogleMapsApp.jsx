@@ -4,18 +4,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 
 import { createMarker, createPolyline } from '../utilities/googleMapHelper';
-import { googleMapLoader } from '../utilities/googleMapLoader';
+//import { googleMapLoader } from '../utilities/googleMapLoader';
 import { measureGoogleMapDimensions } from '../hooks/measureGoogleMapDimensions';
 
 
-import { readMapLocation } from '../reducers/conceptExplorerSlice';
+import { newZoomGlobal } from '../reducers/conceptExplorerSlice';
 
 
 
 import './GoogleMapsApp.css';
 
  
-const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
+const GoogleMapsApp = ({ processMarkerClick, map }) => {
  
     const oldMarkerHandleArray = useRef({});
     const oldPolylineHandleArray = useRef({});
@@ -27,14 +27,12 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
+    const zoomGlobal = useSelector((state) => state.counter[0].zoomGlobal);
 
-    const googleMapPresentLocation = useSelector((state) => state.counter[0].googleMapPresentLocation);
-
-
-
-    const map = googleMapLoader(mapLocation);
-
+    
+     
     const { elementRef } = measureGoogleMapDimensions(); //measurements dispatched as a redux state
+   
 
     useEffect(() => {
         if (map) {          
@@ -91,7 +89,7 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
                     const newMarkerHandle = createMarker(map, markerData)
                     newMarkerHandle.addListener("click", () => {          
                         if (markerData.param === null) { return }
-                        processMarkerClick(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng);
+                        processMarkerClick(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng, false);
                     });
 
                     oldMarkerHandleArray[markerName] = {}
@@ -158,8 +156,12 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
 
         const zoomChangeListener = map?.addListener('zoom_changed', () => {
             const zoomLevel = map.getZoom()
-            dispatch(readMapLocation({ zoom: zoomLevel }))
-            resizeAllMarkers(zoomLevel);
+            const zoomChange = 4;
+
+            if ((zoomLevel < zoomChange && zoomGlobal) || (zoomLevel > zoomChange && !zoomGlobal)) {
+                return
+            }      
+          dispatch(newZoomGlobal(!zoomGlobal))
         });
         const zoomListenerRef = React.createRef();
         zoomListenerRef.current = zoomChangeListener;
@@ -170,15 +172,14 @@ const GoogleMapsApp = ({ processMarkerClick, resizeAllMarkers  }) => {
             }
         };
 
-    }, [map, gameMode]);
+    }, [map, gameMode, zoomGlobal]);
 
     useEffect(() => {
         const idleListener = map?.addListener("idle", () => {          
-            //handleIdleFunction()
+
         });
         const centerListener = map?.addListener('center_changed', () => {
-            const newCenter = map.getCenter();
-            dispatch(readMapLocation({ lat: newCenter.lat(), lng: newCenter.lng() }))   
+          
         });
 
 

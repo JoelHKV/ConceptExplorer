@@ -1,8 +1,8 @@
 
-export const googleMapFlight = (dispatch, newMapLocation, origin, destination, duration, latlngEasingFn, zoomEasingFn) => {
+export const googleMapFlight = (dispatch, newMapLocation, origin, destination, duration, latlngEasingFn, zoomEasingFn, hop, setIsFlying) => {
 
     //const dispatch = useDispatch();
-    const hop = true
+   // const hop = true
     const startTime = Date.now();
 
     const animatePanning = () => {
@@ -20,7 +20,8 @@ export const googleMapFlight = (dispatch, newMapLocation, origin, destination, d
             const zoom = Math.round(origin.zoom + zoomFraction * (destination.zoom - origin.zoom));
             let zoomWeight
             if (hop) {
-                zoomWeight = fraction < 0.5 ? 2 * (0.5 - fraction) : 2 * (fraction - 0.5);
+               // zoomWeight = Math.sqrt(fraction < 0.5 ? 2 * (0.5 - fraction) : 2 * (fraction - 0.5));
+                zoomWeight = Math.pow(fraction < 0.5 ? 2 * (0.5 - fraction) : 2 * (fraction - 0.5), 2);
             }
             else {
                 zoomWeight = 1; 
@@ -34,11 +35,16 @@ export const googleMapFlight = (dispatch, newMapLocation, origin, destination, d
             }, 50);
         } else {
             dispatch(newMapLocation({ dall: 'dall', value: { lat: destination.lat, lng: destination.lng, zoom: destination.zoom } }));
+            setIsFlying(false)
         }
     }
 
     animatePanning();
 
+}
+
+export const squareRootEasing = (fraction) => {
+    return Math.sqrt(fraction)
 }
 
 
@@ -53,9 +59,3 @@ export const linearEasing = (fraction) => {
     return fraction
 }
 
-export const hopInAirEasing = (fraction) => {
-    const midPointValue = 0.2;
-    const startW = fraction < 1 / 2 ? 2* fraction * (0.5 - fraction)  : 0 
-    console.log(startW)
-    return  fraction  
-}

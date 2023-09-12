@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
  
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from './reducers/conceptExplorerSlice';
@@ -16,14 +16,24 @@ import InstructionBlock from './components/InstructionBlock';
 
 import MyFavicon from './components/MyFavicon';
 
+
+import { googleMapLoader } from './utilities/googleMapLoader';
+
+
+
 import { conceptFlowerCoordinates } from './utilities/conceptFlowerCoordinates';
 import { saveHistory } from './utilities/saveHistory';
+import { googleMapFlight, linearEasing, firstTwoThirdEasing, lastTwoThirdEasing, squareRootEasing } from './utilities/googleMapFlight';
 
 
 import './App.css'; 
 
 
 const App = () => {
+
+
+    
+
 
     const faviconDataURL = drawCanvasSizeReturnDataURL(100, ' ', 'C', [0.9, 0.45, 0.35], 20)
 
@@ -32,16 +42,19 @@ const App = () => {
   
     const [clickHistory, setClickHistory] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
+
+    const [isFlying, setIsFlying] = useState(false)
   
+
     const dispatch = useDispatch();
 
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
+    const map = googleMapLoader(mapLocation);
 
 
     const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
-
  
     const browseZoomLevel = useSelector((state) => state.counter[0].browseZoomLevel);
   
@@ -49,40 +62,22 @@ const App = () => {
 
     const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
 
-  
- 
    
     const gameMode = useSelector((state) => state.counter[0].gameMode); //  
   
     const { concepts, globalData, loaded, error } = fetchAllConcepts('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore');
 
-    const resizeAllMarkers = (zoomLevel) => {
 
-        return
-         if (gameMode !== 'globe') { return }
-       
-         
+    const getCurrentLocation = () => {
+        const newCenter = map.getCenter();
+        const zoomLevel = map.getZoom()
+        return { lat: newCenter.lat(), lng: newCenter.lng(), zoom: zoomLevel }
 
-        const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
-        const diameter = minDimen * markerDiameterPerZoom[zoomLevel]
-
-        
-        let i = 0;
-
-        while (markerState['Marker' + i]) {
-            const thisMarker = { ...markerState['Marker' + i] };
-            thisMarker.diameter = diameter;
-            thisMarker.dataURL = drawCanvasSizeReturnDataURL(diameter, thisMarker.title, '', [0.9, 0.45, 0.35], diameter/5)
-
-            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-            i++
-        }
     }
-   
 
-    const processMarkerClick = (thisConcept, clickDirection, lat, lng) => {
-
-        if (gameMode === 'browse' && clickDirection === 0) { // we click the center marker while browsing
+    const processMarkerClick = (thisConcept, clickDirection, lat, lng, newConcept) => {
+        console.log(gameMode, newConcept )
+        if (gameMode === 'browse' && clickDirection === 0 && !newConcept) { // we click the center marker while browsing
             dispatch(newGameMode('details')) // open the popup for details
             return
         }
@@ -90,19 +85,64 @@ const App = () => {
 
         const prevRoundExists = gameMode === 'browse'
    
-        if (!prevRoundExists) { // we start browsing from a new concept
-            console.log('re browse')
+        if (!prevRoundExists ||  newConcept) { // we start browsing from a new concept
+            console.log('go to fly', gameMode, prevRoundExists)
             setRoundCounter(0);            
             dispatch(newGameMode('browse'))
-            clickDirection = 0; // click direction makes no difference for the first concept
-        }
+            const markerName = 'Marker' + clickDirection;
+            const googleMapPresentLocation = getCurrentLocation()      
+            const hopRoute = googleMapPresentLocation.zoom > 4;
 
-        processMarkers(thisConcept, clickDirection, lat, lng, prevRoundExists, prevRoundExists)
+            
+
+
+            let flyParams
+            let flytime
+            if (hopRoute) {
+                flyParams = [linearEasing, linearEasing];
+                flytime = 3400;
+            }
+            else {
+                flyParams = [firstTwoThirdEasing, lastTwoThirdEasing];
+                flytime = 1400;
+            }
+            setIsFlying(true)
+           
+
+          
+            const thisLat = globalData.lat[clickDirection];
+            const thisLng = globalData.lng[clickDirection];
+
+
+            googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation,
+                { lat: thisLat, lng: thisLng, zoom: browseZoomLevel },
+                flytime, flyParams[0], flyParams[1], hopRoute, setIsFlying)
+
+
+
+            clickDirection = 0; // click direction makes no difference for the first concept
+
+            setTimeout(() => {
+            //    processMarkers(thisConcept, clickDirection, markerState[markerName].lat, markerState[markerName].lng, prevRoundExists, prevRoundExists)
+                processMarkers(thisConcept, clickDirection, thisLat, thisLng, false, false)
+
+            }, flytime + 1000);
+
+            return
+        }
+        dispatch(newGameMode('browse'))
+        processMarkers(thisConcept, clickDirection, lat, lng, true, true)
 
     }
-  
+
+
+
+
     const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
-        
+
+
+
+
         if (markerState['Marker0'] && enablepolyline) {       
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + clickDirection].lat, markerState['Marker' + clickDirection].lng, 0)
         }
@@ -245,16 +285,23 @@ const App = () => {
                 <>
                     <GoogleMapsApp  
                         processMarkerClick={processMarkerClick}
-                        resizeAllMarkers={resizeAllMarkers}
+                        
+                        map={map}
+                
                     />
                     <BottomButtons
                         roundCounter={roundCounter}
                         setRoundCounter={setRoundCounter}
                         clickHistory={clickHistory}
                         loaded={loaded}
-                        globalData={globalData}   
+                        globalData={globalData}
                         processMarkers={processMarkers}
-                        updateMarkers={updateMarkers}                                                                                                                               
+                        processMarkerClick={processMarkerClick}
+                        updateMarkers={updateMarkers}
+                        map={map}
+                        isFlying={isFlying}
+                        setIsFlying={setIsFlying}
+                        getCurrentLocation={getCurrentLocation}
                     />
                 </>
             )} 

@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
-
+ 
+import { useDispatch  } from 'react-redux';
 export const googleMapLoader = (mapLocation) => {
-   
+
+
+    const dispatch = useDispatch();
+
     const [map, setMap] = useState(null);
 
     useEffect(() => {
@@ -15,6 +19,8 @@ export const googleMapLoader = (mapLocation) => {
     }, []);
 
     const initMap = () => {
+
+       // 
   
         const mapOptions = {  
             disableDefaultUI: true,
@@ -28,7 +34,8 @@ export const googleMapLoader = (mapLocation) => {
         const mapElement = document.getElementById('map');
         const newMap = new window.google.maps.Map(mapElement, mapOptions);
 
-        setMap(newMap); // Save the map instance in the state     
+        setMap(newMap); // Save the map instance in the state 
+      //  dispatch(newGoogleMapObject([newMap]))
     };
 
     return map
