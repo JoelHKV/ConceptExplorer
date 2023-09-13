@@ -89,7 +89,7 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
                     const newMarkerHandle = createMarker(map, markerData)
                     newMarkerHandle.addListener("click", () => {          
                         if (markerData.param === null) { return }
-                        processMarkerClick(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng, false);
+                        processMarkerClick(markerData.param ? markerData.param : markerData.title, index, markerData.lat, markerData.lng, true);
                     });
 
                     oldMarkerHandleArray[markerName] = {}

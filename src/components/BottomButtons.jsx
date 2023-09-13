@@ -9,12 +9,12 @@ import './BottomButtons.css';
 import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
 import { processRoute } from '../utilities/processRoute';
 
-import { googleMapFlight, linearEasing, firstTwoThirdEasing, lastTwoThirdEasing, squareRootEasing  } from '../utilities/googleMapFlight';
+import { thisFlight } from '../utilities/googleMapFlight';
 
  
 
 
-const BottomButtons = ({ map, isFlying, setIsFlying, getCurrentLocation, processMarkerClick, loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
+const BottomButtons = ({ map, isFlying, setIsFlying, processMarkerClick, loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
 
     const dispatch = useDispatch();
 
@@ -43,13 +43,11 @@ const BottomButtons = ({ map, isFlying, setIsFlying, getCurrentLocation, process
     }, [loaded])
 
     useEffect(() => {
-        if (loaded) {
+        if (loaded && !isFlying) {
             if (zoomGlobal) {
                 setGlobeView()
             }
-            if (!zoomGlobal && !isFlying) {
-                console.log('only when manual')
-               // const diameter = 220
+            else {
                 const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
                 const diameter = minDimen * markerDiameterPerZoom[browseZoomLevel] 
                 changeMarkerSize(diameter)
@@ -110,26 +108,30 @@ const BottomButtons = ({ map, isFlying, setIsFlying, getCurrentLocation, process
         }
 
         if (param === 'random') {
-
+            dispatch(newGameMode('globe'))
             if (gameMode !== 'globe') {
                 setGlobeView()
             }
                                   
-            const conceptNumber = Math.floor(Math.random() * (globalData.branch.length));            
-            const newConcept = true;           
-            processMarkerClick(globalData.branch[conceptNumber], conceptNumber, globalData.lat[conceptNumber], globalData.lng[conceptNumber], newConcept);
-            return
+            const conceptNumber = Math.floor(Math.random() * (globalData.branch.length));  
+            setTimeout(() => {  
+                processMarkerClick(globalData.branch[conceptNumber], conceptNumber, globalData.lat[conceptNumber], globalData.lng[conceptNumber], false);
+            }, 100);
+                return
                                  
         } 
         if (param === 'globe') {
             if (gameMode !== 'globe') {
                 setGlobeView()
             }
+            const destination = { lat: 0, lng: 0, zoom: 2 }
 
-            const googleMapPresentLocation = getCurrentLocation()       
-            googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation,
-                { lat: 0, lng: 0, zoom: 2 },
-                1400, lastTwoThirdEasing, firstTwoThirdEasing, false, setIsFlying)
+            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination)
+
+        //    const googleMapPresentLocation = getCurrentLocation()       
+         //   googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation,
+         //       { lat: 0, lng: 0, zoom: 2 },
+         //       1400, lastTwoThirdEasing, firstTwoThirdEasing, false, setIsFlying)
                      
         }
     }

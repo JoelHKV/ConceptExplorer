@@ -23,7 +23,7 @@ import { googleMapLoader } from './utilities/googleMapLoader';
 
 import { conceptFlowerCoordinates } from './utilities/conceptFlowerCoordinates';
 import { saveHistory } from './utilities/saveHistory';
-import { googleMapFlight, linearEasing, firstTwoThirdEasing, lastTwoThirdEasing, squareRootEasing } from './utilities/googleMapFlight';
+import { thisFlight } from './utilities/googleMapFlight';
 
 
 import './App.css'; 
@@ -68,80 +68,36 @@ const App = () => {
     const { concepts, globalData, loaded, error } = fetchAllConcepts('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore');
 
 
-    const getCurrentLocation = () => {
-        const newCenter = map.getCenter();
-        const zoomLevel = map.getZoom()
-        return { lat: newCenter.lat(), lng: newCenter.lng(), zoom: zoomLevel }
 
-    }
-
-    const processMarkerClick = (thisConcept, clickDirection, lat, lng, newConcept) => {
-        console.log(gameMode, newConcept )
-        if (gameMode === 'browse' && clickDirection === 0 && !newConcept) { // we click the center marker while browsing
+    const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
+        console.log(gameMode)
+        if (gameMode === 'browse' && clickDirection === 0 && realMarkerClick) { // we click the center marker while browsing
             dispatch(newGameMode('details')) // open the popup for details
             return
         }
         setLastConcept(thisConcept)
 
-        const prevRoundExists = gameMode === 'browse'
-   
-        if (!prevRoundExists ||  newConcept) { // we start browsing from a new concept
-            console.log('go to fly', gameMode, prevRoundExists)
-            setRoundCounter(0);            
+ 
+        if (gameMode === 'globe' || !realMarkerClick) { // we start browsing from a new concept
             dispatch(newGameMode('browse'))
-            const markerName = 'Marker' + clickDirection;
-            const googleMapPresentLocation = getCurrentLocation()      
-            const hopRoute = googleMapPresentLocation.zoom > 4;
-
-            
-
-
-            let flyParams
-            let flytime
-            if (hopRoute) {
-                flyParams = [linearEasing, linearEasing];
-                flytime = 3400;
-            }
-            else {
-                flyParams = [firstTwoThirdEasing, lastTwoThirdEasing];
-                flytime = 1400;
-            }
-            setIsFlying(true)
-           
-
-          
+            setRoundCounter(0);                       
             const thisLat = globalData.lat[clickDirection];
             const thisLng = globalData.lng[clickDirection];
-
-
-            googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation,
-                { lat: thisLat, lng: thisLng, zoom: browseZoomLevel },
-                flytime, flyParams[0], flyParams[1], hopRoute, setIsFlying)
-
-
-
-            clickDirection = 0; // click direction makes no difference for the first concept
-
+            const destination = { lat: thisLat, lng: thisLng, zoom: browseZoomLevel }
+            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination)
             setTimeout(() => {
-            //    processMarkers(thisConcept, clickDirection, markerState[markerName].lat, markerState[markerName].lng, prevRoundExists, prevRoundExists)
-                processMarkers(thisConcept, clickDirection, thisLat, thisLng, false, false)
+                processMarkers(thisConcept, 0, thisLat, thisLng, false, false)
 
-            }, flytime + 1000);
+            }, flightTime + 200);
 
             return
         }
-        dispatch(newGameMode('browse'))
         processMarkers(thisConcept, clickDirection, lat, lng, true, true)
 
     }
 
 
-
-
     const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
-
-
-
 
         if (markerState['Marker0'] && enablepolyline) {       
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + clickDirection].lat, markerState['Marker' + clickDirection].lng, 0)
@@ -281,6 +237,7 @@ const App = () => {
     return (               
         <Box className="appContainer"> 
             <MyFavicon dataURL={faviconDataURL} />
+            
             {loaded &&   (
                 <>
                     <GoogleMapsApp  
@@ -301,7 +258,7 @@ const App = () => {
                         map={map}
                         isFlying={isFlying}
                         setIsFlying={setIsFlying}
-                        getCurrentLocation={getCurrentLocation}
+                       
                     />
                 </>
             )} 
