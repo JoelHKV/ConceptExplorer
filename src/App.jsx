@@ -156,6 +156,10 @@ const App = () => {
 
         }, 400)
 
+        const destination = { lat: lat, lng: lng, zoom: browseView.zoom }
+        const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
+
+        return
         if (prevRoundExists) {
             dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng } }));
             
@@ -194,9 +198,9 @@ const App = () => {
 
 
             }
-            if (i < 3) {
-                dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-            }
+             
+            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+             
         })
     }
 
