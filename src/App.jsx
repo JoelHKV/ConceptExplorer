@@ -190,12 +190,13 @@ const App = () => {
                 param: fireMarker,
                 opacity: thisOpacity,
                 diameter: diameter,
-                dataURL: koira, // drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
+                dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
 
 
             }
-            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-
+            if (i < 3) {
+                dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+            }
         })
     }
 
