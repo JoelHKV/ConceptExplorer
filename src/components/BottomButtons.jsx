@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from '../reducers/conceptExplorerSlice';
+import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, deletePolylineState } from '../reducers/conceptExplorerSlice';
 
-import { Button } from '@mui/material';
 import './BottomButtons.css';
 
 import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
@@ -11,27 +10,19 @@ import { processRoute } from '../utilities/processRoute';
 
 import { thisFlight, getCurrentLocation } from '../utilities/googleMapFlight';
 
- 
-
 
 const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processMarkerClick, loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
 
     const dispatch = useDispatch();
-
-   
+ 
     const markerState = useSelector((state) => state.counter[0].markerState);
-    const gameMode = useSelector((state) => state.counter[0].gameMode); 
-   
-    const browseView = useSelector((state) => state.counter[0].browseView);
+    const gameMode = useSelector((state) => state.counter[0].gameMode);  
     const globalView = useSelector((state) => state.counter[0].globalView);
-    const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
-
-    
-     
-    const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
-    const mapLocation = useSelector((state) => state.counter[0].mapLocation);
-
+    const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);   
     const zoomTracker = useSelector((state) => state.counter[0].zoomTracker);
+
+    const buttonGeom = [0.9, 0.7, 0.6];
+    const buttonTextSize = 0.16;
 
 
     useEffect(() => {
@@ -58,8 +49,73 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
     }, [zoomTracker])
 
 
+    const bottomButtonAction = (pressedButton) => {
+ 
+        if (pressedButton === 'home') {
+            setRoundCounter(0)
+            clearGoogleMap()
+            const goToChoice = clickHistory[0];
+            processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, false, false)
+        }
+
+        if (pressedButton === 'back') {
+            const goToChoice = clickHistory[roundCounter - 1];
+            const clickDirection = goToChoice.clickDirection
+            const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
+             
+            processMarkers(goToChoice.conceptName, oppositeClickDirection, goToChoice.centerLat, goToChoice.centerLng, true, true)
+        }
+
+        if (pressedButton === 'route') {
+
+            dispatch(newGameMode('route'))
+            clearGoogleMap()
+            const { thisMapLocation, thisRoute } = processRoute(clickHistory);
+             
+            dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
+            
+            setTimeout(() => {
+                const diameter = getMarkerDiameter('medium')
+                updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, diameter)
+            }, 100);
 
 
+        }
+
+        if (pressedButton === 'random') {
+            dispatch(newGameMode('globe'))
+            if (gameMode !== 'globe') {
+                setGlobeView()
+            }
+                                                
+            setTimeout(() => { 
+                const conceptNumber = Math.floor(Math.random() * (globalData.branch.length));
+                processMarkerClick(globalData.branch[conceptNumber], conceptNumber, globalData.lat[conceptNumber], globalData.lng[conceptNumber], false);
+            }, 100);
+
+                                 
+        } 
+        if (pressedButton === 'globe') {
+            if (gameMode !== 'globe' || getCurrentLocation(map).zoom >= viewThreshold) {
+                setGlobeView()
+            }
+    
+            const destination = globalView;
+            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
+                   
+        }
+    }
+    
+    const setGlobeView = () => {
+        clearGoogleMap()
+        dispatch(newGameMode('globe'))
+        
+        setTimeout(() => {   
+            const diameter = getMarkerDiameter('small')
+            updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, diameter)
+        }, 30);
+            
+    }
 
     const changeMarkerSize = (diameter) => {
         let i = 0;
@@ -78,81 +134,6 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
         dispatch(deleteMarkerState({ markerName: 'ALL' }))
         dispatch(deletePolylineState({ polylineName: 'ALL' }))
     }
-
-
-    const controlButtons = (param) => {
- 
-        if (param === 'home') {
-            setRoundCounter(0)
-            clearGoogleMap()
-            const goToChoice = clickHistory[0];
-            processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, false, false)
-        }
-
-        if (param === 'back') {
-            const goToChoice = clickHistory[roundCounter - 1];
-            const clickDirection = goToChoice.clickDirection
-            const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
-             
-            processMarkers(goToChoice.conceptName, oppositeClickDirection, goToChoice.centerLat, goToChoice.centerLng, true, true)
-        }
-
-        if (param === 'route') {
-
-            dispatch(newGameMode('route'))
-            clearGoogleMap()
-            const { thisMapLocation, thisRoute } = processRoute(clickHistory);
-             
-            dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
-            
-            setTimeout(() => {
-                const diameter = getMarkerDiameter('medium')
-                updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, diameter)
-            }, 100);
-
-
-        }
-
-        if (param === 'random') {
-            dispatch(newGameMode('globe'))
-            if (gameMode !== 'globe') {
-                setGlobeView()
-            }
-                                                
-            setTimeout(() => { 
-                const conceptNumber = Math.floor(Math.random() * (globalData.branch.length));
-                processMarkerClick(globalData.branch[conceptNumber], conceptNumber, globalData.lat[conceptNumber], globalData.lng[conceptNumber], false);
-            }, 100);
-
-                                 
-        } 
-        if (param === 'globe') {
-            if (gameMode !== 'globe' || getCurrentLocation(map).zoom >= viewThreshold) {
-                setGlobeView()
-            }
-
-           
-            const destination = globalView;
-            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
-                   
-        }
-    }
-    
-    const setGlobeView = () => {
-        clearGoogleMap()
-        dispatch(newGameMode('globe'))
-        
-
-        setTimeout(() => {   
-            const diameter = getMarkerDiameter('small')
-            updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, diameter)
-        }, 30);
-      
-       
-    }
-
-    const buttonGeom = [0.9, 0.7, 0.6];
-    const buttonTextSize = 0.16;
 
     const buttonData = [
         { name: 'home', label: 'HOME', enabled: roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe' },
@@ -175,7 +156,7 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
                     key={button.name}
                     className={`${button.name}-button ${button.enabled ? '' : 'mode-button-disabled'}`}
                     src={buttonImages[button.name]}
-                    onClick={() => button.enabled ? controlButtons(button.name) : ''}
+                    onClick={() => button.enabled ? bottomButtonAction(button.name) : ''}
                     alt={button.label}
                 />
             ))}

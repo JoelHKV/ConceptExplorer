@@ -11,8 +11,6 @@
     align-items: center;
 }
 
-
-
 .home-button, .back-button, .route-button, .random-button, .globe-button {
     position: absolute;
     transform: translateX(-50%);
@@ -21,7 +19,6 @@
 }
 .home-button {
     left: 10%;
-    border: 1px solid red;
 }
 .back-button {
     left: 30%;

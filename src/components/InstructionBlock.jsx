@@ -25,7 +25,6 @@ const InstructionBlock = ( ) => {
 
 
     const clickInfo = (event) => { // show introscreen
-        console.log('dada')
         if (event.target.closest('.prevbutton') || event.target.closest('.nextbutton') || event.target.closest('.xbutton')) {
             // Prevent the event from propagating further
             return;
