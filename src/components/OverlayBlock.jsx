@@ -10,19 +10,18 @@ import { getConceptDetails } from '../hooks/getConceptDetails';
 
 import { newGameMode } from '../reducers/conceptExplorerSlice';
 
-const OverlayBlock = ( ) => {
+const OverlayBlock = ({ cloudFunctionURL } ) => {
     const [expanded, setExpanded] = useState(false);
     const [showText, setShowText] = useState(false);
     const dispatch = useDispatch();
-
-
+ 
     const markerState = useSelector((state) => state.counter[0].markerState);
 
     const title = markerState['Marker0'].param
     const lat = markerState['Marker0'].lat
     const lng = markerState['Marker0'].lng
 
-    const { conceptDetails, loaded, error } = getConceptDetails(title);
+    const { conceptDetails, loaded, error } = getConceptDetails(cloudFunctionURL, title);
 
     const latitudeText = lat >= 0 ? 'N' : 'S';
     const longitudeText = lng >= 0 ? 'E' : 'W';

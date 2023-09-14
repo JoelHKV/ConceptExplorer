@@ -27,13 +27,11 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
     const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
 
     
-
-
-    const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
+     
     const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
 
-    const zoomGlobal = useSelector((state) => state.counter[0].zoomGlobal);
+    const zoomTracker = useSelector((state) => state.counter[0].zoomTracker);
 
 
     useEffect(() => {
@@ -44,16 +42,20 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
     }, [loaded])
 
     useEffect(() => {
-        if (loaded && !isFlying) {
-            if (zoomGlobal) {
-                setGlobeView()
-            }
-            else {
-                const diameter = getMarkerDiameter('big')
-                changeMarkerSize(diameter)
-            }        
+
+        if (!loaded || isFlying || gameMode==='route') { return }
+ 
+        if (zoomTracker[1] === viewThreshold && zoomTracker[0] === viewThreshold + 1) { // zooming out past threshold
+            setGlobeView()
+       
         }
-    }, [zoomGlobal])
+        if (zoomTracker[1] === viewThreshold + 1 && zoomTracker[0] == viewThreshold) { // zooming in past threshold
+            console.log('bigmarker')
+            const diameter = getMarkerDiameter('big')
+            changeMarkerSize(diameter)
+        }        
+         
+    }, [zoomTracker])
 
 
 
@@ -104,7 +106,7 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
             dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
             
             setTimeout(() => {
-                const diameter = getMarkerDiameter('big')
+                const diameter = getMarkerDiameter('medium')
                 updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, diameter)
             }, 100);
 
@@ -149,32 +151,34 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
        
     }
 
-    const homeButtonImage = drawCanvasSizeReturnDataURL(80, '', 'HOME', [0.9, 0.7, 0.6], 80 / 6)
-    const backButtonImage = drawCanvasSizeReturnDataURL(80, '', 'BACK', [0.9, 0.7, 0.6], 80 / 6)
-    const routeButtonImage = drawCanvasSizeReturnDataURL(80, '', 'ROUTE', [0.9, 0.7, 0.6], 80 / 6)
-    const randomButtonImage = drawCanvasSizeReturnDataURL(80, '', 'RANDOM', [0.9, 0.7, 0.6], 80 / 6)
-    const globeButtonImage = drawCanvasSizeReturnDataURL(80, '', 'GLOBE', [0.9, 0.7, 0.6], 80 / 6)
+    const buttonGeom = [0.9, 0.7, 0.6];
+    const buttonTextSize = 0.16;
 
-    const homeButtonEnabled = roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe';
-    const backButtonEnabled = roundCounter > 0 && gameMode !== 'route' && gameMode !== 'details' && gameMode !== 'globe';
-    const routeButtonEnabled = roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe';
-    const randomButtonEnabled = gameMode !== 'details' && !isFlying;
-    const globeButtonEnabled = gameMode !== 'details' && !isFlying;
+    const buttonData = [
+        { name: 'home', label: 'HOME', enabled: roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe' },
+        { name: 'back', label: 'BACK', enabled: roundCounter > 0 && gameMode !== 'route' && gameMode !== 'details' && gameMode !== 'globe' },
+        { name: 'route', label: 'ROUTE', enabled: roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe' },
+        { name: 'random', label: 'RAND', enabled: gameMode !== 'details' && !isFlying },
+        { name: 'globe', label: 'GLOBE', enabled: gameMode !== 'details' && !isFlying },
+    ];
+
+    const buttonImages = {};
+
+    for (const button of buttonData) {
+        buttonImages[button.name] = drawCanvasSizeReturnDataURL(80, '', button.label, buttonGeom, 80 * buttonTextSize);
+    }
 
     return (
         <div className="BottomButtons">
-            {gameMode !== 'glodbe' && (
-                <> 
-                    <img className={`home-button ${homeButtonEnabled ? '' : 'mode-button-disabled'}`} src={homeButtonImage} onClick={() => homeButtonEnabled ? controlButtons('home') : ''} alt="HOME" />
-                    <img className={`back-button ${backButtonEnabled ? '' : 'mode-button-disabled'}`} src={backButtonImage} onClick={() => backButtonEnabled ? controlButtons('back') : ''} alt="BACK" />
-                    <img className={`route-button ${routeButtonEnabled ? '' : 'mode-button-disabled'}`} src={routeButtonImage} onClick={() => routeButtonEnabled ? controlButtons('route') : ''} alt="ROUTE" />
-                </>
-            )}
-            {gameMode !== 'glsdsobe' && (
-                <img className={`random-button ${randomButtonEnabled ? '' : 'mode-button-disabled'}`} src={randomButtonImage} onClick={() => controlButtons('random')} alt="RANDOM" />
-             )}
-            <img className={`globe-button ${globeButtonEnabled ? '' : 'mode-button-disabled'}`} src={globeButtonImage} onClick={() => controlButtons('globe')} alt="GLOBE" />
-
+            {buttonData.map((button) => (
+                <img
+                    key={button.name}
+                    className={`${button.name}-button ${button.enabled ? '' : 'mode-button-disabled'}`}
+                    src={buttonImages[button.name]}
+                    onClick={() => button.enabled ? controlButtons(button.name) : ''}
+                    alt={button.label}
+                />
+            ))}
         </div>
     );
 };

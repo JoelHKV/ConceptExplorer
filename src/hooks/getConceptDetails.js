@@ -3,18 +3,16 @@ import { useState, useEffect} from 'react';
 
 
 
-export const getConceptDetails = (queryParam) => {
+export const getConceptDetails = (cloudFunctionURL, queryParam) => {
     const [conceptDetails, setConceptDetails] = useState([]);
  
     const [loaded, setLoaded] = useState(false);  
     const [error, setError] = useState(null);
 
-    const url = 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?concept_name=';
-  
     const fetchData = () => { 
         
         axios
-            .get(url + queryParam)
+            .get(cloudFunctionURL + '?concept_name=' + queryParam)
             .then(response => {
                 setConceptDetails(response.data)
                 setLoaded(true)

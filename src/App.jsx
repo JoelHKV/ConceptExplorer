@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
  
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, newMapLocation, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } from './reducers/conceptExplorerSlice';
+import { newGameMode, newMapLocation, newMarkerState, newPolylineState } from './reducers/conceptExplorerSlice';
  
 import { Box } from '@mui/material'; // use MUI component library
 
-import { drawCanvasSizeReturnDataURL } from './utilities/drawCanvasSizeReturnDataURL';
 
 import { fetchAllConcepts } from './hooks/fetchAllConcepts';
 
@@ -13,14 +12,10 @@ import GoogleMapsApp from './components/GoogleMapsApp';
 import BottomButtons from './components/BottomButtons';
 import OverlayBlock from './components/OverlayBlock';
 import InstructionBlock from './components/InstructionBlock';
-
 import MyFavicon from './components/MyFavicon';
 
-
+import { drawCanvasSizeReturnDataURL } from './utilities/drawCanvasSizeReturnDataURL';
 import { googleMapLoader } from './utilities/googleMapLoader';
-
-
-
 import { conceptFlowerCoordinates } from './utilities/conceptFlowerCoordinates';
 import { saveHistory } from './utilities/saveHistory';
 import { thisFlight } from './utilities/googleMapFlight';
@@ -32,14 +27,14 @@ import './App.css';
 const App = () => {
 
 
-    
+    const cloudFunctionURL = 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore'
+    const { concepts, globalData, loaded, error } = fetchAllConcepts(cloudFunctionURL);
 
 
-    const faviconDataURL = drawCanvasSizeReturnDataURL(100, ' ', 'C', [0.9, 0.45, 0.35], 20)
+    const map = googleMapLoader();
 
-
+    const faviconDataURL = drawCanvasSizeReturnDataURL(100, ' ', 'C', [0.85, 0.45, 0.35], 20)
     const [lastConcept, setLastConcept] = useState([])
-  
     const [clickHistory, setClickHistory] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
 
@@ -50,58 +45,44 @@ const App = () => {
 
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
-    const mapLocation = useSelector((state) => state.counter[0].mapLocation);
-    const map = googleMapLoader(mapLocation);
-
-
     const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
- 
+    const googlemapMarkerSizes = useSelector((state) => state.counter[0].googlemapMarkerSizes);
     const browseView = useSelector((state) => state.counter[0].browseView);
     const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
-
-   
     const gameMode = useSelector((state) => state.counter[0].gameMode); //  
-  
-    const { concepts, globalData, loaded, error } = fetchAllConcepts('https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore');
-
 
 
     const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
-        console.log(gameMode)
-        if (gameMode === 'browse' && clickDirection === 0 && realMarkerClick) { // we click the center marker while browsing
+        if (gameMode === 'browse' && clickDirection === 0 && realMarkerClick) { // center marker clicked while browsing
             dispatch(newGameMode('details')) // open the popup for details
             return
         }
         setLastConcept(thisConcept)
-        if (gameMode === 'route') {
-            processMarkers(thisConcept, 0, lat, lng, false, false)
-            dispatch(newGameMode('browse'))
+        if (gameMode === 'browse' && clickDirection > 0) { // periferial marker clicked while browsing
+            processMarkers(thisConcept, clickDirection, lat, lng, true, true) // make it the new center concept
             return
-        } 
-
-        
-        if (gameMode === 'globe' || !realMarkerClick) { // we start browsing from a new concept
-            dispatch(newGameMode('browse'))
+        }
+            
+        if (gameMode === 'globe' || !realMarkerClick) { // marker clicked in the globe view or emulated from a button
+            dispatch(newGameMode('browse')) // browsing starts
             setRoundCounter(0);                       
-            const thisLat = globalData.lat[clickDirection];
+            const thisLat = globalData.lat[clickDirection]; // we make the clicked global concept the new center concept
             const thisLng = globalData.lng[clickDirection];
             const destination = { lat: thisLat, lng: thisLng, zoom: browseView.zoom }
+            // fly to the destination
             const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
-            setTimeout(() => {
+            setTimeout(() => { // set browsing markers
                 processMarkers(thisConcept, 0, thisLat, thisLng, false, false)
-
             }, flightTime + 200);
 
             return
         }
 
-
-
-        
-
-        
-            processMarkers(thisConcept, clickDirection, lat, lng, true, true)
-         
+        if (gameMode === 'route') { // concept clicked while checking the route history, make it the new center concept
+            processMarkers(thisConcept, 0, lat, lng, false, false)
+            dispatch(newGameMode('browse'))
+            return
+        }                                
     }
 
 
@@ -146,7 +127,7 @@ const App = () => {
     }
 
     const makeNewOptions = (thisConcept, lastConcept, clickDirection) => {
-        //  setLastConcept(thisConcept)
+  
         const originalOrderedConcepts = concepts[thisConcept]['ordered_concepts'];
         const clickingOrderedConcepts = originalOrderedConcepts.filter(concept => concept !== thisConcept && concept !== lastConcept);
 
@@ -158,11 +139,10 @@ const App = () => {
         return clickingOrderedConcepts.slice(0, 9)
     }
 
-
     const handleMapVisuals = (newOptions, PivotItems, lat, lng, prevRoundExists) => {
 
         const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
-        const diameter = getMarkerDiameter('big')
+        const diameter = getMarkerDiameter('large')
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng, minDimen/250)
         const opacity = 0.1
         updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
@@ -181,8 +161,6 @@ const App = () => {
         }
 
     }
-
-
 
     const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
 
@@ -215,11 +193,7 @@ const App = () => {
         })
     }
 
-
-
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
-
-       // console.log('poly', fromlat, fromlng, tolat, tolng, index)
 
         const thisPolyline = {
             lat: [fromlat * 0.7 + tolat * 0.3, fromlat * 0.3 + tolat * 0.7],
@@ -243,17 +217,9 @@ const App = () => {
     }
 
    
-    const getMarkerDiameter = (markerSize) => {
-        let markerPercentPerScreen
-        if (markerSize === 'big') {
-            markerPercentPerScreen = 0.2;
-        }
-        if (markerSize === 'small') {
-            markerPercentPerScreen = 0.11;
-        }
-
+    const getMarkerDiameter = (thisSize) => {
         const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height);
-        const diameter = minDimen * markerPercentPerScreen;
+        const diameter = minDimen * googlemapMarkerSizes[thisSize];
         return diameter
 
     }
@@ -288,7 +254,11 @@ const App = () => {
                 </>
             )} 
             <InstructionBlock />
-            {gameMode === 'details' && (<OverlayBlock />)}                   
+            {gameMode === 'details' && (
+                <OverlayBlock
+                    cloudFunctionURL={cloudFunctionURL}
+                />
+            )}                   
         </Box >            
     );
 };

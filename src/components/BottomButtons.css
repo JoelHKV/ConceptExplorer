@@ -21,6 +21,7 @@
 }
 .home-button {
     left: 10%;
+    border: 1px solid red;
 }
 .back-button {
     left: 30%;
@@ -28,7 +29,7 @@
 .route-button {
     left: 50%;
 }
- .random-button {
+.random-button {
     left: 70%;
 }
 .globe-button {

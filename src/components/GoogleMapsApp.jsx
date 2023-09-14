@@ -2,14 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
-
 import { createMarker, createPolyline } from '../utilities/googleMapHelper';
-//import { googleMapLoader } from '../utilities/googleMapLoader';
 import { measureGoogleMapDimensions } from '../hooks/measureGoogleMapDimensions';
-
-
-import { newZoomGlobal } from '../reducers/conceptExplorerSlice';
-
+import { newZoomTracker } from '../reducers/conceptExplorerSlice';
 
 
 import './GoogleMapsApp.css';
@@ -27,16 +22,15 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
-    const zoomGlobal = useSelector((state) => state.counter[0].zoomGlobal);
-    const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
-    
+    const zoomTracker = useSelector((state) => state.counter[0].zoomTracker);
+   
      
     const { elementRef } = measureGoogleMapDimensions(); //measurements dispatched as a redux state
    
 
     useEffect(() => {
         if (map) {          
-           //  map.setCenter({ lat: mapLocation.lat, lng: mapLocation.lng});
+            // map.setCenter({ lat: mapLocation.lat, lng: mapLocation.lng});
              map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng });
            
             if (mapLocation.zoom) { // use zoom if zoom data is given
@@ -155,13 +149,8 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
     useEffect(() => {
 
         const zoomChangeListener = map?.addListener('zoom_changed', () => {
-            const zoomLevel = map.getZoom()
-           // const zoomChange = 4;
-
-            if ((zoomLevel < viewThreshold && zoomGlobal) || (zoomLevel > viewThreshold && !zoomGlobal)) {
-                return
-            }      
-          dispatch(newZoomGlobal(!zoomGlobal))
+            const zoomLevel = map.getZoom()     
+            dispatch(newZoomTracker([zoomTracker[1] ,zoomLevel]))
         });
         const zoomListenerRef = React.createRef();
         zoomListenerRef.current = zoomChangeListener;
@@ -172,7 +161,7 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
             }
         };
 
-    }, [map, gameMode, zoomGlobal]);
+    }, [map, gameMode, zoomTracker]);
 
     useEffect(() => {
         const idleListener = map?.addListener("idle", () => {          

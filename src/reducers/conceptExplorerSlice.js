@@ -1,16 +1,22 @@
 import { createSlice } from '@reduxjs/toolkit';
 
- 
-//const markerDiameterPerZoom = [0.1, 0.1, 0.11, 0.12, 0.13, 0.15, 0.17, 0.19, 0.22, 0.26, 0.31, 0.37, 0.45, 0.45, 0.45, 0.45, 0.45];
+
+const googlemapMarkerSizes = {
+    small: 0.11,
+    medium: 0.15,
+    large: 0.2,
+}
+
+
 const initialState = [
     {
         gameMode: 'globe',
-        zoomGlobal: true,
+        zoomTracker: [2, 2], // keeps track of last two zoom levels for various purposes
         googleMapDimensions: { width: 756, height: 534 },
+        googlemapMarkerSizes: googlemapMarkerSizes,
         browseView: { zoom: 7 },
         globalView: { lat: 0, lng: 0, zoom: 2 },
-        viewThreshold: 6,
-    //    markerDiameterPerZoom: markerDiameterPerZoom,
+        viewThreshold: 4,
         markerState: {},
         polylineState: {},
         mapLocation: {},
@@ -41,11 +47,11 @@ const conceptExplorerReducer = createSlice({
                 ...state.slice(1) // Copy the rest of the state array
             ];
         },
-        newZoomGlobal: (state, action) => {
+        newZoomTracker: (state, action) => {
             return [
                 {
                     ...state[0],
-                    zoomGlobal: action.payload
+                    zoomTracker: action.payload
                 },
                 ...state.slice(1) // Copy the rest of the state array
             ];
@@ -152,5 +158,5 @@ const conceptExplorerReducer = createSlice({
 
 });
 
-export const { newGameMode, newMapDimensions, newMapLocation, newZoomGlobal,    newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
+export const { newGameMode, newMapDimensions, newMapLocation, newZoomTracker,    newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
 export default conceptExplorerReducer.reducer;
