@@ -49,7 +49,11 @@ const App = () => {
     const googlemapMarkerSizes = useSelector((state) => state.counter[0].googlemapMarkerSizes);
     const browseView = useSelector((state) => state.counter[0].browseView);
     const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
-    const gameMode = useSelector((state) => state.counter[0].gameMode); //  
+    const gameMode = useSelector((state) => state.counter[0].gameMode); //
+
+
+    const koira = drawCanvasSizeReturnDataURL(100, 'KOIRA', '0.8', [0.9, 0.45, 0.35], 20)
+
 
 
     const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
@@ -162,6 +166,8 @@ const App = () => {
 
     }
 
+
+
     const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
 
         const updatedMarkers = newOptions.map((markerTitle, i) => {
@@ -184,7 +190,7 @@ const App = () => {
                 param: fireMarker,
                 opacity: thisOpacity,
                 diameter: diameter,
-                dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
+                dataURL: koira, // drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
 
 
             }

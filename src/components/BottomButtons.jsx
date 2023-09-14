@@ -40,9 +40,8 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
             setGlobeView()
        
         }
-        if (zoomTracker[1] === viewThreshold + 1 && zoomTracker[0] == viewThreshold) { // zooming in past threshold
-            console.log('bigmarker')
-            const diameter = getMarkerDiameter('big')
+        if (zoomTracker[1] === viewThreshold + 1 && zoomTracker[0] == viewThreshold) { // zooming in past threshold          
+            const diameter = getMarkerDiameter('large')
             changeMarkerSize(diameter)
         }        
          
