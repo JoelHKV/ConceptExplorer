@@ -9,12 +9,12 @@ import './BottomButtons.css';
 import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
 import { processRoute } from '../utilities/processRoute';
 
-import { thisFlight } from '../utilities/googleMapFlight';
+import { thisFlight, getCurrentLocation } from '../utilities/googleMapFlight';
 
  
 
 
-const BottomButtons = ({ map, isFlying, setIsFlying, processMarkerClick, loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
+const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processMarkerClick, loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
 
     const dispatch = useDispatch();
 
@@ -22,8 +22,13 @@ const BottomButtons = ({ map, isFlying, setIsFlying, processMarkerClick, loaded,
     const markerState = useSelector((state) => state.counter[0].markerState);
     const gameMode = useSelector((state) => state.counter[0].gameMode); 
    
-    const browseZoomLevel = useSelector((state) => state.counter[0].browseZoomLevel);
-    const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
+    const browseView = useSelector((state) => state.counter[0].browseView);
+    const globalView = useSelector((state) => state.counter[0].globalView);
+    const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
+
+    
+
+
     const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
     const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
     const mapLocation = useSelector((state) => state.counter[0].mapLocation);
@@ -31,13 +36,9 @@ const BottomButtons = ({ map, isFlying, setIsFlying, processMarkerClick, loaded,
     const zoomGlobal = useSelector((state) => state.counter[0].zoomGlobal);
 
 
-  
-
-
-
     useEffect(() => {
         if (loaded) {
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: 0, lng: 0, zoom: globalConceptZoomLevel } }));
+            dispatch(newMapLocation({ dall: 'dall', value: globalView }));
             setGlobeView()
         }
     }, [loaded])
@@ -48,12 +49,13 @@ const BottomButtons = ({ map, isFlying, setIsFlying, processMarkerClick, loaded,
                 setGlobeView()
             }
             else {
-                const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
-                const diameter = minDimen * markerDiameterPerZoom[browseZoomLevel] 
+                const diameter = getMarkerDiameter('big')
                 changeMarkerSize(diameter)
             }        
         }
     }, [zoomGlobal])
+
+
 
 
 
@@ -89,6 +91,7 @@ const BottomButtons = ({ map, isFlying, setIsFlying, processMarkerClick, loaded,
             const goToChoice = clickHistory[roundCounter - 1];
             const clickDirection = goToChoice.clickDirection
             const oppositeClickDirection = clickDirection !== 0 ? ((clickDirection + 4) > 8 ? (clickDirection + 4 - 8) : (clickDirection + 4)) : 0;
+             
             processMarkers(goToChoice.conceptName, oppositeClickDirection, goToChoice.centerLat, goToChoice.centerLng, true, true)
         }
 
@@ -97,11 +100,12 @@ const BottomButtons = ({ map, isFlying, setIsFlying, processMarkerClick, loaded,
             dispatch(newGameMode('route'))
             clearGoogleMap()
             const { thisMapLocation, thisRoute } = processRoute(clickHistory);
-            const zoomLevel = 4
+             
             dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
-
+            
             setTimeout(() => {
-                updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, markerDiameterPerZoom[zoomLevel])
+                const diameter = getMarkerDiameter('big')
+                updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, diameter)
             }, 100);
 
 
@@ -112,39 +116,35 @@ const BottomButtons = ({ map, isFlying, setIsFlying, processMarkerClick, loaded,
             if (gameMode !== 'globe') {
                 setGlobeView()
             }
-                                  
-            const conceptNumber = Math.floor(Math.random() * (globalData.branch.length));  
-            setTimeout(() => {  
+                                                
+            setTimeout(() => { 
+                const conceptNumber = Math.floor(Math.random() * (globalData.branch.length));
                 processMarkerClick(globalData.branch[conceptNumber], conceptNumber, globalData.lat[conceptNumber], globalData.lng[conceptNumber], false);
             }, 100);
-                return
+
                                  
         } 
         if (param === 'globe') {
-            if (gameMode !== 'globe') {
+            if (gameMode !== 'globe' || getCurrentLocation(map).zoom >= viewThreshold) {
                 setGlobeView()
             }
-            const destination = { lat: 0, lng: 0, zoom: 2 }
 
-            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination)
-
-        //    const googleMapPresentLocation = getCurrentLocation()       
-         //   googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation,
-         //       { lat: 0, lng: 0, zoom: 2 },
-         //       1400, lastTwoThirdEasing, firstTwoThirdEasing, false, setIsFlying)
-                     
+           
+            const destination = globalView;
+            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
+                   
         }
     }
     
     const setGlobeView = () => {
         clearGoogleMap()
         dispatch(newGameMode('globe'))
-        const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
-        const diameter = minDimen * markerDiameterPerZoom[globalConceptZoomLevel]
+        
 
-        setTimeout(() => {          
+        setTimeout(() => {   
+            const diameter = getMarkerDiameter('small')
             updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, diameter)
-        }, 100);
+        }, 30);
       
        
     }

@@ -56,11 +56,8 @@ const App = () => {
 
     const googleMapDimensions = useSelector((state) => state.counter[0].googleMapDimensions);
  
-    const browseZoomLevel = useSelector((state) => state.counter[0].browseZoomLevel);
-  
-    const globalConceptZoomLevel = useSelector((state) => state.counter[0].globalConceptZoomLevel);
-
-    const markerDiameterPerZoom = useSelector((state) => state.counter[0].markerDiameterPerZoom);
+    const browseView = useSelector((state) => state.counter[0].browseView);
+    const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
 
    
     const gameMode = useSelector((state) => state.counter[0].gameMode); //  
@@ -76,15 +73,20 @@ const App = () => {
             return
         }
         setLastConcept(thisConcept)
+        if (gameMode === 'route') {
+            processMarkers(thisConcept, 0, lat, lng, false, false)
+            dispatch(newGameMode('browse'))
+            return
+        } 
 
- 
+        
         if (gameMode === 'globe' || !realMarkerClick) { // we start browsing from a new concept
             dispatch(newGameMode('browse'))
             setRoundCounter(0);                       
             const thisLat = globalData.lat[clickDirection];
             const thisLng = globalData.lng[clickDirection];
-            const destination = { lat: thisLat, lng: thisLng, zoom: browseZoomLevel }
-            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination)
+            const destination = { lat: thisLat, lng: thisLng, zoom: browseView.zoom }
+            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
             setTimeout(() => {
                 processMarkers(thisConcept, 0, thisLat, thisLng, false, false)
 
@@ -92,17 +94,23 @@ const App = () => {
 
             return
         }
-        processMarkers(thisConcept, clickDirection, lat, lng, true, true)
 
+
+
+        
+
+        
+            processMarkers(thisConcept, clickDirection, lat, lng, true, true)
+         
     }
 
 
     const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
-
+        drawPolyline(0, 0, 0, 0, 1)
         if (markerState['Marker0'] && enablepolyline) {       
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + clickDirection].lat, markerState['Marker' + clickDirection].lng, 0)
         }
-        
+      
         const lastChoice = clickHistory[roundCounter - 1];
         const last2ndChoice = clickHistory[roundCounter - 2];
 
@@ -125,7 +133,7 @@ const App = () => {
             if (clickDirection > 0) {  // click non-center marker and thereby move on
                 setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
             }
-         
+             
             const lastConceptIfHistory = prevRoundExists ? lastConcept : '';
             const newOptions = makeNewOptions(thisConcept, lastConceptIfHistory, clickDirection)
             setTimeout(() => {
@@ -154,7 +162,7 @@ const App = () => {
     const handleMapVisuals = (newOptions, PivotItems, lat, lng, prevRoundExists) => {
 
         const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
-        const diameter = minDimen * markerDiameterPerZoom[browseZoomLevel] 
+        const diameter = getMarkerDiameter('big')
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng, minDimen/250)
         const opacity = 0.1
         updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
@@ -169,7 +177,7 @@ const App = () => {
             
         }
         else {
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: browseZoomLevel } }));
+            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: browseView.zoom } }));
         }
 
     }
@@ -234,6 +242,22 @@ const App = () => {
 
     }
 
+   
+    const getMarkerDiameter = (markerSize) => {
+        let markerPercentPerScreen
+        if (markerSize === 'big') {
+            markerPercentPerScreen = 0.2;
+        }
+        if (markerSize === 'small') {
+            markerPercentPerScreen = 0.11;
+        }
+
+        const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height);
+        const diameter = minDimen * markerPercentPerScreen;
+        return diameter
+
+    }
+
     return (               
         <Box className="appContainer"> 
             <MyFavicon dataURL={faviconDataURL} />
@@ -258,6 +282,7 @@ const App = () => {
                         map={map}
                         isFlying={isFlying}
                         setIsFlying={setIsFlying}
+                        getMarkerDiameter={getMarkerDiameter }
                        
                     />
                 </>

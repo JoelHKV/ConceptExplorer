@@ -28,7 +28,7 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const zoomGlobal = useSelector((state) => state.counter[0].zoomGlobal);
-
+    const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
     
      
     const { elementRef } = measureGoogleMapDimensions(); //measurements dispatched as a redux state
@@ -156,9 +156,9 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
 
         const zoomChangeListener = map?.addListener('zoom_changed', () => {
             const zoomLevel = map.getZoom()
-            const zoomChange = 4;
+           // const zoomChange = 4;
 
-            if ((zoomLevel < zoomChange && zoomGlobal) || (zoomLevel > zoomChange && !zoomGlobal)) {
+            if ((zoomLevel < viewThreshold && zoomGlobal) || (zoomLevel > viewThreshold && !zoomGlobal)) {
                 return
             }      
           dispatch(newZoomGlobal(!zoomGlobal))

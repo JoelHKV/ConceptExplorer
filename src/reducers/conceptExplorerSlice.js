@@ -1,17 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit';
 
  
-const markerDiameterPerZoom = [0.1, 0.1, 0.11, 0.12, 0.13, 0.15, 0.17, 0.19, 0.22, 0.26, 0.31, 0.37, 0.45, 0.45, 0.45, 0.45, 0.45];
+//const markerDiameterPerZoom = [0.1, 0.1, 0.11, 0.12, 0.13, 0.15, 0.17, 0.19, 0.22, 0.26, 0.31, 0.37, 0.45, 0.45, 0.45, 0.45, 0.45];
 const initialState = [
     {
         gameMode: 'globe',
         zoomGlobal: true,
         googleMapDimensions: { width: 756, height: 534 },
-  //      googleMapPresentLocation: { lat: 0, lng: 0, zoom: 2 },
-  //      googleMapObject: null,
-        browseZoomLevel: 7,
-        globalConceptZoomLevel: 2,
-        markerDiameterPerZoom: markerDiameterPerZoom,
+        browseView: { zoom: 7 },
+        globalView: { lat: 0, lng: 0, zoom: 2 },
+        viewThreshold: 6,
+    //    markerDiameterPerZoom: markerDiameterPerZoom,
         markerState: {},
         polylineState: {},
         mapLocation: {},

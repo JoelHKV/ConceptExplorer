@@ -1,24 +1,27 @@
 
-export const thisFlight = (dispatch, newMapLocation, map, setIsFlying, destination) => {
+export const thisFlight = (dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold) => {
+
+  
+
     const googleMapPresentLocation = getCurrentLocation(map)
 
     let flyParams
     let flyTime
     let hopRoute = false
-    if (googleMapPresentLocation.zoom > 4 && destination.zoom > 4) { // down  up down flight
+    if (googleMapPresentLocation.zoom > viewThreshold && destination.zoom > viewThreshold) { // down  up down flight
         flyParams = [linearEasing, linearEasing];
         flyTime = 3400;
         hopRoute = true;
     }
-    if (googleMapPresentLocation.zoom < 4 && destination.zoom > 4) { // up down flight
+    if (googleMapPresentLocation.zoom < viewThreshold && destination.zoom > viewThreshold) { // up down flight
         flyParams = [firstTwoThirdEasing, lastTwoThirdEasing];
         flyTime = 1400;
     }
-    if (destination.zoom < 4) { // down up flight
+    if (destination.zoom <= viewThreshold) { // down up flight
         flyParams = [lastTwoThirdEasing, firstTwoThirdEasing];
         flyTime = 1400;
     }
-
+   // console.log(flyTime)
 
    setIsFlying(true)   
    googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation, destination,
