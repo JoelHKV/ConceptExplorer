@@ -30,9 +30,13 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
 
     useEffect(() => {
         if (map) {          
-              map.setCenter({ lat: mapLocation.lat, lng: mapLocation.lng});
-           //  map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng });
-           
+              
+            if (mapLocation.pan) {
+                map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng })
+            }
+            else {
+                map.setCenter({ lat: mapLocation.lat, lng: mapLocation.lng });
+            }
             if (mapLocation.zoom) { // use zoom if zoom data is given
                  map.setZoom(mapLocation.zoom);
             }

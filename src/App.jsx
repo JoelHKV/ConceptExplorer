@@ -156,16 +156,13 @@ const App = () => {
 
         }, 400)
 
-        const destination = { lat: lat, lng: lng, zoom: browseView.zoom }
-        const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
-
-        return
+        
         if (prevRoundExists) {
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng } }));
+            dispatch(newMapLocation({ dall: 'dall', value: { pan: true, lat: lat, lng: lng } }));
             
         }
         else {
-            dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: browseView.zoom } }));
+            dispatch(newMapLocation({ dall: 'dall', value: { pan: true, lat: lat, lng: lng, zoom: browseView.zoom } }));
         }
 
     }

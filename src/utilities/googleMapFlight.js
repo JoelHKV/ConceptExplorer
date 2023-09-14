@@ -10,7 +10,7 @@ export const thisFlight = (dispatch, newMapLocation, map, setIsFlying, destinati
     let hopRoute = false
     if (googleMapPresentLocation.zoom > viewThreshold && destination.zoom > viewThreshold) { // down  up down flight
         flyParams = [linearEasing, linearEasing];
-        flyTime = 700;
+        flyTime = 3400;
         hopRoute = true;
     }
     if (googleMapPresentLocation.zoom < viewThreshold && destination.zoom > viewThreshold) { // up down flight
@@ -69,7 +69,7 @@ export const googleMapFlight = (dispatch, newMapLocation, origin, destination, d
             else {
                 zoomWeight = 1; 
             }
-            const weightedZoom = zoom * zoomWeight + 6.7 * (1 - zoomWeight)
+            const weightedZoom = zoom * zoomWeight + 2 * (1 - zoomWeight)
 
 
             dispatch(newMapLocation({ dall: 'dall', value: { lat: lat, lng: lng, zoom: weightedZoom } }));
