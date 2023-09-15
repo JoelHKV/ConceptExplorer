@@ -39,6 +39,26 @@ npm install
 ```
 npm run dev
 ```
+## API Keys
+### Custom API
+Access to the custom API is restricted. Please refer to the API Documentation for more details.
+
+### Google Maps
+The current version uses a Google Cloud Function to grant access to Google Maps securely. For local use, you can follow these steps:
+1) Add the following line to your index.html file:
+```
+<script src="secret.js"></script>
+```
+2) Create an additional JavaScript (JS) file named secret.js with the following content:
+```
+const API_KEY = “YOUR_API_KEY” 
+const script = document.createElement('script');
+script.src = API_KEY;
+script.async = true;
+script.defer = true;
+document.head.appendChild(script);
+```
+Replace "YOUR_API_KEY" with your actual Google Maps API key. 
 
 ## Technologies Used
 Concept Explorer is written in JavaScript (React + Redux), HTML, and CSS. 
@@ -103,16 +123,15 @@ To ensure the security and reliability of this API, access is restricted as foll
 - The cloud function checks the IP address and the URL of the request.
 - Access is granted only to this project's page and the developer's own development server.
 
-### Contact
-If you wish to use this API and need further details or access, please don't hesitate to contact the project owner for additional information.
-For inquiries, contact...
-
-
-
-
+### Usage
+If you wish to use this API, please don't hesitate to contact the project owner. Please find my contact information at the end of this document.
+ 
 ## Testing
 
- 
-## Room for improvement
-- Perform unit tests and clicking tests with Selenium.
+## Licence
+## Known Issues
 
+## Roadmap
+- Perform unit tests and clicking tests with Selenium.
+- 
+## Contact Information
