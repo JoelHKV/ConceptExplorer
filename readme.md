@@ -20,17 +20,48 @@ Concept Explorer switches to <strong>Browse View</strong> once a starting concep
 
 <img src="https://raw.githubusercontent.com/JoelHKV/ConceptExplorer/main/public/Instruction_Fig3.jpg" width="600" height="auto">
 
-## Setup
-The app contains of the following code files:
-- index.html
-- src/main.jsx
-- src/App.jsx
-- src/App.css
-- src/reducers/conceptExplorerSlice.jsx (Redux to handle the game logic)
-- src/components/ 
-- src/components/ 
-- src/utilities/ 
-- src/assets/ 
+
+## Getting Started
+To run this React app locally, follow these four steps:
+1. **Clone the Repository:**
+```
+git clone https://github.com/JoelHKV/ConceptExplorer.git
+```
+2. **Navigate to the Project Directory:**
+```
+cd your-react-app
+```
+3. **Install Dependencies:**
+```
+npm install
+```
+4. **Start the Development Server:**
+```
+npm run dev
+```
+
+## Folder Structure
+The project directory is organized as follows:
+
+* src/: This folder contains the main source code.
+* main.jsx: The JavaScript entry point.
+* App.jsx: The main entry point.
+* App.css: The main CSS styles specific to App.jsx.
+* assets/: Stores static assets like images, fonts, etc.
+* components/: Houses React components.
+* hooks/: Contains custom React hooks.
+* reducers/: Stores Redux reducers.
+* utilities/: Holds utility functions.
+
+
+
+## Database Schema
+
+
+## API Documentation
+
+
+
 
 ## Technologies Used
 Concept Explorer is written in JavaScript (React + Redux), HTML, and CSS. 

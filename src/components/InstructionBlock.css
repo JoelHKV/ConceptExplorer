@@ -12,7 +12,6 @@
 .InstructionBlockTitle {
     cursor: pointer;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     justify-content: center;
     position: relative;
@@ -29,11 +28,12 @@
 
 
 .InstructionBlockTitleText {
-    text-transform: capitalize;
+    text-transform: capitalize;  
     white-space: nowrap; /* Prevents text from wrapping to the next line */
     overflow: hidden; /* Hides any overflowed content */
     text-overflow: ellipsis;
-    font-size: clamp(35px, 4vw, 44px) !important;
+    font-size: clamp(25px, 4vw, 44px) !important;
+    
 }
 
 .ExpandButton {
@@ -65,19 +65,14 @@
         transition: height 0.5s ease-in-out, border 0.5s steps(1, start) 
     }
 
-
-
 .InstructionBlockHeader {
     margin-top: 3vh !important;
     font-size: clamp(25px, 2vw, 35px) !important;
+    font-weight: bold !important;
+   
 }
 
-
-
-
-
-
-.prevbutton, .nextbutton {
+.prevbutton, .nextbutton, .InstructionCounter {
     position: absolute;
     bottom: 3%;
     height: calc(var(--button-size) * 1.2);
@@ -92,9 +87,19 @@
  
 }
 
-    .navbuttondis {
-        opacity: 0.3;
-    }
+.InstructionCounter {
+    font-size: 20px;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(15px, 2vw, 22px) !important;
+}
+
+
+.navbuttondis {
+    opacity: 0.3;
+}
 
 
 

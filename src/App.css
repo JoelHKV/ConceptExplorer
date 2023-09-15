@@ -1,8 +1,5 @@
 :root {
     --background-color: #bbb;
-    --button-text-color: #000000;
-    --button-background-color: #77ee00;
-    --button-background-color-hover: #55aa00;
     --app-max-width: 750px;
     --app-height: 85vh;
     --title-height: clamp(40px, 10vh, 100px);
@@ -18,7 +15,7 @@
     left: 50%;
     top: 3%;
     transform: translateX(-50%);
-    width: clamp(200px, 100%, var(--app-max-width) + 0px);
+    width: clamp(200px, 95%, var(--app-max-width) + 0px);
     height: var(--app-height);
     user-select: none;
     border: solid white clamp(15px, 3vmin, 30px);
@@ -27,7 +24,6 @@
     padding: 0px;
     
 }
-
 
 
 html {

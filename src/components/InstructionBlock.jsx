@@ -78,12 +78,14 @@ const InstructionBlock = ( ) => {
                 {showText &&  (
                     <>        
                         <Typography className='InstructionBlockHeader' variant="h4">
-                            INSTRUCTIONS  {introCounter + 1} / {instructionsText.length}
+                            Instructions
                         </Typography>
                         <Typography className='InstructionBlock_Text' variant="h6" style={{ whiteSpace: 'pre-line' }}>
                             <div dangerouslySetInnerHTML={{ __html: instructionsText[introCounter] }} />
                         </Typography> 
-
+                        <Typography className='InstructionCounter' variant="h4">
+                            {introCounter + 1} / {instructionsText.length}
+                        </Typography>
                         <img className={`prevbutton ${prevButtonDisabled}`} src={prevbuttonImage} onClick={() => prevButtonDisabled === '' ? takeStep(-1) : ''} alt="Previous" />
                         <img className={`nextbutton ${nextButtonDisabled}`} src={nextbuttonImage} onClick={() => nextButtonDisabled === '' ? takeStep(1) : ''} alt="Next" />                  
 

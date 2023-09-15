@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
  
 import { useDispatch, useSelector } from 'react-redux';
-import { newGameMode, newMapLocation, newMarkerState, newPolylineState } from './reducers/conceptExplorerSlice';
+import { newGameMode, newMapLocation, newMarkerState, newPolylineState, deleteMarkerState } from './reducers/conceptExplorerSlice';
  
 import { Box } from '@mui/material'; // use MUI component library
 
@@ -51,11 +51,6 @@ const App = () => {
     const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
     const gameMode = useSelector((state) => state.counter[0].gameMode); //
 
-
-    const koira = drawCanvasSizeReturnDataURL(100, 'KOIRA', '0.8', [0.9, 0.45, 0.35], 20)
-
-
-
     const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
         if (gameMode === 'browse' && clickDirection === 0 && realMarkerClick) { // center marker clicked while browsing
             dispatch(newGameMode('details')) // open the popup for details
@@ -83,12 +78,12 @@ const App = () => {
         }
 
         if (gameMode === 'route') { // concept clicked while checking the route history, make it the new center concept
+            dispatch(deleteMarkerState({ markerName: 'ALL' }))
             processMarkers(thisConcept, 0, lat, lng, false, false)
             dispatch(newGameMode('browse'))
             return
         }                                
     }
-
 
     const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
         drawPolyline(0, 0, 0, 0, 1)
@@ -155,8 +150,7 @@ const App = () => {
             updateOpacity(newOptions, PivotItems)
 
         }, 400)
-
-        
+       
         if (prevRoundExists) {
             dispatch(newMapLocation({ dall: 'dall', value: { pan: true, lat: lat, lng: lng } }));
             
@@ -166,8 +160,6 @@ const App = () => {
         }
 
     }
-
-
 
     const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
 
@@ -192,7 +184,6 @@ const App = () => {
                 opacity: thisOpacity,
                 diameter: diameter,
                 dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
-
 
             }
              
@@ -224,7 +215,6 @@ const App = () => {
 
     }
 
-   
     const getMarkerDiameter = (thisSize) => {
         const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height);
         const diameter = minDimen * googlemapMarkerSizes[thisSize];
@@ -239,10 +229,8 @@ const App = () => {
             {loaded &&   (
                 <>
                     <GoogleMapsApp  
-                        processMarkerClick={processMarkerClick}
-                        
-                        map={map}
-                
+                        processMarkerClick={processMarkerClick}                      
+                        map={map}               
                     />
                     <BottomButtons
                         roundCounter={roundCounter}

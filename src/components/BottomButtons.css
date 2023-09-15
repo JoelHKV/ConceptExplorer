@@ -17,6 +17,13 @@
     cursor: pointer;
     height: 80%;
 }
+
+@media screen and (max-width: 400px) {
+    .home-button, .back-button, .route-button, .random-button, .globe-button {
+        height: 70%;
+    }
+}
+
 .home-button {
     left: 10%;
 }
