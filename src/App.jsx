@@ -265,6 +265,7 @@ const App = () => {
             {gameMode === 'details' && (
                 <OverlayBlock
                     cloudFunctionURL={cloudFunctionURL}
+                    abstractValue={concepts[lastConcept]['abstract']}
                 />
             )}                   
         </Box >            

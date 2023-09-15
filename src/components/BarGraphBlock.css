@@ -1,0 +1,50 @@
+.BarGraphBlock {
+    position: relative;
+    padding: 1rem;
+    padding-bottom: 0;
+}
+
+.bar-graph-container {
+    position: relative;
+}
+
+.progress-bar {
+    height: 3vh !important;
+    border-radius: 10px;
+    background-color: #ccc !important;
+}
+
+    .progress-bar .MuiLinearProgress-bar {
+        background-color: #777 !important;
+    }
+
+.bar-graph-label {
+    position: absolute;
+    top: -3vh;
+}
+
+.concrete-label {
+    left: 0.3rem;
+    color: #000;  
+}
+
+.abstract-label {
+    right: 0.3rem;
+    color: #000;
+  
+}
+
+.bar-value {
+    position: absolute;
+    top: 1.5vh;
+    font-size: 2vh !important;
+    font-weight: bold !important;
+}
+.bar-value-low {
+    transform: translateX(20%) translateY(-50%);
+    color: #000;
+}
+.bar-value-high {
+    transform: translateX(-120%) translateY(-50%);
+    color: #FFF;
+}

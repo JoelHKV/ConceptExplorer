@@ -15,12 +15,13 @@ const InstructionBlock = ( ) => {
     const dispatch = useDispatch();
 
     const instructionsText = [
-        "Concept Explorer is a tool for exploring the conceptual world, much like how Google Maps is a tool for exploring the physical world. Concepts, similar to places, have distances between them, and Concept Explorer allows you to travel between related concepts, facilitating a deeper understanding of the conceptual world.",
-        "Concept Explorer starts with Globe View, where you can explore the given starting concepts.These concepts are shown as markers on Google Maps, and you can scroll, zoom in and out on the map as if they were regular Google Map markers. Alternatively, you can click 'Random' to travel to a random starting concept. Once you have found a concept you want to explore, you can simply click the marker.",
-        "The first click centers the map around the concept you want to explore, and the second click shows eight related concepts. Now you can just click any of these related concepts shown on the perimeter and make that the new center concept. Concept Explorer will then display eight concepts related to the new center concept.",
-        "if you click the center concept again (while periferial ones are shown also) you will see a popup window that provides a summary of the concept. Additionally, you will find a link to Wikipedia if you wish to delve into the concept in detail.",
-        "While exploring the concepts you can also:\n1) Click 'Home' to return to exploring the initial starting concept\n2) Click 'Back' to retrace the steps you have taken\n3) Click 'Route' to view the concepts you have recently explored"        
+        "Concept Explorer is an educational app for understanding concepts, which are fundamental building blocks in thinking. With Concept Explorer, you can learn not only the definitions but also how concepts relate to one another. For instance, <em>Mind</em> and <em>Consciousness</em> are closely related in the <em>conceptual space</em>, much like how <em> Belgium</em> and <em>the Netherlands</em> are closely located in the <em>physical space</em>.",
+        "Concept Explorer starts with <strong>Globe View</strong>, displaying a Google Map with custom markers representing concepts. You can navigate and zoom the map just like a regular Google Map. Once you find an interesting concept, you can start exploring it by clicking on it. Alternatively, you can click <em>RAND</em> to explore a random concept. If you're not satisfied with the concept you are exploring, simply click <em>GLOBE</em> to return to <strong>Globe View</strong>.",
+        "Concept Explorer switches to <strong>Browse View</strong> once a starting concept has been selected. In <strong>Browse View</strong>, the map zooms in and shows the selected concept in the center of the screen, surrounded by eight closely related concepts. You can click on any of these surrounding concepts to make it the new center concept. Alternatively, you can click on the center concept to switch to <strong>Details View</strong> that contains more information about the concept.",
+        "<strong>Details View</strong> is a popup window that provides a summary of the concept, a link to the corresponding Wikipedia article for further exploration, and a score ranging from 0 to 100, indicating how concrete versus abstract the concept is. This score is also displayed in the middle of the marker in <strong>Browse View</strong>.",
+        "In addition to <em>GLOBE</em> and <em>RAND</em> buttons explained earlier, the bottom panel includes <em>HOME</em>, <em>BACK</em>, and <em>ROUTE</em> buttons.These buttons are active only in <strong>Browse View</strong>, allowing you to return to the starting concept, take one step back on your browsing path, or view the entire route you have been browsing since the starting concept. Happy Exploring!"
     ];
+
   
 
 
@@ -77,10 +78,10 @@ const InstructionBlock = ( ) => {
                 {showText &&  (
                     <>        
                         <Typography className='InstructionBlockHeader' variant="h4">
-                            INSTRUCTIONS {introCounter + 1} / {instructionsText.length}
+                            INSTRUCTIONS  {introCounter + 1} / {instructionsText.length}
                         </Typography>
                         <Typography className='InstructionBlock_Text' variant="h6" style={{ whiteSpace: 'pre-line' }}>
-                            {instructionsText[introCounter]}
+                            <div dangerouslySetInnerHTML={{ __html: instructionsText[introCounter] }} />
                         </Typography> 
 
                         <img className={`prevbutton ${prevButtonDisabled}`} src={prevbuttonImage} onClick={() => prevButtonDisabled === '' ? takeStep(-1) : ''} alt="Previous" />

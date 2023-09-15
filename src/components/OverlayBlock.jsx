@@ -1,8 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Typography } from '@mui/material';
+import { Typography, LinearProgress } from '@mui/material';
 import './OverlayBlock.css';
+
+
+import BarGraphBlock from '../components/BarGraphBlock';
 
 import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDataURL';
 
@@ -10,7 +13,7 @@ import { getConceptDetails } from '../hooks/getConceptDetails';
 
 import { newGameMode } from '../reducers/conceptExplorerSlice';
 
-const OverlayBlock = ({ cloudFunctionURL } ) => {
+const OverlayBlock = ({ cloudFunctionURL, abstractValue } ) => {
     const [expanded, setExpanded] = useState(false);
     const [showText, setShowText] = useState(false);
     const dispatch = useDispatch();
@@ -51,15 +54,12 @@ const OverlayBlock = ({ cloudFunctionURL } ) => {
         
     }
 
-     
     const xbuttonImage = drawCanvasSizeReturnDataURL(80, '', 'X', [0.9, 0.7, 0.6], 30)
-
 
     const openWikipediaInNewTab = () => {
         window.open('https://en.wikipedia.org/wiki/' + title, '_blank');
         return
     };
-
 
     return (
         <div className={`OverlayBlock ${expanded ? 'expanded' : ''}`} onClick={clickInfo}>
@@ -70,8 +70,11 @@ const OverlayBlock = ({ cloudFunctionURL } ) => {
                 <>
                     <Typography className='OverlayBlockSubTitle' variant="h6">             
                         {latLngWholeText}
-                    </Typography>
-                          
+                    </Typography>                 
+                    <BarGraphBlock
+                        value={abstractValue}
+                    />
+
                     <Typography className='OverlayBlockText' variant="h6">
                         {conceptDetails['definition']}
                     </Typography>
