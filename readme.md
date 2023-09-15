@@ -56,9 +56,30 @@ The project directory is organized as follows:
 * utilities/: Holds utility functions.
 
 
+## Data
+All data for this project has been generated exclusively by ChatGPT 3.5. For more details, you can refer to the Concept Generation project.
 
 ## Database Schema
+### All Interconnections
+Data related to interconnections between concepts is stored in Firestore under the following structure:
 
+- **`conceptBrowser`** (Collection)
+  - **`concepts_refined`** (Collection)
+    - **`[Concept Name]`** (Document)
+      - **`abstract`** (Number): Abstractness rating from 0 (concrete) to 100 (abstract).
+      - **`branch`** (String): The starting concept that led to this concept.
+      - **`ordered_concepts`** (Array of Strings): An array of the 8 most related concepts to this concept, ordered by relatedness.
+
+### Concept Details
+Details about individual concepts are stored in Firestore using the following structure:
+
+- **`conceptNames`** (Collection)
+  - **`[Concept Name]`** (Document)
+    - **`definition`** (String): A concise summary (about 70 words) about the concept.
+    - **`date`** (Timestamp): The date and time when ChatGPT generated the definition.
+    - **`definition_model_version`** (String): The version of ChatGPT used to generate the definition.
+
+This structure helps organize and retrieve data efficiently, allowing for easy access to interconnections between concepts and detailed information about each concept.
 
 ## API Documentation
 
@@ -90,10 +111,6 @@ For inquiries, contact...
 
 
 ## Testing
-
-## Data
-
-The data for Concept Explorer is created in the Concept Generation -project.
 
  
 ## Room for improvement
