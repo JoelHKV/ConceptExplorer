@@ -40,6 +40,8 @@ npm install
 npm run dev
 ```
 
+## Technologies Used
+Concept Explorer is written in JavaScript (React + Redux), HTML, and CSS. 
 ## Folder Structure
 The project directory is organized as follows:
 
@@ -60,11 +62,32 @@ The project directory is organized as follows:
 
 ## API Documentation
 
+### Overview
+This API allows you to retrieve information about concepts and their interconnections from Firestore using a Google Cloud Function.
+### Endpoints
+
+#### Get All Interconnections (GET)
+- **URL:** `https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore`
+- **Description:** Returns all interconnections between concepts.
+- **Usage:** Simply make a GET request to the above URL.
+
+#### Get Concept Details (GET)
+- **URL:** `https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore?concept_name=ENTER_CONCEPT_NAME_HERE`
+- **Description:** Returns details about a specific concept.
+- **Usage:** Replace `ENTER_CONCEPT_NAME_HERE` with the desired concept name and make a GET request to the URL.
+
+### Access Restrictions
+To ensure the security and reliability of this API, access is restricted as follows:
+
+- The cloud function checks the IP address and the URL of the request.
+- Access is granted only to this project's page and the developer's own development server.
+
+### Contact
+If you wish to use this API and need further details or access, please don't hesitate to contact the project owner for additional information.
+For inquiries, contact...
 
 
 
-## Technologies Used
-Concept Explorer is written in JavaScript (React + Redux), HTML, and CSS. 
 
 ## Testing
 
