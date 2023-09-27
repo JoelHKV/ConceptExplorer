@@ -12,6 +12,7 @@ const initialState = [
     {
         gameMode: 'globe',
         zoomTracker: [2, 2], // keeps track of last two zoom levels for various purposes
+        haltTimeTracker: 0,
         googleMapDimensions: { width: 756, height: 534 },
         googlemapMarkerSizes: googlemapMarkerSizes,
         browseView: { zoom: 7 },
@@ -56,10 +57,7 @@ const conceptExplorerReducer = createSlice({
                 ...state.slice(1) // Copy the rest of the state array
             ];
         },
-
-
-
-  
+ 
         newMapLocation: (state, action) => {
             const { attribute, dall, value } = action.payload;
             const newState = [...state];
@@ -158,5 +156,5 @@ const conceptExplorerReducer = createSlice({
 
 });
 
-export const { newGameMode, newMapDimensions, newMapLocation, newZoomTracker,    newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
+export const { newGameMode, newMapDimensions, newMapLocation, newZoomTracker, newMarkerState, deleteMarkerState, newPolylineState, deletePolylineState } = conceptExplorerReducer.actions;
 export default conceptExplorerReducer.reducer;

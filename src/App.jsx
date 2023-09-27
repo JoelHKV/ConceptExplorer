@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
  
 import { useDispatch, useSelector } from 'react-redux';
 import { newGameMode, newMapLocation, newMarkerState, newPolylineState, deleteMarkerState } from './reducers/conceptExplorerSlice';
@@ -30,7 +30,6 @@ const App = () => {
     const cloudFunctionURL = 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore'
     const { concepts, globalData, loaded, error } = fetchAllConcepts(cloudFunctionURL);
 
-
     const map = googleMapLoader();
 
     const faviconDataURL = drawCanvasSizeReturnDataURL(100, ' ', 'C', [0.85, 0.45, 0.35], 20)
@@ -38,8 +37,12 @@ const App = () => {
     const [clickHistory, setClickHistory] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
 
-    const [isFlying, setIsFlying] = useState(false)
-  
+
+    const [haltExecutionUntil, setHaltExecutionUntil] = useState(performance.now())
+
+    const [haltClick, setHaltClick] = useState(false)
+
+    
 
     const dispatch = useDispatch();
 
@@ -51,11 +54,44 @@ const App = () => {
     const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
     const gameMode = useSelector((state) => state.counter[0].gameMode); //
 
+     
+    const computeHalt = (waitTime) => {
+        if (typeof waitTime === 'number') {
+            setHaltExecutionUntil(performance.now() + waitTime)
+            return
+        }
+        else {
+            
+            const halted = haltExecutionUntil - performance.now() > 0
+            if (!halted && haltClick) {
+                setHaltClick(false)
+            }
+            if (halted && !haltClick) {
+                setHaltClick(true)
+            }
+            if (halted && haltClick) {
+                setTimeout(() => {  
+                    computeHalt() 
+                }, 50);
+            }
+            return halted  
+        }
+        
+    }
+
+    const haltExecution = computeHalt()
+  
     const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
-        if (gameMode === 'browse' && clickDirection === 0 && realMarkerClick) { // center marker clicked while browsing
+               
+        const haltExecution = computeHalt()
+        if (haltExecution) { return }
+        computeHalt(500)
+           
+        if (gameMode === 'browse' && clickDirection === 0 && realMarkerClick) { // center marker clicked while browsing            
             dispatch(newGameMode('details')) // open the popup for details
             return
         }
+       
         setLastConcept(thisConcept)
         if (gameMode === 'browse' && clickDirection > 0) { // periferial marker clicked while browsing
             processMarkers(thisConcept, clickDirection, lat, lng, true, true) // make it the new center concept
@@ -69,9 +105,12 @@ const App = () => {
             const thisLng = globalData.lng[clickDirection];
             const destination = { lat: thisLat, lng: thisLng, zoom: browseView.zoom }
             // fly to the destination
-            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
+            const flightTime = thisFlight(dispatch, newMapLocation, map, destination, viewThreshold)         
+           // dispatch(newHaltTimeTracker(flightTime + 200))
+            computeHalt(flightTime + 400)
             setTimeout(() => { // set browsing markers
                 processMarkers(thisConcept, 0, thisLat, thisLng, false, false)
+                 
             }, flightTime + 200);
 
             return
@@ -87,6 +126,7 @@ const App = () => {
 
     const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
         drawPolyline(0, 0, 0, 0, 1)
+        
         if (markerState['Marker0'] && enablepolyline) {       
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + clickDirection].lat, markerState['Marker' + clickDirection].lng, 0)
         }
@@ -95,20 +135,19 @@ const App = () => {
         const last2ndChoice = clickHistory[roundCounter - 2];
 
         const clickBack = lastChoice ? Math.abs(lastChoice.clickDirection - clickDirection) == 4 : false;
-   
+       
         if (lastChoice && last2ndChoice && clickBack) { // click where we came from
-   
             if (enablepolyline) {        
                 drawPolyline(last2ndChoice.clickLat, last2ndChoice.clickLng, last2ndChoice.centerLat, last2ndChoice.centerLng, 1)          
             }
             setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
             const newOptions = makeNewOptions(lastChoice.conceptName, last2ndChoice.conceptName, last2ndChoice.clickDirection)
-            setTimeout(() => {
+          //  setTimeout(() => {
                 handleMapVisuals(newOptions, [lastChoice.conceptName, last2ndChoice.conceptName], lat, lng, prevRoundExists)
-            }, 50)
+           // }, 50)
         }
         else {
-
+            
            
             if (clickDirection > 0) {  // click non-center marker and thereby move on
                 setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
@@ -116,11 +155,14 @@ const App = () => {
              
             const lastConceptIfHistory = prevRoundExists ? lastConcept : '';
             const newOptions = makeNewOptions(thisConcept, lastConceptIfHistory, clickDirection)
-            setTimeout(() => {
+            
+         //   setTimeout(() => {
                 handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, prevRoundExists)
-            }, 50)
+                
+       //     }, 50)
             const newHistory = saveHistory(clickHistory, markerState, clickDirection, roundCounter)
             setClickHistory(newHistory);
+           
         }
                            
     }
@@ -139,18 +181,22 @@ const App = () => {
     }
 
     const handleMapVisuals = (newOptions, PivotItems, lat, lng, prevRoundExists) => {
-
+  
         const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
         const diameter = getMarkerDiameter('large')
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng, minDimen/250)
         const opacity = 0.1
-        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
 
-        setTimeout(() => {
-            updateOpacity(newOptions, PivotItems)
 
-        }, 400)
+         
+       // setTimeout(() => {
+            updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
+      //  }, 50)
        
+        setTimeout(() => {
+              updateOpacity(newOptions, PivotItems)           
+        }, 500)
+        
         if (prevRoundExists) {
             dispatch(newMapLocation({ dall: 'dall', value: { pan: true, lat: lat, lng: lng } }));
             
@@ -158,7 +204,7 @@ const App = () => {
         else {
             dispatch(newMapLocation({ dall: 'dall', value: { pan: true, lat: lat, lng: lng, zoom: browseView.zoom } }));
         }
-
+        
     }
 
     const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
@@ -186,10 +232,18 @@ const App = () => {
                 dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
 
             }
-             
-            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+            if (keepBrightArray.includes(markerTitle)) {
+                dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+            }
+            else {
+
+               // setTimeout(() => {
+                     dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+              //  }, 0)
+            }
              
         })
+    
     }
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
@@ -204,15 +258,15 @@ const App = () => {
 
     }
 
-    const updateOpacity = (newOptions, excludeMarkers) => {
+    const updateOpacity = (newOptions, excludeMarkers) => {  
         const updatedMarkers = newOptions.map((markerTitle, i) => {
             if (!excludeMarkers.includes(markerTitle)) {                                      
                 const opacity = concepts.hasOwnProperty(markerTitle) ? 1 : 0.6; // transparent markers for concepts that cannot be examined (not keys in the database)
                 dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: { opacity: opacity } }));
-
-        }
+         
+            }
         })
-
+        
     }
 
     const getMarkerDiameter = (thisSize) => {
@@ -229,8 +283,9 @@ const App = () => {
             {loaded &&   (
                 <>
                     <GoogleMapsApp  
-                        processMarkerClick={processMarkerClick}                      
-                        map={map}               
+                        processMarkerClick={processMarkerClick}
+                        map={map}
+                           
                     />
                     <BottomButtons
                         roundCounter={roundCounter}
@@ -242,8 +297,8 @@ const App = () => {
                         processMarkerClick={processMarkerClick}
                         updateMarkers={updateMarkers}
                         map={map}
-                        isFlying={isFlying}
-                        setIsFlying={setIsFlying}
+                        computeHalt={computeHalt}
+                        haltExecution={haltExecution}
                         getMarkerDiameter={getMarkerDiameter }
                        
                     />
@@ -254,6 +309,7 @@ const App = () => {
                 <OverlayBlock
                     cloudFunctionURL={cloudFunctionURL}
                     abstractValue={concepts[lastConcept]['abstract']}
+                    computeHalt={computeHalt}
                 />
             )}                   
         </Box >            

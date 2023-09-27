@@ -4,16 +4,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Checkbox, FormControlLabel } from '@mui/material'; // use MUI component library
 import { createMarker, createPolyline } from '../utilities/googleMapHelper';
 import { measureGoogleMapDimensions } from '../hooks/measureGoogleMapDimensions';
-import { newZoomTracker } from '../reducers/conceptExplorerSlice';
+import { newZoomTracker  } from '../reducers/conceptExplorerSlice';
 
 
 import './GoogleMapsApp.css';
 
- 
+//setIsMapMoving
 const GoogleMapsApp = ({ processMarkerClick, map }) => {
  
     const oldMarkerHandleArray = useRef({});
     const oldPolylineHandleArray = useRef({});
+
+
  
     const dispatch = useDispatch();
     const [mapLocked, setMapLocked] = useState(false);
@@ -23,7 +25,10 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
     const markerState = useSelector((state) => state.counter[0].markerState);
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const zoomTracker = useSelector((state) => state.counter[0].zoomTracker);
-   
+
+   // const haltTimeTracker = useSelector((state) => state.counter[0].haltTimeTracker); //
+
+
      
     const { elementRef } = measureGoogleMapDimensions(); //measurements dispatched as a redux state
    
@@ -32,10 +37,15 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
         if (map) {          
               
             if (mapLocation.pan) {
-                map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng })
+                if (!isNaN(mapLocation.lat) && !isNaN(mapLocation.lng)) {
+                    map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng })
+                }
             }
             else {
-                map.setCenter({ lat: mapLocation.lat, lng: mapLocation.lng });
+              //  console.log(mapLocation.lat, mapLocation.lng, mapLocation, gameMode)
+                if (!isNaN(mapLocation.lat) && !isNaN(mapLocation.lng)) {
+                    map.setCenter({ lat: mapLocation.lat, lng: mapLocation.lng });
+                }
             }
             if (mapLocation.zoom) { // use zoom if zoom data is given
                  map.setZoom(mapLocation.zoom);
@@ -98,7 +108,7 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
             });
 
         }
-    }, [map, markerState]);
+    }, [map, markerState ]);
 
 
     useEffect(() => {
@@ -168,14 +178,8 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
     }, [map, gameMode, zoomTracker]);
 
     useEffect(() => {
-        const idleListener = map?.addListener("idle", () => {          
-
-        });
-        const centerListener = map?.addListener('center_changed', () => {
-          
-        });
-
-
+        const idleListener = map?.addListener("idle", () => { 
+        });     
     }, [map]);
 
 

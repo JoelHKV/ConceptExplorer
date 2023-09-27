@@ -9,10 +9,11 @@ import { drawCanvasSizeReturnDataURL } from '../utilities/drawCanvasSizeReturnDa
 const InstructionBlock = ( ) => {
     const [expanded, setExpanded] = useState(false);
     const [showText, setShowText] = useState(false);
- 
+    const [closing, setClosing] = useState(false);
+
     const [introCounter, setIntroCounter] = useState(0);
 
-    const dispatch = useDispatch();
+    //const dispatch = useDispatch();
 
     const instructionsText = [
         "Concept Explorer is an educational app for understanding concepts, which are fundamental building blocks in thinking. With Concept Explorer, you can learn not only the definitions but also how concepts relate to one another. For instance, <em>Mind</em> and <em>Consciousness</em> are closely related in the <em>conceptual space</em>, much like how <em> Belgium</em> and <em>the Netherlands</em> are closely located in the <em>physical space</em>.",
@@ -30,6 +31,10 @@ const InstructionBlock = ( ) => {
             // Prevent the event from propagating further
             return;
         }
+        if ((expanded && !showText) || closing) { // do not allow action when opening or closing animation is on
+            return
+        }
+
         maxMin()
       
     }
@@ -46,11 +51,14 @@ const InstructionBlock = ( ) => {
         return
     };
 
-    const maxMin = () => {
-   
+    const maxMin = () => {     
         if (expanded) {
             setShowText(false)
             setExpanded(false)
+            setClosing(true)
+            setTimeout(() => {
+                setClosing(false)
+            }, 500);
             setIntroCounter(0)
             return
         }

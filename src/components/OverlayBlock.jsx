@@ -13,7 +13,10 @@ import { getConceptDetails } from '../hooks/getConceptDetails';
 
 import { newGameMode } from '../reducers/conceptExplorerSlice';
 
-const OverlayBlock = ({ cloudFunctionURL, abstractValue } ) => {
+
+
+
+const OverlayBlock = ({ cloudFunctionURL, abstractValue, computeHalt } ) => {
     const [expanded, setExpanded] = useState(false);
     const [showText, setShowText] = useState(false);
     const dispatch = useDispatch();
@@ -30,11 +33,17 @@ const OverlayBlock = ({ cloudFunctionURL, abstractValue } ) => {
     const longitudeText = lng >= 0 ? 'E' : 'W';
     const latLngWholeText = `${Math.abs(lat).toFixed(2)} ${latitudeText}, ${Math.abs(lng).toFixed(2)} ${longitudeText}`;
 
+    
+
     useEffect(() => {
+        computeHalt(1000)
         setExpanded(true);
         setTimeout(() => {
             setShowText(true)
         }, 500);
+        return () => {
+            computeHalt(0)
+        }
     }, []);
 
     const clickInfo = (event) => { // show introscreen
@@ -46,9 +55,9 @@ const OverlayBlock = ({ cloudFunctionURL, abstractValue } ) => {
 
         setShowText(false)
         setExpanded(false)
-
+        
         setTimeout(() => {
-            dispatch(newGameMode('browse'))
+            dispatch(newGameMode('browse'))           
         }, 400);
 
         

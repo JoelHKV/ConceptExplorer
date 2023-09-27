@@ -1,5 +1,5 @@
 
-export const thisFlight = (dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold) => {
+export const thisFlight = (dispatch, newMapLocation, map, destination, viewThreshold) => {
 
   
 
@@ -21,11 +21,10 @@ export const thisFlight = (dispatch, newMapLocation, map, setIsFlying, destinati
         flyParams = [lastTwoThirdEasing, firstTwoThirdEasing];
         flyTime = 1400;
     }
-   // console.log(flyTime)
-
-   setIsFlying(true)   
+  
+  
    googleMapFlight(dispatch, newMapLocation, googleMapPresentLocation, destination,
-        flyTime, flyParams[0], flyParams[1], hopRoute, setIsFlying)
+       flyTime, flyParams[0], flyParams[1], hopRoute)
 
 
     return flyTime
@@ -42,10 +41,8 @@ export const getCurrentLocation = (map) => {
 
 
 
-export const googleMapFlight = (dispatch, newMapLocation, origin, destination, duration, latlngEasingFn, zoomEasingFn, hop, setIsFlying) => {
+export const googleMapFlight = (dispatch, newMapLocation, origin, destination, duration, latlngEasingFn, zoomEasingFn, hop) => {
 
-    //const dispatch = useDispatch();
-   // const hop = true
     const startTime = Date.now();
 
     const animatePanning = () => {
@@ -53,8 +50,7 @@ export const googleMapFlight = (dispatch, newMapLocation, origin, destination, d
         const fraction = elapsed / duration;
 
         if (fraction < 1) {
-
-
+                          
             const latlngFraction = latlngEasingFn(fraction);
             const zoomFraction = zoomEasingFn(fraction);
 
@@ -78,7 +74,8 @@ export const googleMapFlight = (dispatch, newMapLocation, origin, destination, d
             }, 50);
         } else {
             dispatch(newMapLocation({ dall: 'dall', value: { lat: destination.lat, lng: destination.lng, zoom: destination.zoom } }));
-            setIsFlying(false)
+    
+             
         }
     }
 

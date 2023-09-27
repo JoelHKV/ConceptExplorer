@@ -11,7 +11,7 @@ import { processRoute } from '../utilities/processRoute';
 import { thisFlight, getCurrentLocation } from '../utilities/googleMapFlight';
 
 
-const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processMarkerClick, loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
+const BottomButtons = ({ map, getMarkerDiameter, haltExecution, computeHalt, processMarkerClick, loaded, globalData, roundCounter, clickHistory, processMarkers, updateMarkers, setRoundCounter }) => {
 
     const dispatch = useDispatch();
  
@@ -24,7 +24,6 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
     const buttonGeom = [0.9, 0.7, 0.6];
     const buttonTextSize = 0.16;
 
-
     useEffect(() => {
         if (loaded) {
             dispatch(newMapLocation({ dall: 'dall', value: globalView }));
@@ -34,7 +33,7 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
 
     useEffect(() => {
 
-        if (!loaded || isFlying || gameMode==='route') { return }
+        if (!loaded || haltExecution || gameMode==='route') { return }
  
         if (zoomTracker[1] === viewThreshold && zoomTracker[0] === viewThreshold + 1) { // zooming out past threshold
             setGlobeView()
@@ -100,8 +99,15 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
             }
     
             const destination = globalView;
-            const flightTime = thisFlight(dispatch, newMapLocation, map, setIsFlying, destination, viewThreshold)
-                   
+           // computeHalt('halt')
+            const flightTime = thisFlight(dispatch, newMapLocation, map, destination, viewThreshold)
+            computeHalt(flightTime+200)
+            setTimeout(() => { // set browsing markers
+            //    computeHalt('go')
+            }, flightTime);
+
+
+
         }
     }
     
@@ -135,11 +141,11 @@ const BottomButtons = ({ map, getMarkerDiameter, isFlying, setIsFlying, processM
     }
 
     const buttonData = [
-        { name: 'home', label: 'HOME', enabled: roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe' },
-        { name: 'back', label: 'BACK', enabled: roundCounter > 0 && gameMode !== 'route' && gameMode !== 'details' && gameMode !== 'globe' },
-        { name: 'route', label: 'ROUTE', enabled: roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe' },
-        { name: 'random', label: 'RAND', enabled: gameMode !== 'details' && !isFlying },
-        { name: 'globe', label: 'GLOBE', enabled: gameMode !== 'details' && !isFlying },
+        { name: 'home', label: 'HOME', enabled: roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe' && !haltExecution },
+        { name: 'back', label: 'BACK', enabled: roundCounter > 0 && gameMode !== 'route' && gameMode !== 'details' && gameMode !== 'globe' && !haltExecution },
+        { name: 'route', label: 'ROUTE', enabled: roundCounter > 0 && gameMode !== 'details' && gameMode !== 'globe' && !haltExecution },
+        { name: 'random', label: 'RAND', enabled: gameMode !== 'details' && !haltExecution },
+        { name: 'globe', label: 'GLOBE', enabled: gameMode !== 'details' && !haltExecution },
     ];
 
     const buttonImages = {};
