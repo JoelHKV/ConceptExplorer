@@ -127,11 +127,12 @@ To ensure the security and reliability of this API, access is restricted as foll
 If you wish to use this API, please don't hesitate to contact the project owner. Please find my contact information at the end of this document.
  
 ## Testing
-
+Since Concept Explorer uses Google Map Markers as buttons, and Selenium does not easily recognize them as such, conventional functional testing is difficult. Thus, we use Autohotkey to randomly click the screen area. We run this test with Chrome, Firefox, and Edge (but not Safari). The testing script is located in the 'testing_script' subfolder alongside the captured video with Chrome. The link to the video is also provided here.
+    
 ## Licence
 ## Known Issues
-
+- Google Map animations are not always smooth, particularly with some smartphones
 ## Roadmap
-- Perform unit tests and clicking tests with Selenium.
+- Add Settings Menu where the user can turn animations on or off, change marker sizes etc.
 - 
 ## Contact Information

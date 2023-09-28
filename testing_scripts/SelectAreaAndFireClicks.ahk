@@ -10,10 +10,10 @@ X2 := 0
 Y2 := 0
 Interval :=1
 ; Define a hotkey to start the area selection
-s:: ; Use Ctrl+Alt+S (you can change this hotkey)
+s:: ; start area selection
     Clicking := false
     MouseGetPos, X1, Y1
-    Tooltip, Area Selection Started. Click P at the diagonal corner.
+    Tooltip, Area Selection Started. Click X at the bottom right corner.
 
 return
 
@@ -22,7 +22,7 @@ return
 
 
 ; Define a hotkey to stop the area selection and click within the selected area
-p:: ; Use Ctrl+Alt+C (you can change this hotkey)
+x:: ; end area selection
     Clicking := false
 	MouseGetPos, X2, Y2
     Tooltip, Area Selection Completed %X1%  %Y1%  %X2%  %Y2% .
@@ -34,7 +34,7 @@ p:: ; Use Ctrl+Alt+C (you can change this hotkey)
     Click, %X%, %Y% ; Click at the center of the selected area
 return
 
-v:: ; Use Ctrl+Alt+S (you can change this hotkey)
+v:: ; toggle clicking on and off
     Clicking := !Clicking ; Toggle the Clicking state
     if (Clicking)
     {
@@ -51,10 +51,8 @@ return
 PerformClick:
     Random, ClickX, X1, X2
     Random, ClickY, Y1, Y2
-   Click, %ClickX%, %ClickY% ;
-
- 
-    
+    Click, %ClickX%, %ClickY% ;
+   
 return
 
 

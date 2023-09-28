@@ -39,10 +39,7 @@ const App = () => {
 
 
     const [haltExecutionUntil, setHaltExecutionUntil] = useState(performance.now())
-
     const [haltClick, setHaltClick] = useState(false)
-
-    
 
     const dispatch = useDispatch();
 
@@ -54,37 +51,9 @@ const App = () => {
     const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
     const gameMode = useSelector((state) => state.counter[0].gameMode); //
 
-     
-    const computeHalt = (waitTime) => {
-        if (typeof waitTime === 'number') {
-            setHaltExecutionUntil(performance.now() + waitTime)
-            return
-        }
-        else {
-            
-            const halted = haltExecutionUntil - performance.now() > 0
-            if (!halted && haltClick) {
-                setHaltClick(false)
-            }
-            if (halted && !haltClick) {
-                setHaltClick(true)
-            }
-            if (halted && haltClick) {
-                setTimeout(() => {  
-                    computeHalt() 
-                }, 50);
-            }
-            return halted  
-        }
-        
-    }
-
-    const haltExecution = computeHalt()
+    
   
     const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
-
-        console.log(gameMode, thisConcept, clickDirection, lat, lng, realMarkerClick)
-
 
         const haltExecution = computeHalt()
         if (haltExecution) { return }
@@ -106,7 +75,6 @@ const App = () => {
             const destination = { lat: thisLat, lng: thisLng, zoom: browseView.zoom }
             // fly to the destination
             const flightTime = thisFlight(dispatch, newMapLocation, map, destination, viewThreshold)         
-           // dispatch(newHaltTimeTracker(flightTime + 200))
             computeHalt(flightTime + 400)
             setTimeout(() => { // set browsing markers
                 processMarkers(thisConcept, 0, thisLat, thisLng, false, false)                
@@ -124,8 +92,7 @@ const App = () => {
       
         processMarkers(thisConcept, clickDirection, lat, lng, true, true) // make it the new center concept
         dispatch(newGameMode('browse'))
-      
-
+     
     }
 
     const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
@@ -137,7 +104,6 @@ const App = () => {
       
         const lastChoice = clickHistory[roundCounter - 1];
         const last2ndChoice = clickHistory[roundCounter - 2];
-
         const clickBack = lastChoice ? Math.abs(lastChoice.clickDirection - clickDirection) == 4 : false;
        
         if (lastChoice && last2ndChoice && clickBack) { // click where we came from
@@ -209,15 +175,11 @@ const App = () => {
         }, 50)
     }
 
-    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
-        const currentIndex = 0;     
+    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {   
             const updatedMarkers = newOptions.map((markerTitle, i) => {
                 updateOneMarker(markerTitle, i, keepBrightArray, lat, lng, opacity, diameter);
             })                  
     }
-
-  
-
 
     const updateOneMarker = (markerTitle, i, keepBrightArray, lat, lng, opacity, diameter) => {
         let formattedValue = ''
@@ -276,6 +238,33 @@ const App = () => {
         return diameter
 
     }
+
+    const computeHalt = (waitTime) => {
+        if (typeof waitTime === 'number') {
+            setHaltExecutionUntil(performance.now() + waitTime)
+            return
+        }
+        else {
+
+            const halted = haltExecutionUntil - performance.now() > 0
+            if (!halted && haltClick) {
+                setHaltClick(false)
+            }
+            if (halted && !haltClick) {
+                setHaltClick(true)
+            }
+            if (halted && haltClick) {
+                setTimeout(() => {
+                    computeHalt()
+                }, 50);
+            }
+            return halted
+        }
+
+    }
+
+
+    const haltExecution = computeHalt() // we need to run the function for every render to see whether buttom buttons are clickable, or animation is on.
 
     return (               
         <Box className="appContainer"> 
