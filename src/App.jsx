@@ -188,27 +188,11 @@ const App = () => {
         const diameter = getMarkerDiameter('large')
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng, minDimen/250)
         const opacity = 0.012
-        const opacityEnd = 1
-
          
-      
-
-        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter, 'immediate')
-        
-        //   setTimeout(() => {
-      //      updateOpacity(newOptions, PivotItems, 0.2)
-      //  }, 100)
-       
+        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
+              
         setTimeout(() => {
-
-
-         //   const updatedMarkers = newOptions.map((markerTitle, i) => {
-         //       updateOneMarker(markerTitle, i, keepBrightArray, lat, lng, opacityEnd, diameter);
-          //  }) 
-            updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacityEnd, diameter, 'onebyone')
-
-
-              //updateOpacity(newOptions, PivotItems, 0.6)           
+              updateOpacity(newOptions, PivotItems, 0.6)           
         }, 500)
 
 
@@ -225,35 +209,14 @@ const App = () => {
         }, 50)
     }
 
-    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter, speed) => {
-        const currentIndex = 0;
-       // processNextMarker(newOptions, currentIndex, keepBrightArray, lat, lng, opacity, diameter) 
-        if (speed === 'immediate') {
+    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
+        const currentIndex = 0;     
             const updatedMarkers = newOptions.map((markerTitle, i) => {
                 updateOneMarker(markerTitle, i, keepBrightArray, lat, lng, opacity, diameter);
-            })
-        }
-        if (speed === 'onebyone') {
-            const updatedMarkers = newOptions.map((markerTitle, i) => {
-                if (!keepBrightArray.includes(markerTitle)) {
-                    setTimeout(() => {
-                        updateOneMarker(markerTitle, i, keepBrightArray, lat, lng, opacity, diameter);
-                    }, i * 10)
-                }
-            })
-        }
-         
+            })                  
     }
 
-    const processNextMarker = (newOptions, currentIndex, keepBrightArray, lat, lng, opacity, diameter) => {
-        updateOneMarker(newOptions[currentIndex], currentIndex, keepBrightArray, lat, lng, opacity, diameter);
-        currentIndex++
-        if (currentIndex < newOptions.length) {
-             setTimeout(() => {
-                processNextMarker(newOptions, currentIndex, keepBrightArray, lat, lng, opacity, diameter) 
-             }, 1)
-        }
-    }
+  
 
 
     const updateOneMarker = (markerTitle, i, keepBrightArray, lat, lng, opacity, diameter) => {
@@ -296,10 +259,10 @@ const App = () => {
 
     }
 
-    const updateOpacity = (newOptions, excludeMarkers, opacity) => {  
+    const updateOpacity = (newOptions, excludeMarkers, opacityValue) => {  
         const updatedMarkers = newOptions.map((markerTitle, i) => {
             if (!excludeMarkers.includes(markerTitle)) {                                      
-                const opacity = concepts.hasOwnProperty(markerTitle) ? 1 : opacity; // transparent markers for concepts that cannot be examined (not keys in the database)
+                const opacity = concepts.hasOwnProperty(markerTitle) ? 1 : opacityValue; // transparent markers for concepts that cannot be examined (not keys in the database)
                 dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: { opacity: opacity } }));
          
             }
