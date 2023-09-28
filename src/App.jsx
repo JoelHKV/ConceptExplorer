@@ -82,7 +82,10 @@ const App = () => {
     const haltExecution = computeHalt()
   
     const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
-               
+
+        console.log(gameMode, thisConcept, clickDirection, lat, lng, realMarkerClick)
+
+
         const haltExecution = computeHalt()
         if (haltExecution) { return }
         computeHalt(500)
@@ -93,10 +96,7 @@ const App = () => {
         }
        
         setLastConcept(thisConcept)
-        if (gameMode === 'browse' && clickDirection > 0) { // periferial marker clicked while browsing
-            processMarkers(thisConcept, clickDirection, lat, lng, true, true) // make it the new center concept
-            return
-        }
+
             
         if (gameMode === 'globe' || !realMarkerClick) { // marker clicked in the globe view or emulated from a button
             dispatch(newGameMode('browse')) // browsing starts
@@ -109,8 +109,7 @@ const App = () => {
            // dispatch(newHaltTimeTracker(flightTime + 200))
             computeHalt(flightTime + 400)
             setTimeout(() => { // set browsing markers
-                processMarkers(thisConcept, 0, thisLat, thisLng, false, false)
-                 
+                processMarkers(thisConcept, 0, thisLat, thisLng, false, false)                
             }, flightTime + 200);
 
             return
@@ -121,7 +120,12 @@ const App = () => {
             processMarkers(thisConcept, 0, lat, lng, false, false)
             dispatch(newGameMode('browse'))
             return
-        }                                
+        }     
+      
+        processMarkers(thisConcept, clickDirection, lat, lng, true, true) // make it the new center concept
+        dispatch(newGameMode('browse'))
+      
+
     }
 
     const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
@@ -142,9 +146,9 @@ const App = () => {
             }
             setRoundCounter(prevRoundCounter => prevRoundCounter - 1);
             const newOptions = makeNewOptions(lastChoice.conceptName, last2ndChoice.conceptName, last2ndChoice.clickDirection)
-          //  setTimeout(() => {
-                handleMapVisuals(newOptions, [lastChoice.conceptName, last2ndChoice.conceptName], lat, lng, prevRoundExists)
-           // }, 50)
+           
+            handleMapVisuals(newOptions, [lastChoice.conceptName, last2ndChoice.conceptName], lat, lng, prevRoundExists)
+           
         }
         else {
             
@@ -155,11 +159,9 @@ const App = () => {
              
             const lastConceptIfHistory = prevRoundExists ? lastConcept : '';
             const newOptions = makeNewOptions(thisConcept, lastConceptIfHistory, clickDirection)
-            
-         //   setTimeout(() => {
-                handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, prevRoundExists)
-                
-       //     }, 50)
+                    
+            handleMapVisuals(newOptions, [thisConcept, lastConceptIfHistory], lat, lng, prevRoundExists)
+                      
             const newHistory = saveHistory(clickHistory, markerState, clickDirection, roundCounter)
             setClickHistory(newHistory);
            
@@ -185,18 +187,34 @@ const App = () => {
         const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
         const diameter = getMarkerDiameter('large')
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng, minDimen/250)
-        const opacity = 0.1
-
+        const opacity = 0.012
+        const opacityEnd = 1
 
          
-       // setTimeout(() => {
-            updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
-      //  }, 50)
+      
+
+        updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter, 'immediate')
+        
+        //   setTimeout(() => {
+      //      updateOpacity(newOptions, PivotItems, 0.2)
+      //  }, 100)
        
         setTimeout(() => {
-              updateOpacity(newOptions, PivotItems)           
+
+
+         //   const updatedMarkers = newOptions.map((markerTitle, i) => {
+         //       updateOneMarker(markerTitle, i, keepBrightArray, lat, lng, opacityEnd, diameter);
+          //  }) 
+            updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacityEnd, diameter, 'onebyone')
+
+
+              //updateOpacity(newOptions, PivotItems, 0.6)           
         }, 500)
-        
+
+
+
+        setTimeout(() => {
+            
         if (prevRoundExists) {
             dispatch(newMapLocation({ dall: 'dall', value: { pan: true, lat: lat, lng: lng } }));
             
@@ -204,47 +222,67 @@ const App = () => {
         else {
             dispatch(newMapLocation({ dall: 'dall', value: { pan: true, lat: lat, lng: lng, zoom: browseView.zoom } }));
         }
+        }, 50)
+    }
+
+    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter, speed) => {
+        const currentIndex = 0;
+       // processNextMarker(newOptions, currentIndex, keepBrightArray, lat, lng, opacity, diameter) 
+        if (speed === 'immediate') {
+            const updatedMarkers = newOptions.map((markerTitle, i) => {
+                updateOneMarker(markerTitle, i, keepBrightArray, lat, lng, opacity, diameter);
+            })
+        }
+        if (speed === 'onebyone') {
+            const updatedMarkers = newOptions.map((markerTitle, i) => {
+                if (!keepBrightArray.includes(markerTitle)) {
+                    setTimeout(() => {
+                        updateOneMarker(markerTitle, i, keepBrightArray, lat, lng, opacity, diameter);
+                    }, i * 10)
+                }
+            })
+        }
+         
+    }
+
+    const processNextMarker = (newOptions, currentIndex, keepBrightArray, lat, lng, opacity, diameter) => {
+        updateOneMarker(newOptions[currentIndex], currentIndex, keepBrightArray, lat, lng, opacity, diameter);
+        currentIndex++
+        if (currentIndex < newOptions.length) {
+             setTimeout(() => {
+                processNextMarker(newOptions, currentIndex, keepBrightArray, lat, lng, opacity, diameter) 
+             }, 1)
+        }
+    }
+
+
+    const updateOneMarker = (markerTitle, i, keepBrightArray, lat, lng, opacity, diameter) => {
+        let formattedValue = ''
+        if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
+            formattedValue = concepts[markerTitle]['abstract'].toFixed(0);
+
+        }
+
+        const markerTitleUpperCase = markerTitle.toUpperCase()
+        const thisOpacity = keepBrightArray.includes(markerTitle) ? 1 : opacity
+
+        const fireMarker = concepts.hasOwnProperty(markerTitle) ? markerTitle : null; // markers fire action only if they are keys in the database
+
+        const thisMarker = {
+            ...(lat[i] !== undefined ? { lat: lat[i] } : {}),
+            ...(lng[i] !== undefined ? { lng: lng[i] } : {}),
+            title: markerTitleUpperCase,
+            param: fireMarker,
+            opacity: thisOpacity,
+            diameter: diameter,
+            dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
+
+        }
         
+        dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
+               
     }
 
-    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {
-
-        const updatedMarkers = newOptions.map((markerTitle, i) => {
-
-            let formattedValue = ''
-            if (concepts[markerTitle] && concepts[markerTitle]['abstract'] !== undefined) {
-                formattedValue = concepts[markerTitle]['abstract'].toFixed(0);
-
-            }
-
-            const markerTitleUpperCase = markerTitle.toUpperCase()
-            const thisOpacity = keepBrightArray.includes(markerTitle) ? 1 : opacity
-
-            const fireMarker = concepts.hasOwnProperty(markerTitle) ? markerTitle : null; // markers fire action only if they are keys in the database
-
-            const thisMarker = {
-                ...(lat[i] !== undefined ? { lat: lat[i] } : {}),
-                ...(lng[i] !== undefined ? { lng: lng[i] } : {}),
-                title: markerTitleUpperCase,
-                param: fireMarker,
-                opacity: thisOpacity,
-                diameter: diameter,
-                dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
-
-            }
-            if (keepBrightArray.includes(markerTitle)) {
-                dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-            }
-            else {
-
-               // setTimeout(() => {
-                     dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-              //  }, 0)
-            }
-             
-        })
-    
-    }
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
 
@@ -258,10 +296,10 @@ const App = () => {
 
     }
 
-    const updateOpacity = (newOptions, excludeMarkers) => {  
+    const updateOpacity = (newOptions, excludeMarkers, opacity) => {  
         const updatedMarkers = newOptions.map((markerTitle, i) => {
             if (!excludeMarkers.includes(markerTitle)) {                                      
-                const opacity = concepts.hasOwnProperty(markerTitle) ? 1 : 0.6; // transparent markers for concepts that cannot be examined (not keys in the database)
+                const opacity = concepts.hasOwnProperty(markerTitle) ? 1 : opacity; // transparent markers for concepts that cannot be examined (not keys in the database)
                 dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: { opacity: opacity } }));
          
             }

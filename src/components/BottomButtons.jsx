@@ -74,7 +74,7 @@ const BottomButtons = ({ map, getMarkerDiameter, haltExecution, computeHalt, pro
             
             setTimeout(() => {
                 const diameter = getMarkerDiameter('medium')
-                updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, diameter)
+                updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, diameter, 'immediate')
             }, 100);
 
 
@@ -117,7 +117,7 @@ const BottomButtons = ({ map, getMarkerDiameter, haltExecution, computeHalt, pro
         
         setTimeout(() => {   
             const diameter = getMarkerDiameter('small')
-            updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, diameter)
+            updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, diameter, 'immediate')
         }, 30);
             
     }

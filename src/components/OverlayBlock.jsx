@@ -42,6 +42,7 @@ const OverlayBlock = ({ cloudFunctionURL, abstractValue, computeHalt } ) => {
             setShowText(true)
         }, 500);
         return () => {
+          //  dispatch(newGameMode('browse'))
             computeHalt(0)
         }
     }, []);
