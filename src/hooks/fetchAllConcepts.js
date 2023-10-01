@@ -39,10 +39,9 @@ export const fetchAllConcepts = (thisURL) => {
         const uniqueBranches = new Set();
         const keykey = Object.keys(data);
         keykey.forEach(entry => {
-                uniqueBranches.add(data[entry]['branch']);
+                uniqueBranches.add(data[entry]['branch'][0]);
         });
         const globeEntries = [...uniqueBranches]
-
 
         const newLat = [];
         const newLng = [];

@@ -26,13 +26,12 @@ import './App.css';
 
 const App = () => {
 
-
     const cloudFunctionURL = 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore'
-    const { concepts, globalData, loaded, error } = fetchAllConcepts(cloudFunctionURL);
-
+    
+    const { concepts, globalData, loaded, error } = fetchAllConcepts(cloudFunctionURL);   
     const map = googleMapLoader();
+     
 
-    const faviconDataURL = drawCanvasSizeReturnDataURL(100, ' ', 'C', [0.85, 0.45, 0.35], 20)
     const [lastConcept, setLastConcept] = useState([])
     const [clickHistory, setClickHistory] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
@@ -51,8 +50,7 @@ const App = () => {
     const viewThreshold = useSelector((state) => state.counter[0].viewThreshold);
     const gameMode = useSelector((state) => state.counter[0].gameMode); //
 
-    
-  
+
     const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
 
         const haltExecution = computeHalt()
@@ -268,31 +266,28 @@ const App = () => {
 
     return (               
         <Box className="appContainer"> 
-            <MyFavicon dataURL={faviconDataURL} />
-            
-            {loaded &&   (
-                <>
-                    <GoogleMapsApp  
-                        processMarkerClick={processMarkerClick}
-                        map={map}
-                           
-                    />
-                    <BottomButtons
-                        roundCounter={roundCounter}
-                        setRoundCounter={setRoundCounter}
-                        clickHistory={clickHistory}
-                        loaded={loaded}
-                        globalData={globalData}
-                        processMarkers={processMarkers}
-                        processMarkerClick={processMarkerClick}
-                        updateMarkers={updateMarkers}
-                        map={map}
-                        computeHalt={computeHalt}
-                        haltExecution={haltExecution}
-                        getMarkerDiameter={getMarkerDiameter }
-                       
-                    />
-                </>
+            <MyFavicon/>
+
+            <GoogleMapsApp
+                processMarkerClick={processMarkerClick}
+                map={map}
+            />
+
+            {loaded &&   (                                  
+                <BottomButtons
+                    roundCounter={roundCounter}
+                    setRoundCounter={setRoundCounter}
+                    clickHistory={clickHistory}
+                    loaded={loaded}
+                    globalData={globalData}
+                    processMarkers={processMarkers}
+                    processMarkerClick={processMarkerClick}
+                    updateMarkers={updateMarkers}
+                    map={map}
+                    computeHalt={computeHalt}
+                    haltExecution={haltExecution}
+                    getMarkerDiameter={getMarkerDiameter }                       
+                />               
             )} 
             <InstructionBlock />
             {gameMode === 'details' && (

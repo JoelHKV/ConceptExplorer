@@ -22,7 +22,7 @@ Concept Explorer switches to <strong>Browse View</strong> once a starting concep
 
 
 ## Getting Started
-To run this React app locally, follow these four steps:
+To run this React app locally, follow these 4 steps:
 1. **Clone the Repository:**
 ```
 git clone https://github.com/JoelHKV/ConceptExplorer.git
@@ -41,7 +41,7 @@ npm run dev
 ```
 ## API Keys
 ### Custom API
-Access to the custom API is restricted. Please refer to the API Documentation for more details.
+Access to the custom API is restricted. Refer [API Documentation](#api-documentation) for details.
 
 ### Google Maps
 The current version uses a Google Cloud Function to grant access to Google Maps securely. For local use, you can follow these steps:
@@ -77,14 +77,14 @@ The project directory is organized as follows:
 
 
 ## Data
-All data for this project has been generated exclusively by ChatGPT 3.5. For more details, you can refer to the Concept Generation project.
-
+All data for this project has been generated exclusively by ChatGPT 3.5. 
+For more details, you can refer to the Concept Generation [ConceptGenerator](https://github.com/JoelHKV/ConceptGenerator) project.
 ## Database Schema
 ### All Interconnections
 Data related to interconnections between concepts is stored in Firestore under the following structure:
 
 - **`conceptBrowser`** (Collection)
-  - **`concepts_refined`** (Collection)
+  - **`finalConceptData`** (Collection)
     - **`[Concept Name]`** (Document)
       - **`abstract`** (Number): Abstractness rating from 0 (concrete) to 100 (abstract).
       - **`branch`** (String): The starting concept that led to this concept.
