@@ -187,17 +187,22 @@ the clicking area and then press the key `x` in the bottom-right
 corner of the clicking area. Then, press the key `v` to toggle the 
 clicking on and off.
 
-This random clicking test was run with Chrome, Firefox, and Edge (but not Safari).
-The screen capture video `Firefox_clicking.mp4` located in the `testing_script` folder is linked 
-[here](https://github.com/JoelHKV/ConceptExplorer/tree/main/testing_scripts/Firefox_clicking.mp4)
-.
-
+This random clicking test was run with Chrome, Firefox, and Edge (but not Safari). 
+You can view the resulted 
+[screen capture video here.](https://storage.googleapis.com/joeltestfiles/Firefox_clicking.mp4)
 
 ## Known Issues
-- Google Map animations are not always smooth, particularly with some smartphones
+
+- The Redux store keeps track of necessary changes in the Google Map. 
+However, when deleting markers and quickly re-adding them, they do 
+not always appear. The current workaround is to use `hideExtraMarkers()` 
+to set their opacity to zero when a quick rewrite is needed.
+- Google Map animations are not consistently smooth, especially on some smartphones.
+
 ## Roadmap
-- Add Settings Menu where the user can turn animations on or off, change marker sizes etc.
-- 
+- Add a Settings Menu where users can toggle animations on or off, and 
+adjust marker sizes, and more.
+
 ## Contact Information
 
 For inquiries or collaboration opportunities, please feel free to contact me via email. 

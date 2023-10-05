@@ -5,7 +5,6 @@ import { newGameMode, newMapLocation, newMarkerState, newPolylineState, deleteMa
  
 import { Box } from '@mui/material'; // use MUI component library
 
-
 import { fetchAllConcepts } from './hooks/fetchAllConcepts';
 
 import GoogleMapsApp from './components/GoogleMapsApp';
@@ -31,11 +30,9 @@ const App = () => {
     const { concepts, globalData, loaded, error } = fetchAllConcepts(cloudFunctionURL);   
     const map = googleMapLoader();
      
-
     const [lastConcept, setLastConcept] = useState([])
     const [clickHistory, setClickHistory] = useState([])
     const [roundCounter, setRoundCounter] = useState(0)
-
 
     const [haltExecutionUntil, setHaltExecutionUntil] = useState(performance.now())
     const [haltClick, setHaltClick] = useState(false)
@@ -52,7 +49,6 @@ const App = () => {
 
 
     const processMarkerClick = (thisConcept, clickDirection, lat, lng, realMarkerClick) => {
-
         const haltExecution = computeHalt()
         if (haltExecution) { return }
         computeHalt(600)
@@ -63,31 +59,25 @@ const App = () => {
         }
        
         setLastConcept(thisConcept)
-
-            
+           
         if (gameMode === 'globe' || !realMarkerClick) { // marker clicked in the globe view or emulated from a button
             dispatch(newGameMode('browse')) // browsing starts
             setRoundCounter(0);                       
-            const thisLat = globalData.lat[clickDirection]; // we make the clicked global concept the new center concept
-            const thisLng = globalData.lng[clickDirection];
+            const thisLat = lat  
+            const thisLng = lng 
             const destination = { lat: thisLat, lng: thisLng, zoom: browseView.zoom }
             // fly to the destination
             const flightTime = thisFlight(dispatch, newMapLocation, map, destination, viewThreshold)         
             computeHalt(flightTime + 400)
+
             setTimeout(() => { // set browsing markers
-                processMarkers(thisConcept, 0, thisLat, thisLng, false, false)                
+                hideExtraMarkers() // in reality we want to delete these extra markers but something goes wrong with quick delete and rewrite so this is a workaround for now            
+                processMarkers(thisConcept, 0, thisLat, thisLng, false, false)               
             }, flightTime + 200);
 
             return
         }
-
-        if (gameMode === 'route') { // concept clicked while checking the route history, make it the new center concept
-            dispatch(deleteMarkerState({ markerName: 'ALL' }))
-            processMarkers(thisConcept, 0, lat, lng, false, false)
-            dispatch(newGameMode('browse'))
-            return
-        }     
-      
+                
         processMarkers(thisConcept, clickDirection, lat, lng, true, true) // make it the new center concept
         dispatch(newGameMode('browse'))
      
@@ -95,7 +85,7 @@ const App = () => {
 
     const processMarkers = (thisConcept, clickDirection, lat, lng, prevRoundExists, enablepolyline) => { 
         drawPolyline(0, 0, 0, 0, 1)
-        
+
         if (markerState['Marker0'] && enablepolyline) {       
             drawPolyline(markerState['Marker0'].lat, markerState['Marker0'].lng, markerState['Marker' + clickDirection].lat, markerState['Marker' + clickDirection].lng, 0)
         }
@@ -115,8 +105,7 @@ const App = () => {
            
         }
         else {
-            
-           
+                     
             if (clickDirection > 0) {  // click non-center marker and thereby move on
                 setRoundCounter(prevRoundCounter => prevRoundCounter + 1);
             }
@@ -147,11 +136,11 @@ const App = () => {
     }
 
     const handleMapVisuals = (newOptions, PivotItems, lat, lng, prevRoundExists) => {
-  
+        //console.log(newOptions, PivotItems, lat, lng, prevRoundExists)
         const minDimen = Math.min(googleMapDimensions.width, googleMapDimensions.height)
         const diameter = getMarkerDiameter('large')
         const flowerCoordinates = conceptFlowerCoordinates(lat, lng, minDimen/250)
-        const opacity = 0.012
+        const opacity =  0.012
          
         updateMarkers(newOptions, PivotItems, flowerCoordinates[0], flowerCoordinates[1], opacity, diameter)
               
@@ -173,10 +162,11 @@ const App = () => {
         }, 50)
     }
 
-    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {   
+    const updateMarkers = (newOptions, keepBrightArray, lat, lng, opacity, diameter) => {  
             const updatedMarkers = newOptions.map((markerTitle, i) => {
                 updateOneMarker(markerTitle, i, keepBrightArray, lat, lng, opacity, diameter);
-            })                  
+            })    
+             
     }
 
     const updateOneMarker = (markerTitle, i, keepBrightArray, lat, lng, opacity, diameter) => {
@@ -196,16 +186,15 @@ const App = () => {
             ...(lng[i] !== undefined ? { lng: lng[i] } : {}),
             title: markerTitleUpperCase,
             param: fireMarker,
-            opacity: thisOpacity,
+            opacity:  thisOpacity,
             diameter: diameter,
             dataURL: drawCanvasSizeReturnDataURL(diameter, markerTitleUpperCase, formattedValue, [0.9, 0.45, 0.35], diameter / 5),
 
         }
-        
-        dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker }));
-               
-    }
 
+        dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: thisMarker })); 
+
+    }
 
     const drawPolyline = (fromlat, fromlng, tolat, tolng, index) => {
 
@@ -214,9 +203,7 @@ const App = () => {
             lng: [fromlng * 0.7 + tolng * 0.3, fromlng * 0.3 + tolng * 0.7],
             color: '#333333',
         }
-
        dispatch(newPolylineState({ polylineName: 'Polyline' + index, updatedData: thisPolyline }))
-
     }
 
     const updateOpacity = (newOptions, excludeMarkers, opacityValue) => {  
@@ -224,7 +211,6 @@ const App = () => {
             if (!excludeMarkers.includes(markerTitle)) {                                      
                 const opacity = concepts.hasOwnProperty(markerTitle) ? 1 : opacityValue; // transparent markers for concepts that cannot be examined (not keys in the database)
                 dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: { opacity: opacity } }));
-         
             }
         })
         
@@ -235,6 +221,11 @@ const App = () => {
         const diameter = minDimen * googlemapMarkerSizes[thisSize];
         return diameter
 
+    }
+    const hideExtraMarkers = () => { // this is a workaround until the issue with redux keeping track of map markers is solved
+        for (let i = 9; i < Object.keys(markerState).length; i++) {
+            dispatch(newMarkerState({ markerName: 'Marker' + i, updatedData: { opacity: 0.012 } }));
+        }
     }
 
     const computeHalt = (waitTime) => {
@@ -271,6 +262,7 @@ const App = () => {
             <GoogleMapsApp
                 processMarkerClick={processMarkerClick}
                 map={map}
+             
             />
 
             {loaded &&   (                                  

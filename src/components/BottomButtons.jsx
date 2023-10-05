@@ -32,7 +32,7 @@ const BottomButtons = ({ map, getMarkerDiameter, haltExecution, computeHalt, pro
     }, [loaded])
 
     useEffect(() => {
-
+          
         if (!loaded || haltExecution || gameMode==='route') { return }
  
         if (zoomTracker[1] === viewThreshold && zoomTracker[0] === viewThreshold + 1) { // zooming out past threshold
@@ -51,9 +51,10 @@ const BottomButtons = ({ map, getMarkerDiameter, haltExecution, computeHalt, pro
  
         if (pressedButton === 'home') {
             setRoundCounter(0)
-            clearGoogleMap()
-            const goToChoice = clickHistory[0];
+            clearGoogleMap('polyline')
+            const goToChoice = clickHistory[0];           
             processMarkers(goToChoice.conceptName, 0, goToChoice.centerLat, goToChoice.centerLng, false, false)
+
         }
 
         if (pressedButton === 'back') {
@@ -65,19 +66,8 @@ const BottomButtons = ({ map, getMarkerDiameter, haltExecution, computeHalt, pro
         }
 
         if (pressedButton === 'route') {
-
-            dispatch(newGameMode('route'))
-            clearGoogleMap()
-            const { thisMapLocation, thisRoute } = processRoute(clickHistory);
-             
-            dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
-            
-            setTimeout(() => {
-                const diameter = getMarkerDiameter('medium')
-                updateMarkers(thisRoute.concept, thisRoute.concept, thisRoute.lat, thisRoute.lng, 1, diameter)
-            }, 100);
-
-
+            setRoundCounter(0)
+            setGlobeView(true) // this argument adds route markers to the view
         }
 
         if (pressedButton === 'random') {
@@ -89,35 +79,37 @@ const BottomButtons = ({ map, getMarkerDiameter, haltExecution, computeHalt, pro
             setTimeout(() => { 
                 const conceptNumber = Math.floor(Math.random() * (globalData.branch.length));
                 processMarkerClick(globalData.branch[conceptNumber], conceptNumber, globalData.lat[conceptNumber], globalData.lng[conceptNumber], false);
-            }, 100);
-
-                                 
+            }, 100);                               
         } 
         if (pressedButton === 'globe') {
             if (gameMode !== 'globe' || getCurrentLocation(map).zoom >= viewThreshold) {
                 setGlobeView()
-            }
-    
+            }   
             const destination = globalView;
-           // computeHalt('halt')
             const flightTime = thisFlight(dispatch, newMapLocation, map, destination, viewThreshold)
             computeHalt(flightTime+200)
-            setTimeout(() => { // set browsing markers
-            //    computeHalt('go')
-            }, flightTime);
-
-
-
         }
     }
-    
-    const setGlobeView = () => {
-        clearGoogleMap()
+
+    const setGlobeView = (addRouteMarkers) => {
+        clearGoogleMap('all')
         dispatch(newGameMode('globe'))
-        
+
+        let markerName = globalData.branch.slice();
+        let thisLat = globalData.lat.slice();
+        let thisLng = globalData.lng.slice();
+
+        if (addRouteMarkers) {
+            const { thisMapLocation, thisRoute } = processRoute(clickHistory);
+            markerName = markerName.concat(thisRoute.concept);
+            thisLat = thisLat.concat(thisRoute.lat);
+                thisLng = thisLng.concat(thisRoute.lng);
+                dispatch(newMapLocation({ dall: 'dall', value: thisMapLocation }));
+        }
+       
         setTimeout(() => {   
             const diameter = getMarkerDiameter('small')
-            updateMarkers(globalData.branch, globalData.branch, globalData.lat, globalData.lng, 1, diameter)
+            updateMarkers(markerName, markerName, thisLat, thisLng, 1, diameter)
         }, 30);
             
     }
@@ -134,10 +126,14 @@ const BottomButtons = ({ map, getMarkerDiameter, haltExecution, computeHalt, pro
             i++
         }
 
-    }
-    const clearGoogleMap = () => {
-        dispatch(deleteMarkerState({ markerName: 'ALL' }))
-        dispatch(deletePolylineState({ polylineName: 'ALL' }))
+    } 
+    const clearGoogleMap = (whichone) => {
+        if (whichone === 'polyline' || whichone === 'all') {
+            dispatch(deletePolylineState({ polylineName: 'ALL' }))
+        }
+        if (whichone === 'marker' || whichone === 'all') {
+            dispatch(deleteMarkerState({ markerName: 'ALL' }))
+        }
     }
 
     const buttonData = [

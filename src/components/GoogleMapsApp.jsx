@@ -26,16 +26,12 @@ const GoogleMapsApp = ({ processMarkerClick, map }) => {
     const polylineState = useSelector((state) => state.counter[0].polylineState);
     const zoomTracker = useSelector((state) => state.counter[0].zoomTracker);
 
-   // const haltTimeTracker = useSelector((state) => state.counter[0].haltTimeTracker); //
-
-
-     
+    
     const { elementRef } = measureGoogleMapDimensions(); //measurements dispatched as a redux state
    
 
     useEffect(() => {
-        if (map) {          
-              
+        if (map) {           
             if (mapLocation.pan) {
                 if (!isNaN(mapLocation.lat) && !isNaN(mapLocation.lng)) {
                     map.panTo({ lat: mapLocation.lat, lng: mapLocation.lng })
