@@ -35,37 +35,6 @@
 14. [Contact Information](#contact-information)
 
 
-1. [General Information](#general-information)
-2. [Introduction](#introduction)
-   2.1 [Understanding Concepts](#understanding-concepts)
-   2.2 [Explore the World of Concepts](#explore-the-world-of-concepts)
-   2.3 [Three Unique Perspectives](#three-unique-perspectives)
-3. [Instructions and Features](#instructions-and-features)
-   3.1 [Globe View](#globe-view)
-   3.2 [Browse View](#browse-view)
-   3.3 [Details View](#details-view)
-4. [Getting Started](#getting-started)
-5. [API Keys](#api-keys)
-   5.1 [Custom API](#custom-api)
-   5.2 [Google Maps](#google-maps)
-6. [Technologies Used](#technologies-used)
-7. [Folder Structure](#folder-structure)
-8. [Data](#data)
-9. [Database Schema](#database-schema)
-   9.1 [All Interconnections](#all-interconnections)
-   9.2 [Concept Details](#concept-details)
-10. [API Documentation](#api-documentation)
-    10.1 [Overview](#overview)
-    10.2 [Endpoints](#endpoints)
-        10.2.1 [Get All Interconnections (GET)](#get-all-interconnections-get)
-        10.2.2 [Get Concept Details (GET)](#get-concept-details-get)
-    10.3 [Access Restrictions and Usage](#access-restrictions-and-usage)
-11. [Testing](#testing)
-12. [Known Issues](#known-issues)
-13. [Roadmap](#roadmap)
-14. [Contact Information](#contact-information)
-
-
 ## General Information
 
 Concept Explorer is an educational web app designed to make exploring 
