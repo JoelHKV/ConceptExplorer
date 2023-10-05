@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
  
-import { useDispatch  } from 'react-redux';
 export const googleMapLoader = (mapLocation) => {
-
-
-    const dispatch = useDispatch();
 
     const [map, setMap] = useState(null);
 

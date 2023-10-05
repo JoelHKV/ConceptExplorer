@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 
 const googlemapMarkerSizes = {
-    small: 0.11,
+    small: 0.15,
     medium: 0.15,
     large: 0.2,
 }
@@ -12,7 +12,6 @@ const initialState = [
     {
         gameMode: 'globe',
         zoomTracker: [2, 2], // keeps track of last two zoom levels for various purposes
-        haltTimeTracker: 0,
         googleMapDimensions: { width: 756, height: 534 },
         googlemapMarkerSizes: googlemapMarkerSizes,
         browseView: { zoom: 7 },

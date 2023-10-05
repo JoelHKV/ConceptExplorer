@@ -55,7 +55,7 @@ const App = () => {
 
         const haltExecution = computeHalt()
         if (haltExecution) { return }
-        computeHalt(500)
+        computeHalt(600)
            
         if (gameMode === 'browse' && clickDirection === 0 && realMarkerClick) { // center marker clicked while browsing            
             dispatch(newGameMode('details')) // open the popup for details

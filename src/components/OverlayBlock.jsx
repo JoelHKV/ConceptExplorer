@@ -23,7 +23,7 @@ const OverlayBlock = ({ cloudFunctionURL, abstractValue, computeHalt } ) => {
  
     const markerState = useSelector((state) => state.counter[0].markerState);
 
-    const title = markerState['Marker0'].param
+    const title = markerState['Marker0'].param 
     const lat = markerState['Marker0'].lat
     const lng = markerState['Marker0'].lng
 

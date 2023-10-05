@@ -42,7 +42,7 @@ export const fetchAllConcepts = (thisURL) => {
                 uniqueBranches.add(data[entry]['branch'][0]);
         });
         const globeEntries = [...uniqueBranches]
-
+        globeEntries.push('import/export')
         const newLat = [];
         const newLng = [];
 

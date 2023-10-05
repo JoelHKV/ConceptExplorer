@@ -12,7 +12,7 @@ export const getConceptDetails = (cloudFunctionURL, queryParam) => {
     const fetchData = () => { 
         
         axios
-            .get(cloudFunctionURL + '?concept_name=' + queryParam)
+            .get(cloudFunctionURL + '?concept_name=' + queryParam.replace(/\//g, "-"))
             .then(response => {
                 setConceptDetails(response.data)
                 setLoaded(true)
@@ -28,17 +28,11 @@ export const getConceptDetails = (cloudFunctionURL, queryParam) => {
 
     }
 
-
-
     useEffect(() => {
         fetchData()
     }, [])
 
-   
-
-
     return { conceptDetails, loaded, error }
-
 
 };
 
