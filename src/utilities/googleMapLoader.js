@@ -10,7 +10,7 @@ export const googleMapLoader = (mapLocation) => {
     useEffect(() => {
         // Load the Google Maps JavaScript API
         const script = document.createElement('script');
-        script.src = `https://return-secret-2-42285002133.europe-north1.run.app`;
+        script.src = `https://returnsecret-c2cjxe2frq-lz.a.run.app`;
         script.defer = true;
         script.async = true;
         window.initMap = initMap;

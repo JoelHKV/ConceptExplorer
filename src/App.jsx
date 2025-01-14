@@ -25,8 +25,8 @@ import './App.css';
 
 const App = () => {
 
-    const cloudFunctionURL = 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore'
-    //const cloudFunctionURL = 'https://read-concepts-firestore-42285002133.europe-north1.run.app'
+    //const cloudFunctionURL = 'https://europe-north1-koira-363317.cloudfunctions.net/readConceptsFireStore'
+    const cloudFunctionURL = 'https://read-concepts-firestore-42285002133.europe-north1.run.app'
     const { concepts, globalData, loaded, error } = fetchAllConcepts(cloudFunctionURL);   
     const map = googleMapLoader();
      
