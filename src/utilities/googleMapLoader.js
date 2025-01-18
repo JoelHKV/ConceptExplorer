@@ -5,12 +5,12 @@ export const googleMapLoader = (mapLocation) => {
     const [map, setMap] = useState(null);
 
     
-    // https://returnsecret-c2cjxe2frq-lz.a.run.app
-    //https://return-secret-2-42285002133.europe-north1.run.app
+   
     useEffect(() => {
         // Load the Google Maps JavaScript API
         const script = document.createElement('script');
-        script.src = `https://return-secret-2-42285002133.europe-north1.run.app`;
+
+        script.src = 'https://return-secret-2-42285002133.europe-north1.run.app';
         script.defer = true;
         script.async = true;
         window.initMap = initMap;
